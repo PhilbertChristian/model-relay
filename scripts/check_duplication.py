@@ -13,7 +13,7 @@ import sys
 MIN_WORDS = 12
 NOISE_FLOOR = 25  # pairs sharing fewer n-grams than this are almost always boilerplate
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SKIP_DIRS = {".git", ".relay", "node_modules", "examples"}
+SKIP_DIRS = {".git", ".relay", ".worktrees", "node_modules", "examples", "plans", "notes", "burner"}
 
 SKIP_LINE = re.compile(r"^\s*(>|\|)")
 FENCE = re.compile(r"^\s*```")

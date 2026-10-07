@@ -10,7 +10,7 @@ MAX_LINES = 500
 NAME_RE = re.compile(r"^Relay(-[A-Z0-9][A-Za-z0-9]*)+\.md$")
 LINK_RE = re.compile(r"\]\(([^)\s]+)\)")
 # examples/ and docs/plans/ hold input fixtures (plan.py reads the H1 of a plan as its title), not docs
-SKIP_DIRS = {".git", ".relay", "node_modules", "examples", "plans"}
+SKIP_DIRS = {".git", ".relay", ".worktrees", "node_modules", "examples", "plans", "notes", "burner"}
 
 
 def doc_files() -> list[Path]:

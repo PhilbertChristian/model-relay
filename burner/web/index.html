@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#080706" />
+  <title>BURNER</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="shell" id="shell">
+    <header class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <div class="brand-text">
+          <h1>BURNER</h1>
+          <p>quota instrument</p>
+        </div>
+      </div>
+      <div class="top-status">
+        <div class="pill pill-idle" id="state-pill"><i></i><span>Idle</span></div>
+        <div class="demo" id="demo-badge" hidden>DEMO</div>
+        <div class="lamps" id="lamps"></div>
+        <span class="link" id="link">SYNC</span>
+      </div>
+      <div class="clock-block">
+        <div class="clock-label">Hours left</div>
+        <div class="clock" id="countdown">—:—:—</div>
+        <div class="session" id="session" hidden>UP <span id="uptime">00:00:00</span></div>
+      </div>
+    </header>
+
+    <section class="hero panel" aria-label="Weekly quota">
+      <div class="hero-grid">
+        <div class="meter" id="meter" style="--pct: 0" role="img" aria-label="Weekly quota used">
+          <div class="ticks"></div>
+          <div class="ring-glow"></div>
+          <div class="ring"></div>
+          <div class="core">
+            <div class="pct" id="pct">—</div>
+            <div class="quota-label">of weekly quota</div>
+          </div>
+        </div>
+        <div class="hero-side">
+          <div class="panel-h">
+            <h2>Telemetry</h2>
+            <span class="kicker" id="window-end"></span>
+          </div>
+          <p class="limit-flag" id="limit-flag" hidden></p>
+          <div class="stats" id="stats"></div>
+          <div class="rates" id="rates"></div>
+          <div class="controls" id="controls">
+            <button type="button" class="btn btn-start" data-action="start">Start</button>
+            <button type="button" class="btn btn-hold" id="btn-hold" data-action="pause">Pause</button>
+            <button type="button" class="btn btn-boost" data-action="boost">Boost</button>
+            <button type="button" class="btn btn-calm" data-action="calm">Calm</button>
+            <button type="button" class="btn btn-stop" data-action="stop">Stop</button>
+          </div>
+          <p class="notice" id="notice" hidden></p>
+        </div>
+      </div>
+    </section>
+
+    <aside class="feed panel" aria-label="Live feed">
+      <header class="panel-h">
+        <h2>Feed</h2>
+        <span class="kicker" id="feed-count">00</span>
+      </header>
+      <ol class="feed-list" id="feed"></ol>
+    </aside>
+
+    <main class="main">
+      <div class="lanes" id="lanes"></div>
+      <div class="lists">
+        <section class="panel list-panel" aria-labelledby="projects-h">
+          <header class="panel-h">
+            <h2 id="projects-h">Projects</h2>
+            <span class="kicker" id="project-count">00</span>
+          </header>
+          <div class="list-body" id="projects"></div>
+        </section>
+        <section class="panel list-panel" aria-labelledby="tasks-h">
+          <header class="panel-h">
+            <h2 id="tasks-h">Tasks</h2>
+            <span class="kicker" id="task-count">00</span>
+          </header>
+          <div class="list-body" id="tasks"></div>
+        </section>
+      </div>
+    </main>
+
+    <section class="ideas panel" id="ideas" hidden>
+      <h2 class="idea-label">Ideas</h2>
+      <div class="idea-scroller" id="idea-scroller"></div>
+    </section>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
