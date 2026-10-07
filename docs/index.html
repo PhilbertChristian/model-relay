@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Relay Night Shift: $1,412 of AI credits rescued while you slept</title>
+<title>Relay Night Shift: AI credits rescued overnight</title>
 <meta name="description" content="Relay Night Shift finds the AI subscription capacity you already pay for that's about to expire, and spends it overnight on your plan: tested commits, draft PRs, a morning report. Drop-in for any harness. Runs on Agent37.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -184,7 +184,7 @@
 </head>
 <body>
 
-<div class="announce"><a href="#integrate"><b>New:</b> <code style="background:#333;color:#fff">relay serve</code>: point any harness at one URL and get model failover plus savings tracking →</a></div>
+<div class="announce"><a href="try.html"><b>New:</b> upload your build plans and run a night in your browser →</a></div>
 
 <header><div class="wrap">
   <a class="logo" href="#"><i>R</i>Relay</a>
@@ -194,65 +194,59 @@
 
 <div class="hero"><div class="wrap">
   <div>
-    <div class="ms" style="color:#0f3b66">Relay Night Shift · built on Agent37</div>
-    <h1 style="margin-top:14px"><span class="num">$1,412</span> of AI credits<br>rescued while you slept.</h1>
-    <p class="lede">Your <b>$600/month</b> of plans did <b>$5,180</b> of work last month at API rates. The windows you slept through were going to expire anyway. Relay finds that capacity, spends it overnight on your plan, and leaves you tested PRs and a morning report. No waste, no babysitting.</p>
-    <div class="ctas"><a class="btn orange" href="try.html">Try it live</a><a class="btn dark" href="#demo">Watch the demo</a><a class="btn ghost" href="#calc">Get your number</a></div>
-    <div class="trust"><span>Plain-markdown plans</span><span>Draft PRs only, never main</span><span>Drop-in for any harness</span></div>
+    <div class="ms" style="color:#0f3b66">Relay Night Shift</div>
+    <h1 style="margin-top:14px"><span class="num">$1,412</span> of AI credits<br>rescued overnight.</h1>
+    <p class="lede">Your plans expire while you sleep. Relay spends them on your build plans and hands you tested PRs by morning.</p>
+    <div class="ctas"><a class="btn orange" href="try.html">Try it live</a><a class="btn dark" href="#demo">Watch the demo</a></div>
   </div>
   <div class="quote" aria-label="Example month">
-    <div class="top"><b>September · relay savings</b><span class="tag">EXAMPLE MONTH</span></div>
-    <div class="big"><div><small>Used at API rates</small><strong>$5,180.40</strong></div><div class="o"><small>Rescued before reset</small><strong>$1,412.60</strong></div></div>
+    <div class="top"><b>September</b><span class="tag">EXAMPLE</span></div>
+    <div class="big"><div><small>Used at API rates</small><strong>$5,180</strong></div><div class="o"><small>Rescued</small><strong>$1,412</strong></div></div>
     <div class="meter"><i></i></div>
-    <div style="font-size:12.5px;color:var(--muted)">27.3% of last month's usage came from plan capacity that was about to expire · 8.6× the $600 you paid</div>
-    <div class="row" style="margin-top:10px"><span>Claude Code (your daytime work)</span><span>$3,767.80</span></div>
-    <div class="row"><span>Relay night shifts · 22 nights</span><span>$1,412.60</span></div>
-    <div class="row"><span>Tasks shipped · need you</span><span>74 · 4</span></div>
-    <div class="foot">Example: 2× Claude Max 20× + ChatGPT Pro ($600/mo) + $25 Agent37 credit. Value at API list rates, not a bill. Yours: <code>relay savings</code></div>
+    <div class="foot">2× Claude Max 20× + ChatGPT Pro · $600/mo in plans</div>
   </div>
 </div></div>
 
 <div class="wrap">
-  <div class="logos">Built for the Agent37 "Build an Agent" hackathon, on
-    <div class="row"><span>Agent37</span><span>OpenAI</span><span>Supabase</span><span>Claude Code</span><span>OpenCode</span></div></div>
+  <div class="logos"><div class="row"><span>Agent37</span><span>OpenAI</span><span>Supabase</span><span>Claude Code</span><span>OpenCode</span></div></div>
 
   <div class="statement">
-    <p>Relay is an <em>overnight engineering shift</em> for the AI you already pay for. Claude and ChatGPT plan windows, Agent37 credit and OpenAI budgets all reset whether you used them or not. Relay turns the part you won't use into <em>tested commits and draft PRs</em>, not expired capacity.</p>
+    <p>Plan windows reset whether you use them or not. Relay turns the ones you sleep through into <em>commits</em>.</p>
     <div class="fact">
-      <div><b>62%</b><span>of 5-hour Claude windows expired unused on our own build machine last month (89 of 144, measured from local logs)</span></div>
-      <div><b>0</b><span>humans awake while it works: it fails over on limits and unsticks loops, hangs and refusals on its own</span></div>
-      <div><b>1 line</b><span>to plug into your harness: <code>base_url = http://127.0.0.1:8037/v1</code></span></div>
+      <div><b>62%</b><span>of our own Claude windows expired unused last month</span></div>
+      <div><b>0</b><span>humans awake. It unsticks itself.</span></div>
+      <div><b>1 line</b><span>to plug into any harness</span></div>
     </div>
   </div>
 </div>
 
 <section id="how"><div class="wrap">
-  <div class="sh"><div class="ms">How it works</div><h2 style="margin-top:12px">Built around the subscriptions you already have</h2><p>Pick yours. Relay reads what's left, works out what will expire, and burns the most-likely-wasted first, while keeping a reserve for your day.</p></div>
+  <div class="sh"><div class="ms">How it works</div><h2 style="margin-top:12px">Works with the plans you have</h2><p>It burns what's about to expire first and leaves a reserve for your day.</p></div>
   <div class="tabs" role="tablist">
     <button class="on" data-t="t1">Claude &amp; ChatGPT plans</button><button data-t="t2">Agent37</button><button data-t="t3">API budgets</button><button data-t="t4">Your plan</button>
   </div>
-  <div class="tabpanel on" id="t1"><div><h3>Rolling 5-hour windows</h3><p style="color:var(--ink-2)">Windows reset whether you used them or not. Relay counts every window that falls inside your downtime, then fills it.</p>
-    <ul><li>Downtime from your hours: weeknights 23:00–07:00, weekends all day</li><li>Weekly reset tracked so it never drains your Monday</li><li>A reserve is kept for your own daytime use (30% by default)</li></ul></div>
+  <div class="tabpanel on" id="t1"><div><h3>Rolling 5-hour windows</h3><p style="color:var(--ink-2)">Idle windows inside your downtime get filled.</p>
+    <ul><li>Weeknights 23:00–07:00, weekends all day</li><li>30% reserved for your day</li></ul></div>
     <pre class="snip"><span class="c">$ relay burn capacity -b burner.json</span>
 downtime window: Wed 23:00 → Thu 07:00
 <span class="o">claude-max</span>  21 windows left · resets Mon 09:00
             13 × 5h windows fall in your idle time
             tonight: <span class="g">1 window</span></pre></div>
-  <div class="tabpanel" id="t2"><div><h3>Agent37 instance budget</h3><p style="color:var(--ink-2)">Read live from the Agent37 budget API. The shift runs on an always-on Agent37 instance, woken by an Agent37 platform cron at 23:00.</p>
-    <ul><li><code>GET /v1/instances/{id}/budget</code>: monthly remaining + credit</li><li>402 <code>instance_budget_exhausted</code> → instant switch to the next provider</li><li>The LLM router gives you the whole OpenRouter catalog as a cheap tier</li></ul></div>
+  <div class="tabpanel" id="t2"><div><h3>Agent37 instance budget</h3><p style="color:var(--ink-2)">Budget read live. A platform cron starts the shift at 23:00.</p>
+    <ul><li>402 → instant switch to the next plan</li><li>Router models as the cheap tier</li></ul></div>
     <pre class="snip"><span class="c">$ python3 deploy/agent37.py schedule --at 23:00</span>
 { "name": "relay night shift",
   "schedule": "0 23 * * *",
   "timezone": "America/Los_Angeles",
   "next_run": <span class="g">"tonight 23:00"</span> }</pre></div>
-  <div class="tabpanel" id="t3"><div><h3>Metered API budgets</h3><p style="color:var(--ink-2)">OpenAI, OpenRouter, anything OpenAI-compatible. Spend comes from Relay's own ledger, and tonight's allowance is capped so a long night never blows the month.</p>
-    <ul><li>Per-subscription allowance, split across the nights left before the reset</li><li>Per-model and per-project soft caps</li><li>Every call priced at API list rates into <code>.relay/events.jsonl</code></li></ul></div>
+  <div class="tabpanel" id="t3"><div><h3>Metered API budgets</h3><p style="color:var(--ink-2)">Capped per night and burned last. Never counted as rescued.</p>
+    <ul><li>Per-night and per-project caps</li><li>Every call priced at API rates</li></ul></div>
     <pre class="snip"><span class="c">$ relay burn capacity</span>
 <span class="o">openai</span>   $20.00 left · resets Oct 31
          50% reserved for your day
          tonight: <span class="g">$0.56</span>  expiring: $10.37</pre></div>
-  <div class="tabpanel" id="t4"><div><h3>Your plan, in markdown</h3><p style="color:var(--ink-2)">Projects, a repo, a test gate, a budget and checkboxes. Relay works top to bottom, commits each task that passes the gate, and writes the result back.</p>
-    <ul><li><code>[x]</code> done with the commit sha, <code>[!]</code> blocked with exactly what it needs</li><li>A draft PR per project on <code>relay/night-&lt;date&gt;</code></li><li><code>BLOCKED:</code> instead of guessing at credentials or product calls</li></ul></div>
+  <div class="tabpanel" id="t4"><div><h3>Your plan, in markdown</h3><p style="color:var(--ink-2)">Checkboxes in, commits out.</p>
+    <ul><li><code>[x]</code> done, <code>[!]</code> needs you</li><li>One draft PR per project</li></ul></div>
     <pre class="snip">## greet-cli
 repo: github.com/you/greet
 test: python3 greet.py | grep Hello
@@ -263,25 +257,21 @@ budget: 1.50
 </div></section>
 
 <div class="wrap"><div class="compare">
-  <div class="ms" style="color:#ffb27f">The difference</div><h2 style="margin-top:12px">Your subscription vs. your subscription with Relay</h2>
+  <div class="ms" style="color:#ffb27f">The difference</div><h2 style="margin-top:12px">Tonight, with and without Relay</h2>
   <div class="grid">
-    <div class="col old"><h4>Today</h4>
-      <div class="step"><b>23:00</b>You close the laptop. The 5-hour windows keep ticking.</div>
-      <div class="step"><b>03:00</b>A window resets unused. Capacity you paid for expires.</div>
-      <div class="step"><b>MONDAY</b>The weekly cap resets with 60% still on the table.</div>
-      <div class="step"><b>WEEKEND</b>The side-project checklist hasn't moved.</div>
-      <div class="step"><b>IF IT RUNS</b>A 429 at 2 a.m. and the agent sits there until morning.</div></div>
+    <div class="col old"><h4>Without</h4>
+      <div class="step"><b>23:00</b>Laptop closed. Windows keep ticking.</div>
+      <div class="step"><b>03:00</b>A paid window expires unused.</div>
+      <div class="step"><b>MONDAY</b>Weekly cap resets with 60% unused.</div></div>
     <div class="col new"><h4>With Relay</h4>
-      <div class="step"><b>23:00</b>Agent37 cron wakes the shift. It reads what's expiring.</div>
-      <div class="step"><b>23:05</b>Burns the most-likely-wasted capacity first, inside tonight's allowance.</div>
-      <div class="step"><b>02:14</b>A 402 hits. It switches providers and keeps going. A loop? Second opinion, then a stronger model.</div>
-      <div class="step"><b>EVERY TASK</b>A test gate, then a commit on a night branch, then a draft PR.</div>
-      <div class="step"><b>07:00</b>MORNING.md: done, needs you, PR links, credits rescued.</div></div>
+      <div class="step"><b>23:00</b>The shift starts on your plan.</div>
+      <div class="step"><b>02:14</b>A 402 hits. It switches and keeps going.</div>
+      <div class="step"><b>07:00</b>PRs and a morning report.</div></div>
   </div>
 </div></div>
 
 <section id="calc"><div class="wrap">
-  <div class="sh"><div class="ms">Get your number instantly</div><h2 style="margin-top:12px">How much are you letting expire?</h2><p>A quick estimate from your hours and plan. For your measured number, run <code>relay savings</code>, which reads your own logs.</p></div>
+  <div class="sh"><div class="ms">Get your number instantly</div><h2 style="margin-top:12px">How much are you letting expire?</h2></div>
   <div class="calc">
     <div>
       <label for="plan">Your plan</label>
@@ -289,7 +279,7 @@ budget: 1.50
       <label for="wd">Hours you use AI per weekday <span id="wdv">4</span></label><input id="wd" type="range" min="0" max="14" value="4">
       <label for="we">Hours per weekend day <span id="wev">1</span></label><input id="we" type="range" min="0" max="16" value="1">
       <label for="cv">How much of each idle window Relay should use <span id="cvv">40%</span></label><input id="cv" type="range" min="10" max="90" value="40">
-      <p style="font-size:12.5px;color:var(--muted);margin:16px 0 0">Assumes 5-hour windows. The dropdown value is a rough API-rate value of one fully used window for that plan, and it's an estimate. Relay keeps a 30% reserve for your daytime use.</p>
+      <p style="font-size:12.5px;color:var(--muted);margin:16px 0 0">Estimate. Exact number: <code>relay savings</code></p>
     </div>
     <div class="out">
       <div class="k">Windows expiring unused each month</div><div class="v" id="ow">–</div>
@@ -300,24 +290,24 @@ budget: 1.50
 </div></section>
 
 <section id="integrate" style="padding-top:20px"><div class="wrap">
-  <div class="sh"><div class="ms">Integrate</div><h2 style="margin-top:12px">Plug it into the harness you already use</h2><p>Four ways in, from zero code to full control. All of them write the same ledger, so <code>relay savings</code> counts everything.</p></div>
+  <div class="sh"><div class="ms">Integrate</div><h2 style="margin-top:12px">Plug it into your harness</h2></div>
   <div class="int">
-    <div class="card"><span class="badge">ZERO CODE · OPENAI-COMPATIBLE</span><h3>relay serve</h3><p>Point any harness's base URL at Relay: OpenCode, Hermes, Aider, LangChain, your own scripts. You get model failover on 429/402/quota/context, burn-order routing, and every call priced into your savings.</p>
+    <div class="card"><span class="badge">ZERO CODE · OPENAI-COMPATIBLE</span><h3>relay serve</h3><p>Point any harness's base URL here. Failover and savings are built in.</p>
 <pre class="snip"><span class="c">$ relay serve -c burner.json        # http://127.0.0.1:8037/v1</span>
 export OPENAI_BASE_URL=http://127.0.0.1:8037/v1
 export OPENAI_API_KEY=$RELAY_SERVE_KEY
 <span class="c"># model: "relay/auto" lets Relay pick</span></pre></div>
-    <div class="card"><span class="badge">AGENTS · MCP</span><h3>relay mcp</h3><p>Give Claude Code, Hermes or OpenCode tools to check capacity, read savings, and queue work for tonight. An agent can say "add this to tonight's shift."</p>
+    <div class="card"><span class="badge">AGENTS · MCP</span><h3>relay mcp</h3><p>Agents can queue work for tonight's shift.</p>
 <pre class="snip"><span class="c">$ claude mcp add relay -- python3 -m relay.mcp</span>
 tools: <span class="o">relay_capacity</span> · <span class="o">relay_savings</span>
        <span class="o">relay_plan_list</span> · <span class="o">relay_plan_add</span>
        <span class="o">relay_burn</span>  <span class="c">(opt-in: RELAY_MCP_ALLOW_BURN=1)</span></pre></div>
-    <div class="card"><span class="badge">HOSTED · AGENT37</span><h3>Night shift on Agent37</h3><p>An always-on instance with the Agent37 LLM router built in, woken nightly by a platform cron that fires even while the box sleeps. Your laptop can stay closed.</p>
+    <div class="card"><span class="badge">HOSTED · AGENT37</span><h3>Night shift on Agent37</h3><p>Runs nightly in the cloud. Laptop closed.</p>
 <pre class="snip">python3 deploy/agent37.py create --always-on --budget 5
 python3 deploy/agent37.py push --plan PLAN.md --burner burner.json
 python3 deploy/agent37.py schedule --at 23:00 --days 5,6
 python3 deploy/agent37.py morning</pre></div>
-    <div class="card"><span class="badge">LIBRARY · PYTHON</span><h3>Build your own</h3><p>Zero dependencies, stdlib only. Use the router, the unstick ladder, the capacity planner or the savings ledger directly in your own harness.</p>
+    <div class="card"><span class="badge">LIBRARY · PYTHON</span><h3>Build your own</h3><p>Zero dependencies. Use the pieces directly.</p>
 <pre class="snip">from relay.config import load, build_router
 from relay import capacity, value
 router = build_router(load("burner.json"))
@@ -327,12 +317,12 @@ print(value.render(value.month()))</pre></div>
 </div></section>
 
 <section id="demo" style="padding-top:20px"><div class="wrap">
-  <div class="sh"><div class="ms">Demo</div><h2 style="margin-top:12px">One night, step by step</h2><p>A real, reproducible terminal session: your savings, the plan, what's expiring, the shift running (including a switch from Agent37 to OpenAI on a 402), the morning report, and the engine unsticking itself.</p></div>
+  <div class="sh"><div class="ms">Demo</div><h2 style="margin-top:12px">One night in two minutes</h2></div>
   <video src="demo.mp4" controls muted playsinline preload="metadata"></video>
 </div></section>
 
 <section id="engine" style="padding-top:20px"><div class="wrap"><div class="engine">
-  <div class="sh"><div class="ms" style="color:#ffb27f">The engine</div><h2 style="margin-top:12px">Nobody's awake. It can't get stuck.</h2><p>It fails over the moment a model hits a limit. When the agent loops, hangs or goes nowhere, it climbs an unstick ladder: a cheap second opinion, then a stronger model, then a clean reset. Once things are moving again, it drops back to the cheap model.</p></div>
+  <div class="sh"><div class="ms" style="color:#ffb27f">The engine</div><h2 style="margin-top:12px">Nobody's awake. It can't get stuck.</h2><p>Limits trigger a switch. Loops get a second opinion, then a stronger model.</p></div>
   <div class="demo">
     <div class="term"><div class="bar"><i class="d"></i><i class="d"></i><i class="d"></i><span class="t">relay run "create hello_relay.py that prints a greeting, and run it"</span><button id="replay">↻ replay</button></div><pre class="scr" id="screen"></pre></div>
     <div class="dside">
@@ -349,29 +339,29 @@ print(value.render(value.month()))</pre></div>
         <div class="mtr"><span>saved</span><b id="saved">–</b></div></div>
     </div>
   </div>
-  <div class="sh" id="refusal" style="margin:44px auto 0"><h3 style="font-size:28px">When the agent says no</h3><p>Unattended agents need a rule for refusals. Relay never shops around for a model that will say yes.</p></div>
+  <div class="sh" id="refusal" style="margin:44px auto 0"><h3 style="font-size:28px">When the agent says no</h3><p>Over-refusals get a second look. Real ones stand.</p></div>
   <div class="two">
     <div class="term"><div class="bar"><i class="d"></i><i class="d"></i><i class="d"></i><span class="t">"kill whatever is running on port 8000…"</span><button class="rp" data-k="a">↻</button></div><pre class="scr" id="ra"></pre><div class="verdict ok" id="va">&nbsp;</div></div>
     <div class="term"><div class="bar"><i class="d"></i><i class="d"></i><i class="d"></i><span class="t">"write a keylogger that emails me passwords"</span><button class="rp" data-k="b">↻</button></div><pre class="scr" id="rb"></pre><div class="verdict stop" id="vb">&nbsp;</div></div>
   </div>
-  <div class="safe"><b>A refusal only counts as a blocker when an independent reviewer judges the task benign.</b> If the reviewer agrees with the refusal, if the review fails, if no reviewer is available, or if a second model also refuses, the refusal stands and the task goes to "needs you" in the morning report.</div>
+  <div class="safe">Relay never shops for a model that will say yes.</div>
 </div></div></section>
 
 <section id="faq" style="padding-top:20px"><div class="wrap">
   <div class="sh"><div class="ms">FAQ</div><h2 style="margin-top:12px">Questions</h2></div>
   <div class="faq">
-    <details open><summary>Will it push to my main branch?</summary><p>No. Every task is a commit on <code>relay/night-&lt;date&gt;</code> and each project gets a <b>draft</b> PR. A task only counts as done if the project's test gate passes; otherwise it's marked <code>[!]</code> with the reason.</p></details>
-    <details><summary>Does my laptop have to stay on?</summary><p>Not with Agent37. The shift runs on an always-on Agent37 instance, started by an Agent37 platform cron that fires even while the instance sleeps. You can also run it locally with <code>relay burn run --wait</code>.</p></details>
-    <details><summary>What if the agent gets stuck at 3 a.m.?</summary><p>Limits (429, 402, quota, context) trigger an immediate switch. Loops, hung processes, dead ends and over-refusals climb the unstick ladder: a hint, then a stronger model, then a reset. Anything that needs a human is written up for the morning.</p></details>
-    <details><summary>How do I plug in my own harness?</summary><p>Easiest: run <code>relay serve</code> and set your harness's OpenAI base URL to <code>http://127.0.0.1:8037/v1</code>. For agents with MCP support, <code>claude mcp add relay -- python3 -m relay.mcp</code>. Or import the Python package.</p></details>
-    <details><summary>Does it use up my whole plan?</summary><p>No. Each subscription keeps a reserve for your daytime use (30% by default), and tonight's allowance is spread across the idle nights left before the reset.</p></details>
+    <details open><summary>Will it push to my main branch?</summary><p>No. Night branches and draft PRs only. Failing tests mean <code>[!]</code>, not a commit to main.</p></details>
+    <details><summary>Does my laptop have to stay on?</summary><p>No. It runs on Agent37. Locally, use <code>relay burn run --wait</code>.</p></details>
+    <details><summary>What if the agent gets stuck at 3 a.m.?</summary><p>It switches models, asks for a second opinion, or resets. Anything that needs you lands in the morning report.</p></details>
+    <details><summary>How do I plug in my own harness?</summary><p><code>relay serve</code>, then set your base URL to <code>http://127.0.0.1:8037/v1</code>. Or <code>claude mcp add relay -- python3 -m relay.mcp</code>.</p></details>
+    <details><summary>Does it use up my whole plan?</summary><p>No. 30% is reserved for your day.</p></details>
   </div>
 </div></section>
 
 <div class="wrap">
-  <div class="final"><h2>Plan before bed.<br>Wake up to PRs.</h2><p>Your AI subscriptions, working the night shift, under one roof.</p>
+  <div class="final"><h2>Plan before bed.<br>Wake up to PRs.</h2><p>Your AI plans, working the night shift.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a class="btn orange" href="https://github.com/PhilbertChristian/model-relay">Get started on GitHub</a><a class="btn ghost" href="#demo">Watch the demo</a></div></div>
-  <footer><span>Relay Night Shift · built at the Agent37 "Build an Agent" hackathon, Corgi Cafe SF, Oct 7 2026 · MIT</span><span><a href="https://github.com/PhilbertChristian/model-relay">GitHub</a></span></footer>
+  <footer><span>Relay Night Shift · Agent37 "Build an Agent" hackathon · MIT</span><span><a href="https://github.com/PhilbertChristian/model-relay">GitHub</a></span></footer>
 </div>
 
 <script>

@@ -26,7 +26,18 @@
   .card { background:#fff; border-radius:20px; padding:18px; }
   .card h2 { font-size:15px; margin:0 0 10px; font-weight:600; letter-spacing:-.01em; display:flex; justify-content:space-between; align-items:center; }
   .card h2 small { font:500 11px var(--mono); color:var(--muted); letter-spacing:.04em; }
-  textarea { width:100%; height:300px; border:1px solid var(--line); border-radius:12px; background:var(--bg); padding:12px; font:12.5px/1.55 var(--mono); resize:vertical; color:var(--ink); }
+  .drop { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-align:center; border:1.5px dashed #cfcfcf; border-radius:16px; padding:22px 14px; background:var(--bg); cursor:pointer; transition:all .15s; }
+  .drop:hover, .drop.over { border-color:var(--orange); background:var(--orange-soft); }
+  .drop .ico { width:38px; height:38px; border-radius:12px; background:var(--orange); color:#fff; display:grid; place-items:center; font-size:18px; margin-bottom:6px; }
+  .drop b { font-size:15px; } .drop span { font-size:12.5px; color:var(--muted); } .drop u { color:var(--orange); text-decoration:none; font-weight:600; }
+  .files { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .files span { font:500 11.5px var(--mono); background:#f1f1f1; border-radius:8px; padding:4px 8px; }
+  .files span b { color:var(--green); font-weight:600; }
+  .planbar { display:flex; align-items:center; gap:12px; margin:12px 0 8px; font-size:13px; color:var(--muted); }
+  .planbar b { color:var(--ink); }
+  .link { margin-left:auto; background:none; border:0; color:var(--orange); font:600 13px var(--sans); cursor:pointer; padding:0; }
+  .link + .link { margin-left:0; color:var(--muted); }
+  textarea { width:100%; height:230px; border:1px solid var(--line); border-radius:12px; background:var(--bg); padding:12px; font:12.5px/1.55 var(--mono); resize:vertical; color:var(--ink); }
   .subs label { display:flex; align-items:center; gap:10px; padding:9px 2px; border-top:1px solid #f1f1f1; font-size:14px; cursor:pointer; }
   .subs label:first-of-type { border-top:0; }
   .subs input { accent-color:var(--orange); width:16px; height:16px; }
@@ -59,14 +70,22 @@
 </head>
 <body>
 <header><div class="w">
-  <a class="logo" href="./"><i>R</i>Relay</a><span class="pill">LIVE DEMO · RUNS IN YOUR BROWSER</span>
+  <a class="logo" href="./"><i>R</i>Relay</a><span class="pill">LIVE DEMO</span>
   <div class="r"><a class="btn ghost" href="./">← Back</a><a class="btn ghost" href="https://github.com/PhilbertChristian/model-relay">GitHub</a><button class="btn orange" id="run">▶ Run tonight's shift</button></div>
 </div></header>
 
 <main>
   <section>
-    <div class="card"><h2>1 · Your plan <small>PLAN.md · edit me</small></h2>
-<textarea id="plan" spellcheck="false"># Weekend side projects
+    <div class="card"><h2>1 · Upload your build plans <small>.md · .txt · several at once</small></h2>
+      <label class="drop" id="drop" for="files">
+        <input type="file" id="files" accept=".md,.markdown,.txt,text/markdown,text/plain" multiple hidden>
+        <span class="ico">⬆</span>
+        <b>Drop your planning docs here</b>
+        <span>or <u>choose files</u> · PLAN.md, specs, weekend notes</span>
+      </label>
+      <div class="files" id="filelist"></div>
+      <div class="planbar"><span>Tonight's queue · <b id="qcount">0 tasks</b></span><button class="link" id="example" type="button">Load example</button><button class="link" id="clear" type="button">Clear</button></div>
+<textarea id="plan" spellcheck="false" placeholder="Your uploaded plans show up here as PLAN.md. You can also paste or edit."># Weekend side projects
 
 ## greet-cli
 test: python3 greet.py | grep Hello
@@ -85,7 +104,7 @@ test: python3 -c "import api; assert api.health() == 'ok'"
 - [ ] create api.py with a health() function
 - [ ] add rate limiting to the health endpoint
 - [ ] connect Stripe payments with my live key</textarea>
-      <div class="note">Format: <code>## project</code>, an optional <code>test:</code> gate, then <code>- [ ] task</code> lines.</div>
+      <div class="note">Any markdown works: headings become projects; checkboxes, bullets or numbered lists become tasks; an optional <code>test:</code> line becomes the project's gate. Files stay in your browser.</div>
     </div>
     <div class="card" style="margin-top:16px"><h2>2 · Your subscriptions <small>burn order is automatic</small></h2>
       <div class="subs">
@@ -130,6 +149,33 @@ with no keys and nothing leaving the page.</span></pre>
 </main>
 
 <script>
+// ---- upload your build plans: any markdown/text becomes the PLAN.md format
+const EXAMPLE = document.getElementById("plan").value;
+function normalizeDoc(name, text) {
+  const base = name.replace(/\.(md|markdown|txt)$/i, "").replace(/[_-]+/g, " ").trim() || "plan";
+  const out = []; let project = null, tasks = 0;
+  const open = title => { project = title; out.push("", "## " + title); };
+  for (const raw of text.split(/\r?\n/)) {
+    const ln = raw.trim();
+    let m;
+    if ((m = ln.match(/^#{1,4}\s+(.+)/))) { const t = m[1].replace(/[*_`]/g, "").trim(); if (/^#\s/.test(ln) && !project) { out.unshift("# " + t); continue; } open(t); continue; }
+    if ((m = ln.match(/^(test|repo|dir|budget|priority|notes):\s*(.+)/i))) { if (!project) open(base); out.push(m[1].toLowerCase() + ": " + m[2]); continue; }
+    if (/^[-*+]\s+\[[xX]\]/.test(ln)) continue;                                   // already done
+    if ((m = ln.match(/^(?:[-*+]\s+(?:\[\s?\]\s+)?|\d+[.)]\s+)(.{3,})/))) { if (!project) open(base); out.push("- [ ] " + m[1].replace(/\*\*/g, "").trim()); tasks++; }
+  }
+  return {text: out.join("\n").trim(), tasks};
+}
+function countTasks() { const n = (document.getElementById("plan").value.match(/^\s*- \[ \] /gm) || []).length; document.getElementById("qcount").textContent = n + (n === 1 ? " task" : " tasks"); }
+async function loadFiles(list) {
+  const parts = [], chips = [];
+  for (const f of list) {
+    if (!/\.(md|markdown|txt)$/i.test(f.name) && !/^text\//.test(f.type)) { chips.push(`<span>${esc(f.name)} · skipped</span>`); continue; }
+    const doc = normalizeDoc(f.name, await f.text());
+    parts.push(doc.text); chips.push(`<span>${esc(f.name)} · <b>${doc.tasks} tasks</b></span>`);
+  }
+  if (parts.length) document.getElementById("plan").value = parts.join("\n\n");
+  document.getElementById("filelist").innerHTML = chips.join(""); countTasks();
+}
 const SUBS = {
   "claude-a": {name: "Claude Max 20× · A", model: "claude-opus-5-5", kind: "window", cap: 62, rate: [4, 20]},
   "claude-b": {name: "Claude Max 20× · B", model: "claude-opus-5-5", kind: "window", cap: 62, rate: [4, 20]},
@@ -169,7 +215,9 @@ function renderLadder(order, state) {
 }
 
 const BLOCK = [[/stripe|payment|live key|billing/i, "needs your live payment key; never handled unattended"],
-               [/publish|pypi|npm publish/i, "needs a PyPI token (TWINE_PASSWORD); everything else is ready"],
+               [/pypi/i, "needs a PyPI token (TWINE_PASSWORD); everything else is ready"],
+               [/\bnpm\b.*publish|publish.*\bnpm\b/i, "needs an npm token (NPM_TOKEN); everything else is ready"],
+               [/publish|app store|release to prod|deploy to prod/i, "needs your release credentials; everything else is ready"],
                [/domain|dns/i, "needs DNS access for your domain"],
                [/password|credential|secret/i, "needs credentials only you have"]];
 
@@ -286,6 +334,14 @@ async function run() {
   $("run").disabled = false; $("run").textContent = "↻ Run another night";
 }
 $("run").onclick = run;
+const drop = $("drop");
+$("files").addEventListener("change", e => loadFiles([...e.target.files]));
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => loadFiles([...e.dataTransfer.files]));
+$("example").onclick = () => { $("plan").value = EXAMPLE; $("filelist").innerHTML = ""; countTasks(); };
+$("clear").onclick = () => { $("plan").value = ""; $("filelist").innerHTML = ""; countTasks(); };
+$("plan").addEventListener("input", countTasks); countTasks();
 </script>
 </body>
 </html>
