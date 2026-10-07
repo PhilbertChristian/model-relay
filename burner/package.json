@@ -1,0 +1,26 @@
+{
+  "name": "burner-agent",
+  "version": "0.1.0",
+  "description": "Use-it-or-lose-it: turn leftover weekly AI quota into real work on your projects with a paced fleet of Claude Code + Agent37 agents.",
+  "type": "module",
+  "bin": {
+    "burner": "./bin/burner.mjs"
+  },
+  "scripts": {
+    "burner": "tsx src/cli.ts",
+    "demo": "tsx src/cli.ts demo",
+    "start": "tsx src/cli.ts run",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

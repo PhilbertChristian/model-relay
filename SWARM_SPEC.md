@@ -1,4 +1,4 @@
-# burn-week — build spec (source of truth for every agent)
+Build spec for the burn-week swarm. This file is the source of truth for every agent.
 
 ## Pitch
 **Use it or lose it.** `relay burn week` turns the AI-subscription capacity you would otherwise waste before
