@@ -61,7 +61,7 @@ def header(d, step, title, sub, t, t0):
 def logo(d, x, y, s=1.0):
     rr(d, (x, y, x + 34 * s, y + 34 * s), int(10 * s), fill=ORANGE)
     text(d, (x + 17 * s, y + 17 * s), "R", F(int(19 * s), bold=True), fill=(255, 255, 255), anchor="mm")
-    text(d, (x + 46 * s, y + 17 * s), "Relay", F(int(26 * s), bold=True), anchor="lm")
+    text(d, (x + 46 * s, y + 17 * s), "Agent Relay", F(int(26 * s), bold=True), anchor="lm")
 
 
 TASKS = ["Recital date, venue and hero photo", "The program: pieces and performers", "RSVP form that emails the organizer",
@@ -77,7 +77,7 @@ DURATION = SCENES[-1][2]
 
 def scene_title(d, t):
     k = seg(t, 0.2, 1.0)
-    logo(d, W / 2 - 70, 230 - (1 - k) * 20, 1.4)
+    logo(d, W / 2 - 128, 230 - (1 - k) * 20, 1.4)
     text(d, (W / 2, 360), "Your AI plans, working while you sleep.", F(46, bold=True), fill=mix(BG, INK, seg(t, 0.6, 1.4)), anchor="mm")
     text(d, (W / 2, 420), "Give it a build plan. Wake up to shipped work.", F(26), fill=mix(BG, MUTED, seg(t, 1.2, 2.0)), anchor="mm")
 
@@ -250,7 +250,7 @@ def scene_util(d, t):
 
 
 def scene_end(d, t):
-    logo(d, W / 2 - 70, 210, 1.4)
+    logo(d, W / 2 - 128, 210, 1.4)
     text(d, (W / 2, 330), "Try it live", F(48, bold=True), anchor="mm")
     text(d, (W / 2, 392), "philbertchristian.github.io/model-relay/try.html", F(26, mono=True), fill=ORANGE, anchor="mm")
     text(d, (W / 2, 470), "Plug into any harness: relay serve · relay mcp · runs on Agent37", F(22), fill=MUTED, anchor="mm")

@@ -1,10 +1,10 @@
-# Relay Night Shift: your AI subscriptions work while you sleep
+# Agent Relay: your AI subscriptions work while you sleep
 
 **Live page:** https://philbertchristian.github.io/model-relay/ · **Try it in your browser:** https://philbertchristian.github.io/model-relay/try.html · **Demo video:** https://philbertchristian.github.io/model-relay/demo.mp4
 
 You pay for AI capacity that mostly goes unused: Agent37 credit, an OpenAI budget, Claude/ChatGPT plan windows that reset whether you used them or not. Meanwhile your weekend projects sit in a planning doc.
 
-**Relay Night Shift** reads your planning docs, finds your downtime and the subscription capacity that will expire unused, and spends it overnight. It builds, tests, and commits each task on a branch and opens a draft PR. You wake up to `MORNING.md`: what got done, what needs you, and how much capacity it used.
+**Agent Relay** reads your planning docs, finds your downtime and the subscription capacity that will expire unused, and spends it overnight. It builds, tests, and commits each task on a branch and opens a draft PR. You wake up to `MORNING.md`: what got done, what needs you, and how much capacity it used.
 
 ```bash
 python3 -m relay burn capacity -b burner.json            # what expires, when you're idle, burn order
