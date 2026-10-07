@@ -20,12 +20,13 @@ class Telemetry:
         self.sb_table = os.environ.get("SUPABASE_TABLE", "relay_events")
         self.where = os.environ.get("AGENT37_INSTANCE_ID") or "local"
 
-    def emit(self, event: str, **data) -> None:
+    def emit(self, event: str, **data) -> dict:
         row = {"ts": time.time(), "session": self.session, "host": self.where, "event": event, **data}
         with self.path.open("a") as f:
             f.write(json.dumps(row) + "\n")
         if self.sb_url and self.sb_key:
             threading.Thread(target=self._push, args=(row,), daemon=True).start()
+        return row
 
     def _push(self, row: dict) -> None:
         body = {"session": row["session"], "host": row["host"], "event": row["event"],
