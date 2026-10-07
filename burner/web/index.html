@@ -90,8 +90,12 @@
       </div>
     </main>
 
-    <section class="ideas panel" id="ideas" hidden>
-      <h2 class="idea-label">Ideas</h2>
+    <section class="ideas panel" id="ideas">
+      <form class="search-form" id="search-form">
+        <label class="idea-label" for="search">Search</label>
+        <input id="search" name="q" type="search" placeholder="Conversations" autocomplete="off" enterkeyhint="search" />
+      </form>
+      <p class="review-line" id="review-line">Review plan</p>
       <div class="idea-scroller" id="idea-scroller"></div>
     </section>
   </div>

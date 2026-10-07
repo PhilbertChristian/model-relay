@@ -34,7 +34,7 @@ function idea(over: Partial<Idea> = {}): Idea {
   };
 }
 
-const KINDS: TaskKind[] = ["tests", "todos", "docs", "custom"];
+const KINDS: TaskKind[] = ["tests", "todos", "docs", "review", "custom"];
 
 describe("planTasks", () => {
   it("emits tests, todos, and docs with priorities and token estimates", () => {
@@ -260,6 +260,21 @@ describe("planTasks", () => {
   it("returns no tasks for empty input", () => {
     expect(planTasks([], [])).toEqual([]);
     expect(planTasks([], [idea()])).toEqual([]);
+  });
+
+  it("plans a code review when the worktree is dirty", () => {
+    const tasks = planTasks(
+      [project({ dirty: true, hasTests: true, todoCount: 0, readmeExcerpt: "x".repeat(90) })],
+      [],
+    );
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0]?.kind).toBe("review");
+    expect(tasks[0]?.title).toBe("Review uncommitted changes in widget");
+    expect(tasks[0]?.estTokens).toBe(9_000);
+    expect(tasks[0]?.priority).toBe(75);
+    expect(tasks[0]?.prompt).toContain("code review plan");
+    expect(tasks[0]?.prompt).toContain("secret");
+    expect(tasks[0]?.prompt.startsWith(SAFETY)).toBe(true);
   });
 
   it("does not invent kinds outside the planner", () => {

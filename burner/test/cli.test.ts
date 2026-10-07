@@ -17,6 +17,8 @@ describe("parseArgs", () => {
     expect(parseArgs(["node", "src/cli.ts", "run"])).toEqual({ cmd: "run" });
     expect(parseArgs(["node", "src/cli.ts", "discover"])).toEqual({ cmd: "discover" });
     expect(parseArgs(["node", "src/cli.ts", "ideas"])).toEqual({ cmd: "ideas" });
+    expect(parseArgs(["node", "src/cli.ts", "search"])).toEqual({ cmd: "search" });
+    expect(parseArgs(["node", "src/cli.ts", "review"])).toEqual({ cmd: "review" });
     expect(parseArgs(["node", "src/cli.ts"])).toEqual({ cmd: "" });
     expect(parseArgs(["node", "demo"])).toEqual({ cmd: "" });
   });

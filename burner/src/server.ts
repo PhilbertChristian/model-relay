@@ -22,6 +22,8 @@ export function startServer(opts: {
   getState: () => unknown;
   subscribe: (fn: (event: unknown) => void) => () => void;
   onControl: (action: "start" | "pause" | "resume" | "stop" | "boost" | "calm") => void;
+  onSearch?: (query: string) => Promise<unknown>;
+  onReview?: () => Promise<unknown> | unknown;
   webDir?: string;
 }): Promise<{ url: string; close: () => Promise<void> }> {
   const sseCleanups = new Set<() => void>();
@@ -78,6 +80,8 @@ async function handle(
     getState: () => unknown;
     subscribe: (fn: (event: unknown) => void) => () => void;
     onControl: (action: ControlAction) => void;
+    onSearch?: (query: string) => Promise<unknown>;
+    onReview?: () => Promise<unknown> | unknown;
     webDir?: string;
   },
   sseCleanups: Set<() => void>,
@@ -87,6 +91,17 @@ async function handle(
 
   if (method === "GET" && path === "/api/state") {
     sendJson(res, 200, opts.getState());
+    return;
+  }
+  if (method === "GET" && path === "/api/search") {
+    const query = searchParam(req, "q");
+    const hits = opts.onSearch ? await opts.onSearch(query) : [];
+    sendJson(res, 200, { query, hits });
+    return;
+  }
+  if (method === "GET" && path === "/api/review") {
+    const plan = opts.onReview ? await opts.onReview() : null;
+    sendJson(res, 200, { plan });
     return;
   }
   if (method === "GET" && path === "/api/events") {
@@ -227,6 +242,14 @@ function writeSse(res: ServerResponse, chunk: string, cleanup: () => void) {
 
 function isControlAction(value: unknown): value is ControlAction {
   return typeof value === "string" && (CONTROL_ACTIONS as readonly string[]).includes(value);
+}
+
+function searchParam(req: IncomingMessage, name: string): string {
+  try {
+    return new URL(req.url ?? "/", "http://127.0.0.1").searchParams.get(name)?.trim() ?? "";
+  } catch {
+    return "";
+  }
 }
 
 function pathnameOf(req: IncomingMessage): string {

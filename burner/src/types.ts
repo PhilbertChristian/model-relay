@@ -28,6 +28,7 @@ export type TaskKind =
   | "security"
   | "perf"
   | "deps"
+  | "review"
   | "custom";
 
 export type Task = {
@@ -123,6 +124,33 @@ export type Idea = {
   sessionAt?: string; // ISO
   score: number; // higher = more promising
   status: "new" | "planned" | "done";
+};
+
+// One matching turn from a local transcript. Text is redacted.
+export type ConversationHit = {
+  id: string;
+  text: string;
+  role: "user" | "assistant";
+  source: string;
+  projectPath?: string;
+  sessionAt?: string;
+};
+
+export type ReviewFile = {
+  path: string;
+  additions: number;
+  deletions: number;
+  focus: string;
+};
+
+// A review checklist for one git checkout. File contents are never included.
+export type ReviewPlan = {
+  repo: string;
+  branch: string;
+  scope: "uncommitted" | "latest-commit" | "empty";
+  summary: string;
+  files: ReviewFile[];
+  checks: string[];
 };
 
 export type FeedSource = IntegrationName | "burner" | "claude" | "ideas";

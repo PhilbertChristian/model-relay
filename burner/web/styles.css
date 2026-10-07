@@ -812,6 +812,43 @@ body[data-state="paused"] .ring-glow { opacity: 0.28; }
 
 .idea-label { flex: 0 0 auto; }
 
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 min(280px, 36%);
+  min-width: 0;
+}
+
+.search-form input {
+  width: 100%;
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 176, 90, 0.28);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.search-form input:focus {
+  outline: 1px solid rgba(255, 176, 90, 0.7);
+  border-color: rgba(255, 176, 90, 0.7);
+}
+
+.review-line {
+  flex: 0 1 220px;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--cream-dim);
+}
+
 .idea-scroller {
   display: flex;
   gap: 8px;

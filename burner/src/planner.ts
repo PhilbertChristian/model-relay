@@ -10,6 +10,7 @@ const EST = {
   tests: 12_000,
   todos: 8_000,
   docs: 6_000,
+  review: 9_000,
   custom: 10_000,
 } as const;
 
@@ -95,6 +96,20 @@ function tasksForProject(project: ProjectInfo, ideas: Idea[], createdAt: string)
         `Find and resolve about ${project.todoCount} TODO, FIXME, and HACK comments in ${project.name}. Implement the intended change or delete stale notes.`,
         project.score + 15,
         EST.todos,
+        createdAt,
+      ),
+    );
+  }
+
+  if (project.dirty) {
+    tasks.push(
+      makeTask(
+        project,
+        "review",
+        `Review uncommitted changes in ${project.name}`,
+        `Write a code review plan for the uncommitted changes in ${project.name}. For each changed file, name what to check and whether a test covers it. Do not open secret files. Do not commit or push.`,
+        project.score + 25,
+        EST.review,
         createdAt,
       ),
     );

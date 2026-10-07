@@ -5,7 +5,7 @@ import { createReadStream } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { relative, sep } from "node:path";
 import { createInterface } from "node:readline";
-import type { Idea } from "./types.js";
+import type { ConversationHit, Idea } from "./types.js";
 import { newId, SECRET_FILE_RE, truncate } from "./util.js";
 
 const MIN_CHARS = 24;
@@ -199,6 +199,15 @@ function isAssistant(obj: Record<string, unknown>): boolean {
   return !!msg && typeof msg === "object" && !Array.isArray(msg) && (msg as Record<string, unknown>).role === "assistant";
 }
 
+function extractAssistantText(obj: Record<string, unknown>): string {
+  if (!isAssistant(obj)) return "";
+  const msg = obj.message;
+  const msgObj = msg && typeof msg === "object" && !Array.isArray(msg) ? (msg as Record<string, unknown>) : undefined;
+  const fromMessage = msgObj ? textFromContent(msgObj.content) : "";
+  if (fromMessage.trim()) return fromMessage;
+  return textFromContent(obj.content);
+}
+
 function extractUserText(obj: Record<string, unknown>): string {
   if (isAssistant(obj)) return "";
   const msg = obj.message;
@@ -308,6 +317,72 @@ async function scanFile(file: string, root: string, into: Map<string, Idea>): Pr
   } catch {
     /* unreadable transcript — skip */
   }
+}
+
+const SEARCH_LIMIT = 20;
+const SNIPPET = 240;
+
+function around(text: string, query: string): string {
+  const hay = text.replace(/\s+/g, " ").trim();
+  const at = hay.toLowerCase().indexOf(query.toLowerCase());
+  if (at < 0) return hay.slice(0, SNIPPET);
+  const start = Math.max(0, at - 80);
+  const slice = hay.slice(start, start + SNIPPET).trim();
+  return start > 0 ? `…${slice}` : slice;
+}
+
+export async function searchConversations(root: string, query: string, limit?: number): Promise<ConversationHit[]> {
+  const needle = query.replace(/\s+/g, " ").trim();
+  if (needle.length < 2) return [];
+  const cap = limit == null || !Number.isFinite(limit) ? SEARCH_LIMIT : Math.max(0, Math.floor(limit));
+  if (cap === 0) return [];
+  const files = await collectJsonl(root);
+  const hits: ConversationHit[] = [];
+  const folded = needle.toLowerCase();
+  for (const file of files) {
+    const source = toSource(root, file);
+    const stream = createReadStream(file, { encoding: "utf8" });
+    const rl = createInterface({ input: stream, crlfDelay: Infinity });
+    stream.on("error", () => {
+      rl.close();
+    });
+    let n = 0;
+    try {
+      for await (const line of rl) {
+        if (hits.length >= cap) break;
+        const trimmed = line.replace(/^\uFEFF/, "").trim();
+        if (!trimmed) continue;
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(trimmed);
+        } catch {
+          continue;
+        }
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) continue;
+        const obj = parsed as Record<string, unknown>;
+        const user = extractUserText(obj);
+        const assistant = user ? "" : extractAssistantText(obj);
+        const role = user ? "user" : assistant ? "assistant" : "";
+        const raw = user || assistant;
+        if (!role || !raw.trim()) continue;
+        const text = redact(raw);
+        if (!text.toLowerCase().includes(folded)) continue;
+        n += 1;
+        hits.push({
+          id: `${source}#${n}`,
+          text: around(text, needle),
+          role,
+          source,
+          projectPath: readCwd(obj.cwd),
+          sessionAt: readSessionAt(obj.timestamp),
+        });
+      }
+    } catch {
+      /* unreadable transcript — skip */
+    }
+    if (hits.length >= cap) break;
+  }
+  return hits;
 }
 
 export async function mineIdeas(root: string, limit?: number): Promise<Idea[]> {

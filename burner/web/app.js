@@ -438,26 +438,50 @@ function paintFeed(feed) {
   el.scrollTop = pin ? 0 : top;
 }
 
+let reviewPlan = null;
+let searchHits = null;
+let searchTimer = 0;
+
 function paintIdeas(ideas) {
-  const el = $("#ideas");
   const scroller = $("#idea-scroller");
-  if (!ideas.length) {
-    el.hidden = true;
-    if (scroller) scroller._html = "";
-    return;
-  }
-  el.hidden = false;
-  const list = ideas.slice().sort((a, b) => (b.score || 0) - (a.score || 0));
-  const html = list.map((idea) => {
-    const status = IDEA_STATUS.has(idea.status) ? idea.status : "new";
-    return `
+  const query = ($("#search")?.value || "").trim();
+  let html = "";
+  if (query.length >= 2) {
+    const hits = Array.isArray(searchHits) ? searchHits : [];
+    html = hits.length
+      ? hits.map((hit) => `
+      <article class="idea">
+        <span class="idea-score">${esc(hit.role === "assistant" ? "AI" : "YOU")}</span>
+        <p class="idea-text">${esc(clip(hit.text || "", 180))}</p>
+        <span class="idea-status">${esc(hit.role || "hit")}</span>
+      </article>`).join("")
+      : `<p class="idea-text">No matches</p>`;
+  } else if (reviewPlan && Array.isArray(reviewPlan.checks) && reviewPlan.checks.length && !(ideas || []).length) {
+    html = reviewPlan.checks.slice(0, 8).map((check) => `
+      <article class="idea">
+        <span class="idea-score">REV</span>
+        <p class="idea-text">${esc(clip(check, 180))}</p>
+        <span class="idea-status">review</span>
+      </article>`).join("");
+  } else {
+    const list = (ideas || []).slice().sort((a, b) => (b.score || 0) - (a.score || 0));
+    html = list.map((idea) => {
+      const status = IDEA_STATUS.has(idea.status) ? idea.status : "new";
+      return `
       <article class="idea">
         <span class="idea-score">${esc(Math.round(Number(idea.score) || 0))}</span>
         <p class="idea-text">${esc(clip(idea.text || idea.summary || "", 160))}</p>
         <span class="idea-status st-${status}">${esc(status)}</span>
       </article>`;
-  }).join("");
+    }).join("");
+  }
   setHTML(scroller, html);
+}
+
+function paintReviewLine() {
+  const line = $("#review-line");
+  if (!line) return;
+  line.textContent = reviewPlan && reviewPlan.summary ? reviewPlan.summary : "Review plan";
 }
 
 function paint(state) {
@@ -482,6 +506,7 @@ function paint(state) {
   paintProjects(state.projects || []);
   paintTasks(state.tasks || [], names);
   paintFeed(state.feed || []);
+  paintReviewLine();
   paintIdeas(state.ideas || []);
 }
 
@@ -559,14 +584,56 @@ function openEvents() {
   for (const type of SSE_TYPES) es.addEventListener(type, onEvent);
 }
 
+async function runSearch(raw) {
+  const query = String(raw || "").trim();
+  if (query.length < 2) {
+    searchHits = null;
+    if (snapshot) paintIdeas(snapshot.ideas || []);
+    return;
+  }
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(String(res.status));
+    const body = await res.json();
+    searchHits = Array.isArray(body.hits) ? body.hits : [];
+  } catch {
+    searchHits = [];
+  }
+  if (snapshot) paintIdeas(snapshot.ideas || []);
+}
+
+async function loadReview() {
+  try {
+    const res = await fetch("/api/review", { cache: "no-store" });
+    if (!res.ok) return;
+    const body = await res.json();
+    reviewPlan = body && body.plan ? body.plan : null;
+    paintReviewLine();
+    if (snapshot) paintIdeas(snapshot.ideas || []);
+  } catch {
+    /* review plan stays blank until the next load */
+  }
+}
+
 function boot() {
   paint(emptyState());
+  const form = $("#search-form");
+  const input = $("#search");
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    runSearch(input.value);
+  });
+  input.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => runSearch(input.value), 180);
+  });
   $("#controls").addEventListener("click", (event) => {
     const btn = event.target.closest("[data-action]");
     if (!btn) return;
     control(btn.dataset.action, btn);
   });
   refresh();
+  loadReview();
   openEvents();
   setInterval(tick, 1000);
   setInterval(() => {

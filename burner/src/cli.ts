@@ -121,6 +121,8 @@ Commands:
   run        Start from config and enable the configured lanes.
   discover   Print discovered projects (name, score, path).
   ideas      Print unfinished ideas from Claude transcripts.
+  search     Search conversation transcripts. Usage: burner search <query>
+  review     Print a code review plan. Usage: burner review [path]
 `);
 }
 
@@ -145,7 +147,12 @@ async function runnersFromConfig(cfg: BurnerConfig): Promise<Runner[]> {
   return runners;
 }
 
-async function serve(cfg: BurnerConfig, runners: Runner[], demoBanner: boolean): Promise<void> {
+async function serve(
+  cfg: BurnerConfig,
+  runners: Runner[],
+  demoBanner: boolean,
+  extras: { searchRoot?: string; reviewRoot?: string } = {},
+): Promise<void> {
   const [{ Store }, events, schedulerMod, serverMod] = await Promise.all([
     dyn<{ Store: new (dataDir: string) => StoreLike }>("./store.js"),
     dyn<{ createBus: () => Bus }>("./events.js"),
@@ -164,6 +171,8 @@ async function serve(cfg: BurnerConfig, runners: Runner[], demoBanner: boolean):
         getState: () => unknown;
         subscribe: (fn: (event: unknown) => void) => () => void;
         onControl: (action: ControlAction) => void;
+        onSearch?: (query: string) => Promise<unknown>;
+        onReview?: () => unknown;
         webDir?: string;
       }) => Promise<Started>;
     }>("./server.js"),
@@ -183,12 +192,26 @@ async function serve(cfg: BurnerConfig, runners: Runner[], demoBanner: boolean):
     dataDir: cfg.dataDir,
   });
 
+  const searchRoot = extras.searchRoot;
+  const reviewRoot = extras.reviewRoot;
   const server = await serverMod.startServer({
     port: cfg.port,
     webDir: join(packageRoot(), "web"),
     getState: () => store.snapshot(),
     subscribe: (fn) => bus.on(fn),
     onControl: (action) => scheduler[action](),
+    onSearch: async (query) => {
+      if (!searchRoot) return [];
+      const { searchConversations } = await dyn<{
+        searchConversations: (root: string, query: string) => Promise<unknown>;
+      }>("./ideas.js");
+      return searchConversations(searchRoot, query);
+    },
+    onReview: async () => {
+      if (!reviewRoot) return null;
+      const { buildReviewPlan } = await dyn<{ buildReviewPlan: (path: string) => unknown }>("./review.js");
+      return buildReviewPlan(reviewRoot);
+    },
   });
 
   await store.flush();
@@ -211,6 +234,27 @@ async function runDemo(): Promise<void> {
   const dataDir = join(parent, "state");
   mkdirSync(dataDir, { recursive: true });
   const repoPath = await seedDemoRepo(parent);
+  const transcripts = join(parent, "transcripts");
+  mkdirSync(transcripts, { recursive: true });
+  writeFileSync(
+    join(transcripts, "demo.jsonl"),
+    [
+      JSON.stringify({
+        type: "user",
+        message: { role: "user", content: "Add a conversation search over past chats" },
+        cwd: repoPath,
+        timestamp: "2026-10-07T12:00:00.000Z",
+      }),
+      JSON.stringify({
+        type: "assistant",
+        message: {
+          role: "assistant",
+          content: [{ type: "text", text: "A code review plan should list each changed file and the check that proves it." }],
+        },
+        timestamp: "2026-10-07T12:01:00.000Z",
+      }),
+    ].join("\n") + "\n",
+  );
   const port = await chooseDemoPort();
 
   const { loadConfig } = await dyn<{ loadConfig: (overrides?: object) => BurnerConfig }>("./config.js");
@@ -232,11 +276,12 @@ async function runDemo(): Promise<void> {
     orca: { enabled: false },
   });
   const runners = [createMockRunner({ tickMs: 120 })];
+  const extras = { searchRoot: transcripts, reviewRoot: repoPath };
   try {
-    await serve(cfg, runners, true);
+    await serve(cfg, runners, true, extras);
   } catch (err) {
     if (port === 3737 && isAddrInUse(err)) {
-      await serve({ ...cfg, port: 3738 }, runners, true);
+      await serve({ ...cfg, port: 3738 }, runners, true, extras);
       return;
     }
     throw err;
@@ -247,7 +292,10 @@ async function runLive(): Promise<void> {
   const { loadConfig } = await dyn<{ loadConfig: () => BurnerConfig }>("./config.js");
   const cfg = loadConfig();
   const runners = await runnersFromConfig(cfg);
-  await serve(cfg, runners, false);
+  await serve(cfg, runners, false, {
+    searchRoot: join(homedir(), ".claude", "projects"),
+    reviewRoot: process.cwd(),
+  });
 }
 
 async function runDiscover(): Promise<void> {
@@ -280,6 +328,36 @@ async function runIdeas(): Promise<void> {
   }
 }
 
+async function runSearch(query: string): Promise<void> {
+  if (query.length < 2) {
+    console.error("usage: burner search <query>");
+    process.exitCode = 1;
+    return;
+  }
+  const root = join(homedir(), ".claude", "projects");
+  const { searchConversations } = await dyn<{
+    searchConversations: (root: string, query: string) => Promise<{ role: string; text: string; source: string }[]>;
+  }>("./ideas.js");
+  const hits = await searchConversations(root, query);
+  if (hits.length === 0) {
+    console.log("no matches");
+    return;
+  }
+  for (const hit of hits) console.log(`${hit.role}\t${hit.source}\t${hit.text}`);
+}
+
+async function runReview(repo: string): Promise<void> {
+  const { buildReviewPlan } = await dyn<{
+    buildReviewPlan: (path: string) => {
+      summary: string;
+      checks: string[];
+    };
+  }>("./review.js");
+  const plan = buildReviewPlan(repo);
+  console.log(plan.summary);
+  for (const check of plan.checks) console.log(`- ${check}`);
+}
+
 async function main(argv: string[]): Promise<void> {
   const { cmd } = parseArgs(argv);
   switch (cmd) {
@@ -297,6 +375,12 @@ async function main(argv: string[]): Promise<void> {
       return;
     case "ideas":
       await runIdeas();
+      return;
+    case "search":
+      await runSearch(argv.slice(3).join(" ").trim());
+      return;
+    case "review":
+      await runReview(argv[3] ? resolve(argv[3]) : process.cwd());
       return;
     default:
       printHelp();

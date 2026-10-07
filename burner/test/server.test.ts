@@ -196,4 +196,29 @@ describe("startServer", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  it("serves conversation search and a code review plan", async () => {
+    const srv = await startServer({
+      port: 0,
+      getState: () => ({ ok: true }),
+      subscribe: () => () => {},
+      onControl: () => {},
+      onSearch: async (query) => [{ text: `hit ${query}`, role: "user" }],
+      onReview: () => ({ summary: "1 file in the latest commit on main.", checks: ["Do not push."] }),
+    });
+    open.push(srv);
+
+    const search = await fetch(`${srv.url}/api/search?q=${encodeURIComponent("review plan")}`);
+    expect(search.status).toBe(200);
+    expect(await search.json()).toEqual({
+      query: "review plan",
+      hits: [{ text: "hit review plan", role: "user" }],
+    });
+
+    const review = await fetch(`${srv.url}/api/review`);
+    expect(review.status).toBe(200);
+    const body = await review.json();
+    expect(body.plan.summary).toContain("latest commit");
+    expect(body.plan.checks).toEqual(["Do not push."]);
+  });
 });
