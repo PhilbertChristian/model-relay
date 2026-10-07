@@ -202,7 +202,7 @@ def add_task(plan_path: Path, project: str, task: str) -> str:
     """Append '- [ ] task' under '## project'. Returns a one-line description of what happened."""
     from .plan import TASK_RE
 
-    if plan_path.suffix.lower() not in PLAN_SUFFIXES:
+    if Path(os.path.realpath(plan_path)).suffix.lower() not in PLAN_SUFFIXES:     # the file a symlink points at
         # the path comes from the model; never append checklist lines to a shell rc, a config file or source code
         raise ToolFailure(f"refusing to edit {plan_path}: a plan must be a markdown file "
                           f"({', '.join(PLAN_SUFFIXES)}), e.g. PLAN.md")

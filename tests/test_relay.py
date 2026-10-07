@@ -1,5 +1,6 @@
 """python3 -m unittest discover tests"""
 import io
+import os
 import json
 import subprocess
 import tempfile
@@ -232,3 +233,28 @@ class Savings(unittest.TestCase):
         m = value.month("2026-09", [str(ex / "events.jsonl")], claude_logs=str(ex / "claude"))
         self.assertEqual(round(m.used_usd, 2), 5180.40)
         self.assertEqual(round(m.rescued_usd, 2), 1412.60)
+
+
+class Sponsors(unittest.TestCase):
+    def test_check_without_keys_skips_cleanly(self):
+        from unittest import mock
+        from relay import sponsors
+        env = {k: v for k, v in os.environ.items() if not k.startswith(("AGENT37", "OPENAI", "SUPABASE", "INSTA", "CONTEXT_DEV"))}
+        with mock.patch.dict(os.environ, env, clear=True), mock.patch("shutil.which", return_value=None):
+            rows = sponsors.check()
+        self.assertEqual([r["sponsor"] for r in rows], ["Agent37", "OpenAI", "Supabase", "Monid", "InstaCloud", "Context.dev"])
+        self.assertTrue(all(r["status"] == "skipped" for r in rows))
+
+    def test_sponsor_tools_only_when_configured(self):
+        from unittest import mock
+        from relay.tools import available_schemas
+        with mock.patch.dict(os.environ, {"CONTEXT_DEV_API_KEY": "x"}), mock.patch("shutil.which", return_value=None):
+            names = [t["function"]["name"] for t in available_schemas()]
+        self.assertIn("web_fetch", names)
+        self.assertNotIn("find_tool", names)
+
+    def test_plan_deploy_key(self):
+        from relay.plan import parse
+        d = Path(tempfile.mkdtemp()) / "PLAN.md"
+        d.write_text("## site\ndeploy: instacloud\n- [ ] a\n")
+        self.assertEqual(parse(d).projects[0].deploy, "instacloud")

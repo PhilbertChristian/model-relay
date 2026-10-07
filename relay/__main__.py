@@ -11,6 +11,7 @@
   python3 -m relay savings                         this month: used at API rates vs. rescued from expiring
   python3 -m relay serve -c burner.json            OpenAI-compatible endpoint for any harness (failover + savings)
   python3 -m relay mcp                             MCP server: capacity, savings, plan, burn tools for agents
+  python3 -m relay sponsors                        ping Agent37, OpenAI, Supabase, Monid, InstaCloud, Context.dev
 """
 from __future__ import annotations
 
@@ -69,6 +70,7 @@ def main(argv: list[str] | None = None) -> int:
     sv.add_argument("--hang", type=float, default=180, help="seconds without any agent event before the turn counts as hung")
     sub.add_parser("mcp", help="serve Relay's tools over MCP on stdio (Claude Code, Codex, OpenCode, Hermes...)")
     sub.add_parser("serve", help="OpenAI-compatible endpoint: point any harness's base_url here (see relay serve -h)")
+    sub.add_parser("sponsors", help="check every sponsor integration with your keys")
     sv2 = sub.add_parser("savings", help="this month's usage at API rates, and how much Relay rescued from expiring")
     sv2.add_argument("--month", help="YYYY-MM (default: this month, UTC)")
     sv2.add_argument("--ledger", action="append", help="relay events.jsonl (repeatable; default: <cwd>/.relay/events.jsonl)")
@@ -92,6 +94,12 @@ def main(argv: list[str] | None = None) -> int:
         return mcp_main(["-C", args.cwd])
     if extra:
         ap.error(f"unrecognized arguments: {' '.join(extra)}")
+
+    if args.cmd == "sponsors":
+        from . import sponsors
+        rows = sponsors.check()
+        print(sponsors.render(rows))
+        return 0 if all(r["status"] != "error" for r in rows) else 1
 
     if args.cmd == "savings":
         from . import value

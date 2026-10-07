@@ -7,7 +7,11 @@ Anything that speaks the Chat Completions API (OpenAI SDKs, Aider, OpenCode, Cli
 LiteLLM, Codex with wire_api = "chat", ...) gets the whole ladder: each request goes to the
 Router's pick, and when a provider fails (rate limit, budget, auth, context overflow, 5xx) the
 model is cooled down or retired exactly as in `relay run`, and the request is retried on the
-next pick. The harness only ever sees one ordinary response.
+next pick. The harness only ever sees one ordinary response. An upstream 400/413/422 about the
+request itself (bad tool schema, broken message order) is tried on other models without cooling
+anything, and if none accepts it the harness gets that 400 back rather than a retryable 503.
+A provider whose base_url points back at this proxy (OPENAI_BASE_URL exported for the harness in
+the same shell) is taken out of the ladder at startup instead of looping.
 
 Endpoints (the /v1 prefix is optional, so base_url with or without /v1 both work):
     GET  /v1/models               "relay/auto", "relay/tier-N" aliases, then every ladder id
@@ -25,14 +29,16 @@ X-Relay-Attempts. Every upstream success writes a "call" row to <cwd>/.relay/eve
 `relay savings` and `relay stats` count proxied traffic.
 
 Security: binds 127.0.0.1 unless --host says otherwise. With RELAY_SERVE_KEY set, every route
-but /health needs `Authorization: Bearer <key>` (X-Api-Key also accepted). Browser requests
-from non-loopback origins are refused unless a key is set, so a web page you visit cannot spend
-your credits through localhost (including via DNS rebinding).
+but /health needs `Authorization: Bearer <key>` (X-Api-Key also accepted). Without a key,
+browser requests from non-loopback origins are refused, and so is any Host header that is a public
+domain name, so a web page you visit can neither spend your credits through localhost nor read
+your spend via DNS rebinding.
 """
 from __future__ import annotations
 
 import argparse
 import hmac
+import ipaddress
 import json
 import math
 import os
@@ -69,6 +75,29 @@ PASSTHROUGH = ("tools", "tool_choice", "parallel_tool_calls", "response_format",
 # the same model retried once instead.
 DROPPABLE = ("temperature", "top_p", "presence_penalty", "frequency_penalty", "logit_bias", "seed",
              "reasoning_effort", "parallel_tool_calls")
+# upstream statuses that mean "this request is malformed", not "this model is unwell"
+CLIENT_FAULT = (400, 413, 415, 422)
+
+
+def _client_fault(err: ProviderError) -> bool:
+    """A 4xx about the request itself (bad tool schema, tool message without a tool call, ...). The
+    provider layer files it under "transient", which would cool a healthy model for every client and
+    hand the harness a retryable 503 for a request that can never succeed."""
+    return err.kind == "transient" and err.status in CLIENT_FAULT
+
+
+def _upstream_error(err: ProviderError) -> dict:
+    """message/param/code from an upstream OpenAI-style error body (which may be truncated JSON)."""
+    raw = str(err.args[0]) if err.args else str(err)
+    try:
+        e = json.loads(raw).get("error")
+    except (ValueError, AttributeError):
+        e = None
+    if isinstance(e, dict):
+        return {"message": str(e.get("message") or raw),
+                "param": e.get("param") if isinstance(e.get("param"), str) else None,
+                "code": e.get("code") if isinstance(e.get("code"), str) else None}
+    return {"message": e if isinstance(e, str) else raw, "param": None, "code": None}
 
 
 # --------------------------------------------------------------------------- upstream call
@@ -224,25 +253,35 @@ class RelayProxy:
                 return spec.tier, spec
         return None, None
 
-    def _acquire(self, tier: int | None, min_ctx: int, deadline: float) -> ModelSpec:
-        """Router.pick() for this request's tier and context need, waiting (outside the lock) for a cooldown."""
+    def _acquire(self, tier: int | None, min_ctx: int, deadline: float,
+                 skip: frozenset[str] | set[str] = frozenset()) -> ModelSpec:
+        """Router.pick() for this request's tier and context need, waiting (outside the lock) for a cooldown.
+        `skip`: models that already rejected this request as malformed; healthy, just not for this one."""
         r = self.router
         while True:
             with self._lock:
                 now = time.time()
-                alive = [m for m in r.models if self._alive(m, min_ctx)]
+                alive = [m for m in r.models if self._alive(m, min_ctx) and m.id not in skip]
                 if not alive:
                     raise NoModelAvailable(r.status_line())
                 if any(self._ready(m, min_ctx, now) for m in alive):
                     # tier and min_context are per request here: one huge conversation must not
                     # lock every other client out of the small-window models
                     saved = r.tier, r.min_context
+                    current = r.current   # a detour for one odd request must not move everyone's sticky pick
+                    held = {i: r.state[i].cooldown_until for i in skip}
                     r.tier = saved[0] if tier is None else min(max(tier, 0), r.max_tier)
                     r.min_context = min_ctx
+                    for i in skip:   # hidden from this pick only, restored below
+                        r.state[i].cooldown_until = math.inf
                     try:
                         return r.pick()[0]   # never sleeps: a ready model exists
                     finally:
                         r.tier, r.min_context = saved
+                        for i, until in held.items():
+                            r.state[i].cooldown_until = until
+                        if skip:
+                            r.current = current
                 wait = min(r.state[m.id].cooldown_until for m in alive) - now
             if time.time() + wait > deadline:
                 raise _Cooling(wait)
@@ -266,6 +305,7 @@ class RelayProxy:
         prev: ModelSpec | None = None
         last_err: ProviderError | None = None
         attempts: list[dict] = []
+        skip: set[str] = set()   # rejected this request as malformed: try another, don't cool it for everyone
         for n in range(self.max_attempts):
             spec = None
             if n == 0 and pinned is not None:
@@ -273,7 +313,7 @@ class RelayProxy:
                     spec = pinned if self._ready(pinned, min_ctx, time.time()) else None
             if spec is None:
                 try:
-                    spec = self._acquire(tier, min_ctx, deadline)
+                    spec = self._acquire(tier, min_ctx, deadline, skip)
                 except NoModelAvailable:   # its text is Router.status_line(), which _fail appends anyway
                     return self._fail(requested, attempts, last_err, min_ctx, approx, "no model available")
                 except _Cooling as c:
@@ -286,6 +326,15 @@ class RelayProxy:
                 reply = self._call(spec, body)
             except ProviderError as err:
                 last_err = err
+                if _client_fault(err):
+                    skip.add(spec.id)
+                    why = f"rejected: {spec.id} refused this request ({err.status}), trying another model"
+                    detail = str(err)[:300]
+                    attempts.append({"model": spec.id, "kind": err.kind, "status": err.status, "detail": detail,
+                                     "rejected": True})
+                    self.emit("provider_error", model=spec.id, kind=err.kind, status=err.status, detail=detail,
+                              rejected=True)
+                    continue
                 with self._lock:
                     saved = self.router.min_context
                     self.router.min_context = min_ctx
@@ -315,7 +364,14 @@ class RelayProxy:
             # tell the harness in the words it already understands, so it compacts and retries
             compactable = bool(min_ctx) and any(self._alive(m, 0) for m in self.router.models)
         relay = {"attempts": attempts, "status": [s.strip() for s in status.splitlines()]}
-        if retry_after is None and compactable and last_err is not None and last_err.kind == "context":
+        if retry_after is None and last_err is not None and _client_fault(last_err):
+            # the request itself is bad: a 400 the harness shows to its user, not a 503 its SDK retries
+            up = _upstream_error(last_err)
+            ids = ", ".join(dict.fromkeys(a["model"] for a in attempts if a.get("rejected")))
+            out = Outcome(400, attempts=attempts, error=_error(
+                f"{up['message']} (relay: upstream HTTP {last_err.status}; rejected by {ids})",
+                "invalid_request_error", up["code"] or "relay_request_rejected", up["param"], relay=relay))
+        elif retry_after is None and compactable and last_err is not None and last_err.kind == "context":
             biggest = max((m.context_window for m in self.router.models if self._alive(m, 0)), default=0)
             out = Outcome(400, attempts=attempts, error=_error(
                 f"relay: the conversation (~{approx} tokens) is over the maximum context length of every usable "
@@ -435,16 +491,20 @@ def sse_body(out: Outcome, cid: str, created: int, include_usage: bool = False) 
     return "".join(f"data: {json.dumps(c)}\n\n" for c in chunks) + "data: [DONE]\n\n"
 
 
-def _validate(body: Any) -> str | None:
+def _validate(body: Any) -> tuple[str, str | None] | None:
+    """(message, param) for a request that must not reach an upstream, else None. Checked before any
+    spend, so a shape error never costs a model call."""
     if not isinstance(body, dict):
-        return "request body must be a JSON object"
+        return "request body must be a JSON object", None
     msgs = body.get("messages")
     if not isinstance(msgs, list) or not msgs:
-        return "'messages' must be a non-empty array"
+        return "'messages' must be a non-empty array", "messages"
     if not all(isinstance(m, dict) for m in msgs):
-        return "every entry in 'messages' must be an object"
+        return "every entry in 'messages' must be an object", "messages"
     if body.get("tools") is not None and not isinstance(body.get("tools"), list):
-        return "'tools' must be an array"
+        return "'tools' must be an array", "tools"
+    if body.get("stream_options") is not None and not isinstance(body.get("stream_options"), dict):
+        return "'stream_options' must be an object", "stream_options"
     return None
 
 
@@ -472,6 +532,15 @@ class _Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         self._dispatch("POST")
 
+    def do_PUT(self) -> None:      # OpenAI-shaped 405/404 instead of http.server's HTML 501
+        self._dispatch("PUT")
+
+    def do_DELETE(self) -> None:
+        self._dispatch("DELETE")
+
+    def do_PATCH(self) -> None:
+        self._dispatch("PATCH")
+
     def do_OPTIONS(self) -> None:
         if not self._origin_ok():
             return self._error(403, "cross-origin requests are refused unless RELAY_SERVE_KEY is set",
@@ -492,6 +561,27 @@ class _Handler(BaseHTTPRequestHandler):
             return True   # not a browser
         host = (urlsplit(origin).hostname or "").lower()
         return host in LOOPBACK or host.endswith(".localhost") or bool(self.proxy.key)
+
+    def _host_ok(self) -> bool:
+        """DNS-rebinding guard. A page on attacker.example that rebinds its name to 127.0.0.1 can GET
+        this server without sending an Origin header (same-origin GETs carry none), but its Host header
+        still says attacker.example. Without a key, answer only to names a public site can't own."""
+        if self.proxy.key:
+            return True
+        raw = (self.headers.get("Host") or "").strip()
+        if not raw:
+            return True   # HTTP/1.0 tools; browsers always send Host
+        try:
+            name = (urlsplit("//" + raw).hostname or "").lower().rstrip(".")
+        except ValueError:
+            return False
+        try:
+            ipaddress.ip_address(name)
+            return True   # a literal address can't be rebound
+        except ValueError:
+            pass
+        return (name in LOOPBACK or "." not in name or name.endswith((".localhost", ".local", ".internal"))
+                or name == str(self.server.server_address[0]).lower())
 
     def _authorized(self) -> bool:
         key = self.proxy.key
@@ -571,6 +661,9 @@ class _Handler(BaseHTTPRequestHandler):
                                "permission_error", "origin_not_allowed")
         if path == "/health" and method == "GET":
             return self._json(200, self.proxy.health())
+        if not self._host_ok():
+            return self._error(403, f"Host '{self.headers.get('Host')}' is not a local name; set RELAY_SERVE_KEY to "
+                                    "serve other host names (DNS-rebinding guard)", "permission_error", "host_not_allowed")
         if not self._authorized():
             return self._error(401, "missing or wrong API key: send 'Authorization: Bearer $RELAY_SERVE_KEY'",
                                "invalid_request_error", "invalid_api_key")
@@ -611,14 +704,14 @@ class _Handler(BaseHTTPRequestHandler):
         except _TooLarge:
             return self._error(413, f"request body is over {MAX_BODY // (1024 * 1024)} MB", code="request_too_large")
         except ValueError:
-            return self._error(400, "malformed chunked request body")
+            return self._error(400, "malformed request body (bad Content-Length or chunked encoding)")
         try:
             body = json.loads(raw or b"{}")
         except (ValueError, UnicodeDecodeError) as e:
             return self._error(400, f"request body is not valid JSON: {e}")
         problem = _validate(body)
         if problem:
-            return self._error(400, problem, param="messages")
+            return self._error(400, problem[0], param=problem[1])
         out = self.proxy.complete(body)
         if out.status != 200:
             return self._json(out.status, out.error, out.headers)
@@ -656,6 +749,42 @@ class RelayServer(ThreadingHTTPServer):
         return f"http://{f'[{host}]' if ':' in host else host}:{port}/v1"
 
 
+def _points_at(url: str, host: str, port: int) -> bool:
+    """Does an upstream base_url name this very server (a loopback or the bound address, same port)?"""
+    try:
+        u = urlsplit(url)
+        h = (u.hostname or "").lower()
+        p = u.port or {"http": 80, "https": 443}.get(u.scheme.lower())
+    except ValueError:
+        return False
+    if not h or p != port:
+        return False
+    try:
+        ip = ipaddress.ip_address(h)
+        if ip.is_loopback or ip.is_unspecified:
+            return True
+    except ValueError:
+        pass
+    return h in LOOPBACK or h.endswith(".localhost") or h == host.lower().strip("[]")
+
+
+def _disable_self_loops(proxy: RelayProxy, host: str, port: int) -> None:
+    """The usual integration step is `export OPENAI_BASE_URL=http://127.0.0.1:8037/v1` for the harness,
+    and the default ladder's openai provider reads that same variable. Started from such a shell, the
+    proxy would call itself recursively (thousands of nested requests for one prompt). Take any such
+    provider out of the ladder and say why."""
+    r = proxy.router
+    for name, p in r.providers.items():
+        if p.kind == "mock":
+            continue
+        url = p.resolved_base_url()
+        if _points_at(url, host, port):
+            hint = f" (from {p.base_url})" if p.base_url.startswith("$") else ""
+            r.dead_providers[name] = (f"base_url {url}{hint} is this relay serve, so every call would loop back "
+                                      "here; point the provider at the real API, or unset that variable in the shell "
+                                      "that starts relay serve")
+
+
 def make_server(cfg: dict, host: str = "127.0.0.1", port: int = DEFAULT_PORT, cwd: str = ".",
                 include_claude: bool = True, key: str | None = None, max_attempts: int = 6,
                 max_wait: float = 90.0, start_tier: int | None = None,
@@ -663,6 +792,7 @@ def make_server(cfg: dict, host: str = "127.0.0.1", port: int = DEFAULT_PORT, cw
     """A bound, not yet serving, proxy. key=None reads RELAY_SERVE_KEY; key="" turns auth off. port=0: any free port."""
     proxy = RelayProxy(cfg, cwd, include_claude, key, max_attempts, max_wait, start_tier, log)
     srv = RelayServer((host, port), proxy)
+    _disable_self_loops(proxy, host, int(srv.server_address[1]))
     proxy.emit("serve_start", base_url=srv.base_url, auth=bool(proxy.key),
                models=[m.id for m in proxy.router.models], dead=dict(proxy.router.dead_providers))
     return srv
