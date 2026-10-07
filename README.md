@@ -132,6 +132,21 @@ python3 deploy/agent37.py stats | budget --top-up 1 | destroy
 
 Run `supabase/schema.sql`, then set `SUPABASE_URL` + `SUPABASE_KEY`. Every call, switch, blocker, hint, and session summary lands in `relay_events`, with views `relay_model_usage` and `relay_switches`. Events are always written locally to `.relay/events.jsonl`.
 
+## Docs
+
+One file owns each topic. The rules and the checks (`scripts/check_docs_md.py`, `scripts/check_duplication.py`) are in [Relay-Documentation-Standards](docs/Relay-Documentation-Standards.md).
+
+| Doc | What it covers |
+|---|---|
+| [Relay-Night-Shift](docs/Relay-Night-Shift.md) | `relay burn`: a shift, stop conditions, `MORNING.md` |
+| [Relay-Capacity-Planner](docs/Relay-Capacity-Planner.md) | `burner.json`: idle hours, subscription kinds, burn order |
+| [Relay-Plan-Format](docs/Relay-Plan-Format.md) | The planning doc: projects, keys, write-back |
+| [Relay-Unstick-Ladder](docs/Relay-Unstick-Ladder.md) | `relay run`: blockers, the ladder, limits, refusal triage |
+| [Relay-Supervisor-Mode](docs/Relay-Supervisor-Mode.md) | `relay supervise`: unsticking agents hosted on Agent37 |
+| [Relay-Config](docs/Relay-Config.md) | `relay.json`: providers, model ladder, engine knobs |
+| [Relay-Agent37-Deployment](docs/Relay-Agent37-Deployment.md) | `deploy/agent37.py`: instances, scheduled night shifts |
+| [Relay-Telemetry](docs/Relay-Telemetry.md) | Event log, Supabase, `relay stats` |
+
 ## Layout
 
 ```
@@ -148,7 +163,8 @@ relay/tools.py      read/write/edit/list/bash (process-group watchdog)/escalate
 relay/providers.py  OpenAI-compatible client, error → limit-kind classifier, scripted mock
 relay/supervise.py  supervisor for Agent37-hosted agents (SSE stream watch + cancel + model switch)
 deploy/agent37.py   create / push / run / supervise / stats / budget / destroy
-docs/index.html     GitHub Pages site · docs/try.html in-browser demo · docs/demo.mp4 (demo/nightshift.tape)
+docs/               reference notes (above) + GitHub Pages site (index.html, try.html, demo.mp4)
+scripts/            documentation checks
 ```
 
 Built at the Agent37 "Build an Agent" hackathon (Oct 7, 2026). MIT.
