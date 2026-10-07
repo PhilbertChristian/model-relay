@@ -124,11 +124,15 @@
   .calc .out .v.o { color: var(--orange); }
   .calc .out small { color: var(--muted); font-size: 12.5px; }
 
-  .int { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  @media (max-width: 860px) { .int { grid-template-columns: 1fr; } }
-  .int .card { background: #fff; border-radius: 24px; padding: 26px; display: flex; flex-direction: column; gap: 14px; }
+  .int { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 860px) { .int { grid-template-columns: minmax(0, 1fr); } }
+  .int .card { background: #fff; border-radius: 24px; padding: 26px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .int .card p { margin: 0; color: var(--ink-2); font-size: 15px; }
   .int .card .badge { align-self: flex-start; font: 600 11px var(--mono); letter-spacing: .06em; padding: 5px 9px; border-radius: 8px; background: var(--orange-soft); color: var(--orange); }
+  .int .card.wide { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 14px 28px; align-items: start; }
+  .int .card.wide .col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .int .card.wide .col a { color: var(--orange); text-decoration: none; font-weight: 500; }
+  @media (max-width: 860px) { .int .card.wide { grid-template-columns: minmax(0, 1fr); } }
 
   video { width: 100%; border-radius: 24px; display: block; background: #000; box-shadow: 0 20px 60px rgba(0,0,0,.12); }
 
@@ -313,6 +317,16 @@ from relay import capacity, value
 router = build_router(load("burner.json"))
 spec, switch = router.pick()   <span class="c"># fails over for you</span>
 print(value.render(value.month()))</pre></div>
+    <div class="card wide"><div class="col"><span class="badge">ORCHESTRATOR · ORCA</span><h3>Run it inside Orca</h3>
+      <p>Orca's coordinator asks Relay what's about to expire and what matters most, then runs each task as a supervised worker in its own worktree. You watch every worker live in Orca, and anything that needs you waits as a decision gate.</p>
+      <p>Install the <a href="https://github.com/PhilbertChristian/model-relay/tree/main/skills/agent-relay">agent-relay skill</a> next to Orca's orchestration skill.</p></div>
+<pre class="snip"><span class="c">$ claude mcp add relay -- python3 -m relay.mcp</span>
+<span class="c">$ cp -r skills/agent-relay ~/.claude/skills/</span>
+<span class="c"># the coordinator, every shift:</span>
+<span class="o">relay_capacity</span>    what expires, in burn order
+<span class="o">relay_plan_list</span>   tonight's tasks, by priority
+orca orchestration worker-start --spec "…" --agent claude
+orca orchestration gate-create   <span class="c"># BLOCKED → asks you</span></pre></div>
   </div>
 </div></section>
 
