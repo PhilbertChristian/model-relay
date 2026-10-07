@@ -312,6 +312,9 @@ class InProcess(unittest.TestCase):
         self.assertEqual(rc.read_text(), "export FOO=1\n")
         self.assertTrue(self.tool("relay_plan_add", plan="notes.txt", project="a", task="b")[1])
         self.assertFalse((self.ws / "notes.txt").exists())
+        (self.ws / "SNEAKY.md").symlink_to(rc)                                   # a .md name pointing at the rc
+        self.assertTrue(self.tool("relay_plan_add", plan="SNEAKY.md", project="a", task="b")[1])
+        self.assertEqual(rc.read_text(), "export FOO=1\n")
         self.assertFalse(self.tool("relay_plan_add", plan="Plan.MARKDOWN", project="## api", task="t")[1])
         self.assertIn("\n## api\n", (self.ws / "Plan.MARKDOWN").read_text())     # not '## ## api'
 

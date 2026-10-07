@@ -9,6 +9,7 @@ the project; `- [ ]` items are tasks, done top to bottom. Relay writes results b
     budget: 1.50                               # max USD this project may burn per night
     priority: 1                                # lower runs first
     notes: Python 3.11, click, no other deps
+    deploy: instacloud                         # optional: preview-deploy the night branch on InstaCloud
 
     - [ ] add `add`, `list`, `done` commands
     - [x] scaffold the package                 <- done
@@ -21,7 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 TASK_RE = re.compile(r"^(\s*)- \[( |x|X|!)\] (.+)$")
-KEY_RE = re.compile(r"^(repo|dir|test|budget|priority|notes|branch|base):\s*(.+?)\s*$", re.I)
+KEY_RE = re.compile(r"^(repo|dir|test|budget|priority|notes|branch|base|deploy):\s*(.+?)\s*$", re.I)
 
 
 @dataclass
@@ -46,6 +47,7 @@ class Project:
     priority: int = 100
     notes: str = ""
     base: str | None = None
+    deploy: str | None = None          # "instacloud": preview-deploy the night branch after its tasks pass
     tasks: list[Task] = field(default_factory=list)
 
     @property

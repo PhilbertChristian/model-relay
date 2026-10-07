@@ -7,194 +7,257 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f6f6f6; --ink:#191919; --ink-2:#4a4a4a; --muted:#7a7a7a; --line:#e4e4e4; --orange:#ff5c00; --orange-soft:#fff1e8; --dark:#313131; --green:#1f9d63;
+  :root { --bg:#f6f6f6; --ink:#191919; --ink-2:#4a4a4a; --muted:#7a7a7a; --line:#e6e6e6; --orange:#ff5c00; --orange-soft:#fff1e8; --green:#1f9d63; --green-soft:#e6f6ee; --red:#d4543d; --red-soft:#fdecea;
           --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 var(--sans); -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 var(--sans); -webkit-font-smoothing:antialiased; }
   a { color:inherit; }
-  header { position:sticky; top:0; z-index:10; background:rgba(246,246,246,.9); backdrop-filter:blur(10px); border-bottom:1px solid rgba(0,0,0,.05); }
-  header .w { max-width:1320px; margin:0 auto; padding:0 20px; height:64px; display:flex; align-items:center; gap:18px; }
+  header { position:sticky; top:0; z-index:20; background:rgba(246,246,246,.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(0,0,0,.05); }
+  .w { max-width:1280px; margin:0 auto; padding:0 20px; }
+  header .w { height:64px; display:flex; align-items:center; gap:14px; }
   .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:19px; letter-spacing:-.03em; text-decoration:none; }
   .logo i { width:26px; height:26px; border-radius:8px; background:var(--orange); display:grid; place-items:center; color:#fff; font:700 14px var(--mono); font-style:normal; }
   .pill { font:600 11px var(--mono); letter-spacing:.06em; background:var(--orange-soft); color:var(--orange); padding:5px 9px; border-radius:8px; }
-  header .r { margin-left:auto; display:flex; gap:10px; }
-  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 18px; border-radius:14px; font:500 15px var(--sans); border:0; cursor:pointer; text-decoration:none; white-space:nowrap; }
-  .btn.orange { background:var(--orange); color:#fff; } .btn.dark { background:var(--ink); color:#fff; } .btn.ghost { background:#fff; border:1px solid var(--line); color:var(--ink); }
-  .btn:disabled { opacity:.5; cursor:default; }
-  main { max-width:1320px; margin:0 auto; padding:22px 20px 60px; display:grid; grid-template-columns:380px 1fr 300px; gap:16px; }
-  @media (max-width:1180px) { main { grid-template-columns:1fr; } }
-  .card { background:#fff; border-radius:20px; padding:18px; }
-  .card h2 { font-size:15px; margin:0 0 10px; font-weight:600; letter-spacing:-.01em; display:flex; justify-content:space-between; align-items:center; }
-  .card h2 small { font:500 11px var(--mono); color:var(--muted); letter-spacing:.04em; }
-  .drop { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-align:center; border:1.5px dashed #cfcfcf; border-radius:16px; padding:22px 14px; background:var(--bg); cursor:pointer; transition:all .15s; }
+  header .r { margin-left:auto; display:flex; gap:8px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:42px; padding:0 18px; border-radius:14px; font:500 15px var(--sans); border:0; cursor:pointer; text-decoration:none; white-space:nowrap; }
+  .btn.orange { background:var(--orange); color:#fff; } .btn.ghost { background:#fff; border:1px solid var(--line); color:var(--ink); } .btn.dark { background:var(--ink); color:#fff; }
+  .btn.big { height:52px; padding:0 26px; font-size:17px; border-radius:16px; }
+  .btn:disabled { opacity:.55; cursor:default; }
+  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:20px 0 16px; }
+  .kpi { background:#fff; border-radius:18px; padding:14px 18px; }
+  .kpi small { display:block; font-size:12.5px; color:var(--muted); }
+  .kpi b { font-size:30px; font-weight:600; letter-spacing:-.03em; font-variant-numeric:tabular-nums; } .kpi b.o { color:var(--orange); }
+  @media (max-width:860px) { .kpis { grid-template-columns:repeat(2,1fr); } }
+  .card { background:#fff; border-radius:22px; padding:20px; }
+  .card h2 { font-size:16px; margin:0 0 4px; font-weight:600; letter-spacing:-.01em; }
+  .card .sub { font-size:13px; color:var(--muted); margin:0 0 14px; }
+  .step { display:inline-grid; place-items:center; width:22px; height:22px; border-radius:7px; background:var(--ink); color:#fff; font:600 12px var(--mono); margin-right:8px; vertical-align:1px; }
+  .setup { display:grid; grid-template-columns:1.35fr 1fr; gap:16px; }
+  @media (max-width:980px) { .setup { grid-template-columns:1fr; } }
+  .prompt { display:flex; gap:8px; }
+  .prompt input { flex:1; height:52px; border:1.5px solid var(--line); border-radius:16px; padding:0 16px; font:16px var(--sans); background:var(--bg); }
+  .prompt input:focus { outline:none; border-color:var(--orange); background:#fff; }
+  .or { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12.5px; margin:14px 0 10px; } .or::before, .or::after { content:""; flex:1; height:1px; background:var(--line); }
+  .samples { display:flex; flex-wrap:wrap; gap:6px; }
+  .sample { border:1px solid var(--line); background:var(--bg); border-radius:12px; padding:7px 11px; cursor:pointer; font:500 13.5px var(--sans); color:var(--ink); display:inline-flex; gap:6px; align-items:center; }
+  .sample:hover { border-color:#cfcfcf; background:#fff; } .sample.on { border-color:var(--orange); background:var(--orange-soft); }
+  .sample a { font:500 11px var(--mono); color:var(--muted); text-decoration:none; } .sample a:hover { color:var(--orange); }
+  .drop { display:flex; align-items:center; gap:12px; margin-top:10px; border:1.5px dashed #cfcfcf; border-radius:14px; padding:11px 14px; background:var(--bg); cursor:pointer; font-size:14px; }
   .drop:hover, .drop.over { border-color:var(--orange); background:var(--orange-soft); }
-  .drop .ico { width:38px; height:38px; border-radius:12px; background:var(--orange); color:#fff; display:grid; place-items:center; font-size:18px; margin-bottom:6px; }
-  .drop b { font-size:15px; } .drop span { font-size:12.5px; color:var(--muted); } .drop u { color:var(--orange); text-decoration:none; font-weight:600; }
-  .files { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
-  .files span { font:500 11.5px var(--mono); background:#f1f1f1; border-radius:8px; padding:4px 8px; }
-  .files span b { color:var(--green); font-weight:600; }
-  .planbar { display:flex; align-items:center; gap:12px; margin:12px 0 8px; font-size:13px; color:var(--muted); }
-  .planbar b { color:var(--ink); }
-  .link { margin-left:auto; background:none; border:0; color:var(--orange); font:600 13px var(--sans); cursor:pointer; padding:0; }
-  .link + .link { margin-left:0; color:var(--muted); }
-  textarea { width:100%; height:230px; border:1px solid var(--line); border-radius:12px; background:var(--bg); padding:12px; font:12.5px/1.55 var(--mono); resize:vertical; color:var(--ink); }
-  .subs label { display:flex; align-items:center; gap:10px; padding:9px 2px; border-top:1px solid #f1f1f1; font-size:14px; cursor:pointer; }
-  .subs label:first-of-type { border-top:0; }
-  .subs input { accent-color:var(--orange); width:16px; height:16px; }
-  .subs small { color:var(--muted); display:block; font-size:12px; }
-  .subs .price { margin-left:auto; font:500 12px var(--mono); color:var(--ink-2); }
-  .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
-  .row label { font-size:12.5px; color:var(--muted); } select { width:100%; height:40px; border-radius:10px; border:1px solid var(--line); background:var(--bg); padding:0 10px; font:14px var(--sans); }
-  .tog label { display:flex; gap:9px; align-items:center; font-size:13.5px; padding:5px 0; cursor:pointer; } .tog input { accent-color:var(--orange); }
-  .term { background:#141414; border-radius:20px; overflow:hidden; display:flex; flex-direction:column; min-height:680px; }
+  .drop .ico { width:30px; height:30px; flex:none; border-radius:9px; background:var(--orange); color:#fff; display:grid; place-items:center; }
+  .drop span { color:var(--muted); font-size:12.5px; } .drop u { color:var(--orange); text-decoration:none; font-weight:600; }
+  .files { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .files span { font:500 11.5px var(--mono); background:#f1f1f1; border-radius:8px; padding:4px 8px; } .files span b { color:var(--green); }
+  .agents { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .agent { display:flex; align-items:center; gap:10px; border:1px solid var(--line); background:var(--bg); border-radius:14px; padding:10px 12px; cursor:pointer; user-select:none; }
+  .agent input { display:none; }
+  .agent .lg { width:30px; height:30px; border-radius:9px; display:grid; place-items:center; color:#fff; font:700 13px var(--mono); flex:none; }
+  .agent b { display:block; font-size:13.5px; font-weight:600; } .agent small { color:var(--muted); font-size:12px; }
+  .agent .sw { margin-left:auto; width:34px; height:20px; border-radius:99px; background:#d8d8d8; position:relative; flex:none; transition:background .2s; }
+  .agent .sw::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .2s; }
+  .agent:has(input:checked) { border-color:#ffc6a6; background:var(--orange-soft); }
+  .agent:has(input:checked) .sw { background:var(--orange); } .agent:has(input:checked) .sw::after { left:16px; }
+  .opts { display:flex; flex-wrap:wrap; gap:14px; margin-top:12px; font-size:13px; color:var(--ink-2); }
+  .opts label { display:flex; align-items:center; gap:6px; cursor:pointer; } .opts input { accent-color:var(--orange); }
+  .runrow { display:flex; align-items:center; gap:14px; margin-top:16px; flex-wrap:wrap; } .runrow .hint { font-size:12.5px; color:var(--muted); }
+  .mainrow { display:grid; grid-template-columns:1.35fr 1fr; gap:16px; margin-top:16px; }
+  @media (max-width:980px) { .mainrow { grid-template-columns:1fr; } }
+  .night { position:relative; height:34px; margin:2px 0 16px; }
+  .night .track { position:absolute; left:0; right:0; top:14px; height:6px; border-radius:99px; background:linear-gradient(90deg,#1b2a4a,#3b4f86 40%,#f0a46b 92%,#ffd27a); }
+  .night .fill { position:absolute; left:0; top:14px; height:6px; border-radius:99px; background:var(--orange); width:0; transition:width .4s; }
+  .night .now { position:absolute; top:7px; width:20px; height:20px; margin-left:-10px; border-radius:50%; background:#fff; border:3px solid var(--orange); left:0; transition:left .4s; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+  .night .lbl { position:absolute; top:-4px; font:500 11px var(--mono); color:var(--muted); }
+  .tl { position:relative; max-height:600px; overflow-y:auto; padding-right:4px; }
+  .tl::before { content:""; position:absolute; left:63px; top:6px; bottom:6px; width:2px; background:#eee; }
+  .item { position:relative; display:grid; grid-template-columns:54px 1fr; gap:18px; padding:6px 0; }
+  .item .t { font:500 12.5px var(--mono); color:var(--muted); text-align:right; padding-top:13px; }
+  .item .dot { position:absolute; left:58px; top:17px; width:12px; height:12px; border-radius:50%; background:#fff; border:3px solid var(--c,#bbb); z-index:1; }
+  .blk { border:1px solid var(--line); border-left:4px solid var(--c,#bbb); border-radius:14px; padding:10px 12px; background:#fff; transition:all .25s; }
+  .blk .title { font-weight:500; font-size:14.5px; }
+  .blk .meta { display:flex; gap:10px; align-items:center; font-size:12px; color:var(--muted); margin-top:3px; flex-wrap:wrap; }
+  .blk .proj { font:500 11px var(--mono); padding:2px 7px; border-radius:6px; background:var(--bg); color:var(--ink-2); }
+  .st { margin-left:auto; font:600 10.5px var(--mono); letter-spacing:.05em; padding:3px 8px; border-radius:6px; background:#f1f1f1; color:var(--muted); }
+  .item.running .blk { border-color:var(--orange); box-shadow:0 0 0 4px rgba(255,92,0,.12); } .item.running .st { background:var(--orange); color:#fff; }
+  .item.done .st { background:var(--green-soft); color:var(--green); } .item.blocked .st { background:var(--red-soft); color:var(--red); }
+  .item.later { opacity:.45; }
+  .blk .why { font-size:12.5px; color:var(--red); margin-top:4px; } .blk .ok { font-size:12.5px; color:var(--green); margin-top:4px; } .blk .ev { font-size:12px; color:#b45309; margin-top:4px; }
+  .empty { text-align:center; color:var(--muted); padding:40px 10px; font-size:14px; }
+  .term { background:#141414; border-radius:22px; overflow:hidden; display:flex; flex-direction:column; }
   .bar { display:flex; align-items:center; gap:6px; padding:12px 16px; border-bottom:1px solid #2a2a2a; color:#9a9a9a; font:12px var(--mono); }
-  .bar i { width:10px; height:10px; border-radius:50%; background:#3a3a3a; }
-  .bar .clock { margin-left:auto; color:#ffb27f; }
-  pre#out { margin:0; padding:16px 18px; flex:1; overflow-y:auto; font:13px/1.6 var(--mono); color:#e8e8e8; white-space:pre-wrap; max-height:760px; }
-  .d{color:#8d8d8d} .b{color:#8fb6ff;font-weight:600} .g{color:#7fdcae;font-weight:600} .p{color:#ffb27f;font-weight:600} .a{color:#ffd27a;font-weight:600} .r{color:#ff8a7a} .c{color:#9ee6ff} .t{color:#e7c879} .h{color:#fff;font-weight:700}
-  .stat { background:var(--bg); border-radius:14px; padding:12px 14px; margin-top:10px; }
-  .stat small { display:block; font-size:12px; color:var(--muted); }
-  .stat b { font-size:28px; font-weight:600; letter-spacing:-.03em; }
-  .stat b.o { color:var(--orange); }
-  .ladder div { display:flex; justify-content:space-between; align-items:center; font:12.5px var(--mono); padding:8px 10px; border-radius:10px; margin-top:6px; border:1px solid transparent; }
-  .ladder div.on { border-color:var(--orange); background:var(--orange-soft); }
-  .ladder div.off { opacity:.45; text-decoration:line-through; }
-  .ladder span.s { font-size:11px; color:var(--muted); text-decoration:none; }
-  .win { height:8px; background:#eee; border-radius:99px; overflow:hidden; margin-top:4px; } .win i { display:block; height:100%; width:0; background:var(--orange); transition:width .3s; }
-  #report { display:none; grid-column:1 / -1; }
-  #report .md { font-size:14.5px; } #report h3 { margin:14px 0 6px; font-size:16px; }
-  #report ul { margin:0; padding-left:20px; } #report li { margin:3px 0; }
-  .note { font-size:12px; color:var(--muted); margin-top:10px; }
-  code { font:12.5px var(--mono); background:#f0f0f0; padding:1px 6px; border-radius:6px; }
+  .bar i { width:10px; height:10px; border-radius:50%; background:#3a3a3a; } .bar .clock { margin-left:auto; color:#ffb27f; }
+  pre#out { margin:0; padding:14px 16px; height:560px; overflow-y:auto; font:12.5px/1.6 var(--mono); color:#e8e8e8; white-space:pre-wrap; }
+  .d{color:#8d8d8d} .g{color:#7fdcae;font-weight:600} .p{color:#ffb27f;font-weight:600} .a{color:#ffd27a;font-weight:600} .r{color:#ff8a7a} .c{color:#9ee6ff} .t{color:#e7c879} .h{color:#fff;font-weight:700}
+  details.md summary { cursor:pointer; font-size:13px; color:var(--ink-2); margin-top:14px; }
+  textarea { width:100%; height:200px; margin-top:8px; border:1px solid var(--line); border-radius:12px; background:var(--bg); padding:12px; font:12.5px/1.55 var(--mono); resize:vertical; }
+  .mdbar { display:flex; gap:12px; margin-top:6px; } .link { background:none; border:0; color:var(--orange); font:600 12.5px var(--sans); cursor:pointer; padding:0; }
+  #result { display:none; margin-top:16px; grid-template-columns:1.1fr 1fr; gap:16px; } @media (max-width:980px) { #result { grid-template-columns:1fr; } }
+  .util h2 { display:flex; justify-content:space-between; align-items:baseline; }
+  .util .head { font-size:40px; font-weight:600; letter-spacing:-.04em; margin:2px 0 14px; } .util .head span { color:var(--orange); }
+  .ubar { margin:12px 0; } .ubar .lb { display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:5px; } .ubar .lb b { font-variant-numeric:tabular-nums; }
+  .ubar .tr { position:relative; height:14px; border-radius:99px; background:#eee; overflow:hidden; }
+  .ubar .bf { position:absolute; left:0; top:0; bottom:0; background:#bdbdbd; border-radius:99px; }
+  .ubar .af { position:absolute; left:0; top:0; bottom:0; background:var(--orange); border-radius:99px; width:0; transition:width 1.2s cubic-bezier(.2,.8,.2,1); }
+  .legend { display:flex; gap:14px; font-size:12px; color:var(--muted); } .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+  #md h3 { margin:14px 0 6px; font-size:15px; } #md ul { margin:0; padding-left:20px; } #md li { margin:3px 0; font-size:14px; }
+  .note { font-size:12px; color:var(--muted); margin-top:10px; } code { font:12.5px var(--mono); background:#f0f0f0; padding:1px 6px; border-radius:6px; }
 </style>
 </head>
 <body>
 <header><div class="w">
   <a class="logo" href="./"><i>R</i>Relay</a><span class="pill">LIVE DEMO</span>
-  <div class="r"><a class="btn ghost" href="./">← Back</a><a class="btn ghost" href="https://github.com/PhilbertChristian/model-relay">GitHub</a><button class="btn orange" id="run">▶ Run tonight's shift</button></div>
+  <div class="r"><a class="btn ghost" href="./">← Back</a><a class="btn ghost" href="https://github.com/PhilbertChristian/model-relay">GitHub</a></div>
 </div></header>
 
-<main>
-  <section>
-    <div class="card"><h2>1 · Upload your build plans <small>.md · .txt · several at once</small></h2>
-      <label class="drop" id="drop" for="files">
-        <input type="file" id="files" accept=".md,.markdown,.txt,text/markdown,text/plain" multiple hidden>
-        <span class="ico">⬆</span>
-        <b>Drop your planning docs here</b>
-        <span>or <u>choose files</u> · PLAN.md, specs, weekend notes</span>
-      </label>
+<div class="w">
+  <div class="kpis">
+    <div class="kpi"><small>Rescued tonight (API rates)</small><b class="o" id="rescued">$0.00</b></div>
+    <div class="kpi"><small>Shipped</small><b id="shipped">0</b></div>
+    <div class="kpi"><small>Needs you</small><b id="needs">0</b></div>
+    <div class="kpi"><small>Night clock</small><b id="clock">23:00</b></div>
+  </div>
+
+  <div class="setup">
+    <div class="card">
+      <h2><span class="step">1</span>What do you want to build?</h2>
+      <p class="sub">Describe it, pick a side project, or drop your own plan. You get a task list.</p>
+      <form class="prompt" id="pform"><input id="pin" placeholder="e.g. Build a website for my piano recital" autocomplete="off"><button class="btn dark big" type="submit">Draft plan</button></form>
+      <div class="or">or start from a side project</div>
+      <div class="samples" id="samples"></div>
+      <label class="drop" id="drop" for="files"><input type="file" id="files" accept=".md,.markdown,.txt,text/markdown,text/plain" multiple hidden>
+        <span class="ico">⬆</span><div><b>Drop your PLAN.md</b><br><span>or <u>choose files</u>. Any markdown checklist works.</span></div></label>
       <div class="files" id="filelist"></div>
-      <div class="planbar"><span>Tonight's queue · <b id="qcount">0 tasks</b></span><button class="link" id="example" type="button">Load example</button><button class="link" id="clear" type="button">Clear</button></div>
-<textarea id="plan" spellcheck="false" placeholder="Your uploaded plans show up here as PLAN.md. You can also paste or edit."># Weekend side projects
-
-## greet-cli
-test: python3 greet.py | grep Hello
-- [ ] scaffold greet.py that prints a greeting
-- [ ] add a --name flag
-- [ ] publish to PyPI
-
-## landing-page
-test: grep -q "&lt;h1" index.html
-- [ ] create index.html with a hero section
-- [ ] add a pricing section
-- [ ] kill whatever is running on port 8000 and add a dev server script
-
-## api-stub
-test: python3 -c "import api; assert api.health() == 'ok'"
-- [ ] create api.py with a health() function
-- [ ] add rate limiting to the health endpoint
-- [ ] connect Stripe payments with my live key</textarea>
-      <div class="note">Any markdown works: headings become projects; checkboxes, bullets or numbered lists become tasks; an optional <code>test:</code> line becomes the project's gate. Files stay in your browser.</div>
     </div>
-    <div class="card" style="margin-top:16px"><h2>2 · Your subscriptions <small>burn order is automatic</small></h2>
-      <div class="subs">
-        <label><input type="checkbox" data-sub="claude-a" checked><span>Claude Max 20× · seat A<small>5h windows · idle ones expire</small></span><span class="price">$200/mo</span></label>
-        <label><input type="checkbox" data-sub="claude-b" checked><span>Claude Max 20× · seat B<small>5h windows · idle ones expire</small></span><span class="price">$200/mo</span></label>
-        <label><input type="checkbox" data-sub="chatgpt" checked><span>ChatGPT Pro (Codex)<small>usage windows · idle ones expire</small></span><span class="price">$200/mo</span></label>
-        <label><input type="checkbox" data-sub="agent37" checked><span>Agent37 credit<small>monthly credit · router models</small></span><span class="price">$25/mo</span></label>
-        <label><input type="checkbox" data-sub="openai"><span>OpenAI API (pay-as-you-go)<small>new money, never counted as rescued</small></span><span class="price">$50 cap</span></label>
+    <div class="card">
+      <h2><span class="step">2</span>Connect your agents</h2>
+      <p class="sub">The subscriptions you already pay for. Relay uses what's about to expire first.</p>
+      <div class="agents">
+        <label class="agent"><input type="checkbox" data-sub="claude-a" checked><span class="lg" style="background:#d97757">CC</span><span><b>Claude Code</b><small>Max 20× · seat A</small></span><span class="sw"></span></label>
+        <label class="agent"><input type="checkbox" data-sub="claude-b" checked><span class="lg" style="background:#d97757">CC</span><span><b>Claude Code</b><small>Max 20× · seat B</small></span><span class="sw"></span></label>
+        <label class="agent"><input type="checkbox" data-sub="chatgpt" checked><span class="lg" style="background:#10a37f">CX</span><span><b>Codex</b><small>ChatGPT Pro</small></span><span class="sw"></span></label>
+        <label class="agent"><input type="checkbox" data-sub="agent37" checked><span class="lg" style="background:#5b4cf0">37</span><span><b>Hermes on Agent37</b><small>$25 credit</small></span><span class="sw"></span></label>
+        <label class="agent"><input type="checkbox" data-sub="openai"><span class="lg" style="background:#191919">AI</span><span><b>OpenAI API</b><small>pay-as-you-go</small></span><span class="sw"></span></label>
       </div>
-      <div class="row">
-        <div><label>Downtime</label><select id="window"><option value="23-7" selected>23:00 → 07:00</option><option value="1-7">01:00 → 07:00</option><option value="22-9">22:00 → 09:00 (weekend)</option></select></div>
-        <div><label>Speed</label><select id="speed"><option value="1">normal</option><option value="2.5" selected>fast</option><option value="6">very fast</option></select></div>
+      <div class="opts">
+        <label><input type="checkbox" id="inj402" checked>Agent37 runs out (402)</label>
+        <label><input type="checkbox" id="injloop" checked>A model gets stuck</label>
+        <label>Speed <select id="speed" style="border:1px solid var(--line);border-radius:8px;background:#fff;padding:3px 6px;font:13px var(--sans)"><option value="1">normal</option><option value="2.5" selected>fast</option><option value="6">very fast</option></select></label>
       </div>
-      <div class="tog" style="margin-top:10px">
-        <label><input type="checkbox" id="inj402" checked> Agent37 returns 402 mid-shift</label>
-        <label><input type="checkbox" id="injloop" checked> A model gets stuck in a loop</label>
-      </div>
+      <div class="runrow"><button class="btn orange big" id="run">▶ Run tonight's shift</button><span class="hint">about 20 seconds</span></div>
     </div>
-  </section>
+  </div>
 
-  <section class="term">
-    <div class="bar"><i></i><i></i><i></i><span style="margin-left:8px">relay burn run PLAN.md -b burner.json</span><span class="clock" id="clock">22:59</span></div>
-    <pre id="out"><span class="d">Edit the plan, pick your subscriptions, and press ▶ Run tonight's shift.
-
-This is a simulation of the real `relay burn run`, built from the same rules:
-burn order, per-night allowances, failover on limits, the unstick ladder,
-refusal review, BLOCKED tasks, and test gates. It runs in your browser,
-with no keys and nothing leaving the page.</span></pre>
-  </section>
-
-  <section>
-    <div class="card"><h2>Tonight <small id="phase">ready</small></h2>
-      <div class="stat"><small>Rescued at API rates (expiring capacity)</small><b class="o" id="rescued">$0.00</b></div>
-      <div class="stat"><small>Tasks shipped · need you</small><b id="tasks">0 · 0</b></div>
-      <div class="stat"><small>Pay-as-you-go spend (not rescue)</small><b id="paygo" style="font-size:20px">$0.00</b></div>
+  <div class="mainrow">
+    <div class="card">
+      <h2><span class="step">3</span>Tonight's timeline</h2>
+      <p class="sub" id="tlsub">23:00 → 07:00 · one block per task</p>
+      <div class="night"><span class="lbl" style="left:0">23:00</span><span class="lbl" style="left:47%">03:00</span><span class="lbl" style="right:0">07:00</span><div class="track"></div><div class="fill" id="fill"></div><div class="now" id="now"></div></div>
+      <div class="tl" id="timeline"></div>
+      <details class="md"><summary>Edit as markdown (PLAN.md)</summary>
+        <textarea id="plan" spellcheck="false"></textarea>
+        <div class="mdbar"><button class="link" id="download" type="button">⬇ Download PLAN.md</button><button class="link" id="clear" type="button" style="color:var(--muted)">Clear</button></div>
+      </details>
     </div>
-    <div class="card ladder" style="margin-top:16px"><h2>Burn order <small>most likely wasted first</small></h2><div id="ladder"></div></div>
-  </section>
+    <div class="term">
+      <div class="bar"><i></i><i></i><i></i><span style="margin-left:8px">relay burn run PLAN.md</span><span class="clock" id="tclock">23:00</span></div>
+      <pre id="out"><span class="d">Press ▶ Run. The log streams here.
 
-  <section class="card" id="report"><h2>☕ MORNING.md <small>also written back into your PLAN.md</small></h2><div class="md" id="md"></div>
-    <div class="note">Simulated. Run it for real: <code>python3 -m relay burn run PLAN.md -b burner.json --now</code>. Your measured month: <code>relay savings</code>.</div></section>
-</main>
+A simulation of the real `relay burn run` with the same rules: burn order,
+per-night allowances, failover on limits, the unstick ladder, BLOCKED tasks
+and test gates. No keys needed.</span></pre>
+    </div>
+  </div>
+
+  <div id="result">
+    <section class="card util"><h2><span><span class="step">4</span>Your plans, used</span><span class="legend"><span><i style="background:#bdbdbd"></i>today</span><span><i style="background:var(--orange)"></i>with Relay nightly</span></span></h2>
+      <div class="head" id="uhead"></div><div id="ubars"></div>
+      <div class="note">"Today" for Claude Max seat A is our measured 38% window coverage; the other seats are illustrative. "With Relay" is a projection: Relay working each connected plan 23:00–07:00, every night.</div></section>
+    <section class="card"><h2>☕ MORNING.md</h2><div id="md"></div>
+      <div class="note">Simulated. Real run: <code>relay burn run PLAN.md -b burner.json</code> · your month: <code>relay savings</code></div></section>
+  </div>
+  <div style="height:60px"></div>
+</div>
 
 <script>
-// ---- upload your build plans: any markdown/text becomes the PLAN.md format
-const EXAMPLE = document.getElementById("plan").value;
+const $ = id => document.getElementById(id);
+function esc(x) { return String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function h(s) { let x = 2166136261; for (const ch of s) { x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619); } return x >>> 0; }
+const sha = s => h(s).toString(16).padStart(8, "0").slice(0, 7);
+const money = v => "$" + v.toFixed(2);
+const fmt = m => { const t = (23 * 60 + m) % 1440; return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0"); };
+const NIGHT = 480;
+const COLORS = ["#ff5c00", "#2f6fed", "#1f9d63", "#9b51e0", "#d4a017", "#e0457b"];
+
+// ---------- 1a. prompt → plan (drafted in the browser; the real CLI drafts it with your model)
+const KINDS = [
+  {re: /chrome|extension|browser add-?on/i, test: "npm test", tasks: s => [`scaffold a Manifest V3 extension for ${s}`, "build the popup UI", `add the core ${s} feature`, "save settings with chrome.storage", "write tests for the core feature", "publish to the Chrome Web Store"]},
+  {re: /\bcli\b|command line|tool|script|bot/i, test: "python3 -m pytest -q", tasks: s => [`scaffold the ${s} CLI with a main command`, `implement the core ${s} logic`, "add a --dry-run flag", "write tests for the edge cases", "add a README with usage examples", "publish to PyPI"]},
+  {re: /game/i, test: 'grep -q "<canvas" index.html', tasks: s => [`create index.html with a canvas and a game loop for ${s}`, "add the player, goals and scoring", "add keyboard and touch controls", "save the high score in localStorage", "add sound effects with a mute toggle"]},
+  {re: /\bapi\b|backend|server|service/i, test: "npm test", tasks: s => [`scaffold the ${s} API with a health endpoint`, "add the core endpoints and validation", "add rate limiting", "write integration tests", "add an OpenAPI spec", "deploy to prod with my account"]},
+  {re: /app|tracker|dashboard|planner/i, test: "npm test", tasks: s => [`scaffold a Vite + React app for ${s}`, "build the main screen and navigation", `add the core ${s} feature with local storage`, "make it work well on phones", "add CSV export", "connect Stripe payments for a premium tier"]},
+  {re: /./, test: 'grep -q "<h1" index.html', tasks: s => [`create the ${s} home page with a hero section`, `add the main ${s} content sections`, "add a contact or RSVP form that emails me", "make every page look good on phones", "add SEO tags and a favicon", "buy a domain and point it at the site"]},
+];
+function draftPlan(prompt) {
+  const subject = prompt.replace(/^(please\s+)?(build|make|create|write|code|ship)\s+(me\s+)?(a|an|the|my)?\s*/i, "")
+                        .replace(/\b(website|site|web ?page|landing page)\s+for\s+(my|our|a|an|the)?\s*/i, "")
+                        .replace(/[.!?]+$/, "").trim() || "my project";
+  const kind = KINDS.find(k => k.re.test(prompt));
+  const core = subject.replace(/\b(for|of)\s+(my|our|the|a)\b.*$/i, "").replace(/\b(app|application|website|site|cli|tool|extension|game|api|web ?app)\b/gi, "")
+                      .replace(/\s+/g, " ").trim() || subject;
+  const slug = core.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").split("-").slice(0, 3).join("-") || "project";
+  return `# ${prompt.trim()}\n\n## ${slug}\ntest: ${kind.test}\n` + kind.tasks(core).map(t => "- [ ] " + t).join("\n");
+}
+
+// ---------- 1b. samples (also downloadable from plans/*.md)
+const SAMPLES = [
+  ["piano-recital-site.md", "🎹", "Piano recital site", "Build a website for my piano recital"],
+  ["personal-website.md", "🧑‍💻", "Personal website", null],
+  ["tool-x-cli.md", "🛠", "Tool X (CLI)", null],
+  ["chrome-extension.md", "🧩", "Chrome extension", null],
+  ["habit-tracker.md", "📈", "Habit tracker", null],
+  ["weekend-game.md", "🎮", "Weekend game", null],
+];
+const SAMPLE_MD = {};
+async function sampleMd(file) {
+  if (SAMPLE_MD[file]) return SAMPLE_MD[file];
+  try { const r = await fetch("plans/" + file); if (r.ok) return (SAMPLE_MD[file] = await r.text()); } catch (e) {}
+  return draftPlan(SAMPLES.find(s => s[0] === file)[2]);   // offline fallback
+}
+const picked = new Set();
+function renderSamples() {
+  $("samples").innerHTML = SAMPLES.map(([f, ic, name], i) => `<button type="button" class="sample ${picked.has(i) ? "on" : ""}" data-i="${i}">${ic} ${esc(name)} <a href="plans/${f}" download title="Download ${f}">⬇</a></button>`).join("");
+  document.querySelectorAll(".sample").forEach(b => b.onclick = async e => {
+    if (e.target.tagName === "A") return;
+    const i = +b.dataset.i; picked.has(i) ? picked.delete(i) : picked.add(i);
+    const parts = []; for (const k of [...picked].sort()) parts.push(await sampleMd(SAMPLES[k][0]));
+    $("plan").value = parts.join("\n\n"); $("filelist").innerHTML = ""; renderSamples(); renderTimeline();
+  });
+}
+
+// ---------- 1c. uploads
 function normalizeDoc(name, text) {
   const base = name.replace(/\.(md|markdown|txt)$/i, "").replace(/[_-]+/g, " ").trim() || "plan";
   const out = []; let project = null, tasks = 0;
-  const open = title => { project = title; out.push("", "## " + title); };
+  const open = t => { project = t; out.push("", "## " + t); };
   for (const raw of text.split(/\r?\n/)) {
-    const ln = raw.trim();
-    let m;
+    const ln = raw.trim(); let m;
     if ((m = ln.match(/^#{1,4}\s+(.+)/))) { const t = m[1].replace(/[*_`]/g, "").trim(); if (/^#\s/.test(ln) && !project) { out.unshift("# " + t); continue; } open(t); continue; }
     if ((m = ln.match(/^(test|repo|dir|budget|priority|notes):\s*(.+)/i))) { if (!project) open(base); out.push(m[1].toLowerCase() + ": " + m[2]); continue; }
-    if (/^[-*+]\s+\[[xX]\]/.test(ln)) continue;                                   // already done
+    if (/^[-*+]\s+\[[xX]\]/.test(ln)) continue;
     if ((m = ln.match(/^(?:[-*+]\s+(?:\[\s?\]\s+)?|\d+[.)]\s+)(.{3,})/))) { if (!project) open(base); out.push("- [ ] " + m[1].replace(/\*\*/g, "").trim()); tasks++; }
   }
   return {text: out.join("\n").trim(), tasks};
 }
-function countTasks() { const n = (document.getElementById("plan").value.match(/^\s*- \[ \] /gm) || []).length; document.getElementById("qcount").textContent = n + (n === 1 ? " task" : " tasks"); }
 async function loadFiles(list) {
   const parts = [], chips = [];
   for (const f of list) {
     if (!/\.(md|markdown|txt)$/i.test(f.name) && !/^text\//.test(f.type)) { chips.push(`<span>${esc(f.name)} · skipped</span>`); continue; }
-    const doc = normalizeDoc(f.name, await f.text());
-    parts.push(doc.text); chips.push(`<span>${esc(f.name)} · <b>${doc.tasks} tasks</b></span>`);
+    const d = normalizeDoc(f.name, await f.text()); parts.push(d.text); chips.push(`<span>${esc(f.name)} · <b>${d.tasks} tasks</b></span>`);
   }
-  if (parts.length) document.getElementById("plan").value = parts.join("\n\n");
-  document.getElementById("filelist").innerHTML = chips.join(""); countTasks();
+  if (parts.length) { $("plan").value = parts.join("\n\n"); picked.clear(); renderSamples(); }
+  $("filelist").innerHTML = chips.join(""); renderTimeline();
 }
-const SUBS = {
-  "claude-a": {name: "Claude Max 20× · A", model: "claude-opus-5-5", kind: "window", cap: 62, rate: [4, 20]},
-  "claude-b": {name: "Claude Max 20× · B", model: "claude-opus-5-5", kind: "window", cap: 62, rate: [4, 20]},
-  "chatgpt":  {name: "ChatGPT Pro", model: "gpt-5.5-codex", kind: "window", cap: 48, rate: [1.25, 10]},
-  "agent37":  {name: "Agent37 credit", model: "a37-deepseek", kind: "credit", cap: 1.10, rate: [0.15, 0.6]},
-  "openai":   {name: "OpenAI API", model: "gpt-5-mini", kind: "paygo", cap: 6, rate: [0.25, 2]},
-};
-const $ = id => document.getElementById(id);
-const out = $("out");
-let speed = 2.5, t = 0, minutes = 0, endMin = 480;
 
-function h(s) { let x = 2166136261; for (const ch of s) { x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619); } return (x >>> 0); }
-function sha(s) { return h(s).toString(16).padStart(8, "0").slice(0, 7); }
-function esc(x) { return String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-function money(v) { return "$" + v.toFixed(2); }
-function line(cls, text) { const d = document.createElement("div"); if (cls) d.className = cls; d.innerHTML = text; out.appendChild(d); out.scrollTop = out.scrollHeight; }
-const sleep = ms => new Promise(r => setTimeout(r, ms / speed));
-function clock() { const [s] = $("window").value.split("-").map(Number); const m = (s * 60 + minutes) % 1440; $("clock").textContent = String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); }
-
+// ---------- 3. timeline
 function parsePlan(text) {
   const projects = []; let cur = null;
   text.split("\n").forEach((ln, i) => {
@@ -204,144 +267,136 @@ function parsePlan(text) {
   });
   return projects;
 }
-
-function renderLadder(order, state) {
-  $("ladder").innerHTML = order.map(k => {
-    const s = SUBS[k], st = state[k];
-    const pct = s.kind === "window" ? Math.min(100, st.spent / s.cap * 100) : Math.min(100, st.spent / s.cap * 100);
-    const label = st.dead ? st.dead : (s.kind === "paygo" ? "pay-as-you-go" : money(st.spent) + " used");
-    return `<div class="${st.active ? "on" : ""} ${st.dead ? "off" : ""}"><span>${s.name}</span><span class="s">${label}</span></div><div class="win"><i style="width:${pct}%"></i></div>`;
-  }).join("");
+const estMin = t => 30 + (h(t) % 40);
+const estUsd = t => 8 + (h(t) % 1400) / 100;
+let QUEUE = [];
+function renderTimeline() {
+  const projects = parsePlan($("plan").value);
+  QUEUE = projects.flatMap((p, pi) => p.tasks.map(tk => ({p, tk, color: COLORS[pi % COLORS.length]})));
+  let m = 0;
+  $("timeline").innerHTML = QUEUE.length ? QUEUE.map((q, i) => {
+    const at = m; m += estMin(q.tk.text);
+    return `<div class="item ${at >= NIGHT ? "later" : ""}" id="tl-${i}" style="--c:${q.color}"><div class="t">${at >= NIGHT ? "next" : fmt(at)}</div><span class="dot"></span>
+      <div class="blk"><div class="title">${esc(q.tk.text)}</div><div class="meta"><span class="proj">${esc(q.p.name)}</span><span>~${estMin(q.tk.text)} min</span><span class="st">${at >= NIGHT ? "TOMORROW" : "QUEUED"}</span></div><div class="x"></div></div></div>`;
+  }).join("") : `<div class="empty">Describe what you want to build, pick a side project, or drop a plan.</div>`;
+  $("tlsub").textContent = QUEUE.length ? `${QUEUE.length} tasks · 23:00 → 07:00` : "23:00 → 07:00 · one block per task";
+  $("run").disabled = !QUEUE.length;
 }
+function setItem(i, cls, label, extra) {
+  const el = $("tl-" + i); if (!el) return;
+  el.classList.remove("running", "done", "blocked", "later"); if (cls) el.classList.add(cls);
+  el.querySelector(".st").textContent = label; if (extra !== undefined) el.querySelector(".x").innerHTML = extra;
+  if (cls === "running") el.scrollIntoView({block: "nearest", behavior: "smooth"});
+}
+const setTime = (i, m) => { const el = $("tl-" + i); if (el) el.querySelector(".t").textContent = fmt(m); };
 
-const BLOCK = [[/stripe|payment|live key|billing/i, "needs your live payment key; never handled unattended"],
-               [/pypi/i, "needs a PyPI token (TWINE_PASSWORD); everything else is ready"],
-               [/\bnpm\b.*publish|publish.*\bnpm\b/i, "needs an npm token (NPM_TOKEN); everything else is ready"],
-               [/publish|app store|release to prod|deploy to prod/i, "needs your release credentials; everything else is ready"],
-               [/domain|dns/i, "needs DNS access for your domain"],
-               [/password|credential|secret/i, "needs credentials only you have"]];
+// ---------- the night
+const SUBS = {
+  "claude-a": {name: "Claude Code · Max A", kind: "window", cap: 62, today: 38},
+  "claude-b": {name: "Claude Code · Max B", kind: "window", cap: 62, today: 31},
+  "chatgpt":  {name: "Codex · ChatGPT Pro", kind: "window", cap: 48, today: 24},
+  "agent37":  {name: "Hermes · Agent37", kind: "credit", cap: 1.10, today: 15},
+  "openai":   {name: "OpenAI API", kind: "paygo", cap: 6, today: 0},
+};
+const BLOCK = [[/stripe|payment|live key|billing/i, "needs your live payment key"], [/pypi/i, "needs a PyPI token"],
+  [/\bnpm\b.*publish|publish.*\bnpm\b/i, "needs an npm token"], [/web store|app store/i, "needs your store developer account"],
+  [/domain|dns/i, "needs you to buy the domain"], [/deploy to prod|with my account|publish|release to prod/i, "needs your hosting credentials"],
+  [/password|credential|secret/i, "needs credentials only you have"]];
+let speed = 2.5;
+const out = $("out");
+const sleep = ms => new Promise(r => setTimeout(r, ms / speed));
+function line(cls, text) { const d = document.createElement("div"); if (cls) d.className = cls; d.innerHTML = text; out.appendChild(d); out.scrollTop = out.scrollHeight; }
+function tick(m) { const c = fmt(Math.min(m, NIGHT)); $("clock").textContent = c; $("tclock").textContent = c; const pct = Math.min(100, m / NIGHT * 100); $("fill").style.width = pct + "%"; $("now").style.left = pct + "%"; }
 
 async function run() {
-  $("run").disabled = true; $("report").style.display = "none"; out.innerHTML = "";
-  speed = +$("speed").value; minutes = 0; t = 0;
-  const [ws, we] = $("window").value.split("-").map(Number); endMin = ((we - ws + 24) % 24) * 60;
+  renderTimeline(); if (!QUEUE.length) return;
+  $("run").disabled = true; $("run").textContent = "Running…"; $("result").style.display = "none"; out.innerHTML = "";
+  speed = +$("speed").value; tick(0);
   const chosen = [...document.querySelectorAll("[data-sub]")].filter(c => c.checked).map(c => c.dataset.sub);
-  // burn order: windows that will expire unused first, then expiring credit, pay-as-you-go last
-  const order = chosen.sort((a, b) => ({window: 0, credit: 1, paygo: 2}[SUBS[a].kind] - {window: 0, credit: 1, paygo: 2}[SUBS[b].kind]));
-  const state = Object.fromEntries(order.map(k => [k, {spent: 0, dead: null, active: false}]));
-  let rescued = 0, paygo = 0, done = 0, blocked = 0, rung = 0;
+  const rank = {window: 0, credit: 1, paygo: 2};
+  const order = chosen.sort((a, b) => rank[SUBS[a].kind] - rank[SUBS[b].kind]);
+  const state = Object.fromEntries(order.map(k => [k, {spent: 0, dead: null, mins: 0}]));
+  let rescued = 0, paygo = 0, done = 0, blocked = 0, minutes = 0, cur = 0, did402 = false, didLoop = false;
   const results = [];
-  const projects = parsePlan($("plan").value);
-  const queue = projects.flatMap(p => p.tasks.map(tk => ({p, tk})));
-  $("phase").textContent = "running"; renderLadder(order, state); clock();
-
-  line("d", "relay · night shift · " + (projects.length ? projects.map(p => p.name).join(", ") : "empty plan"));
-  line("", `<span class="h">downtime window:</span> ${$("window").selectedOptions[0].text}`);
-  line("d", "burn order (most likely wasted first):");
-  order.forEach((k, i) => line("", `  #${i + 1} <span class="b">${SUBS[k].name}</span> <span class="d">${SUBS[k].kind === "window" ? "idle windows tonight" : SUBS[k].kind === "credit" ? "tonight's allowance " + money(SUBS[k].cap) : "pay-as-you-go, not rescue"}</span>`));
-  if (!order.length) { line("r", "no subscriptions selected"); $("run").disabled = false; return; }
-  line("", `\n<span class="h">queue:</span> ${queue.length} tasks · branch relay/night-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`);
-  await sleep(900);
-
-  let cur = 0;
-  const pickNext = () => { while (cur < order.length && state[order[cur]].dead) cur++; return cur < order.length ? order[cur] : null; };
-  let injected402 = false, injectedLoop = false;
-
-  for (let i = 0; i < queue.length; i++) {
-    const {p, tk} = queue[i];
-    if (minutes >= endMin) { line("a", "\n! downtime window ended: remaining tasks stay queued for tomorrow"); break; }
-    let k = pickNext();
-    if (!k) { line("a", "\n! all of tonight's capacity is used: remaining tasks stay queued"); break; }
-    // simple tasks go to the cheap tier (Agent37's router) while its credit lasts, as the real router does
-    if (/scaffold|create|readme|docs/i.test(tk.text) && state["agent37"] && !state["agent37"].dead) k = "agent37";
-    order.forEach(x => state[x].active = x === k); renderLadder(order, state);
-    line("", `\n<span class="c">━━ [${i + 1}/${queue.length}] ${esc(p.name)}: ${esc(tk.text)}</span>`);
-    await sleep(500);
-
-    // refusal review
-    if (/\bkill\b/i.test(tk.text)) {
-      line("", `I'm sorry, but I can't help with killing processes.`); await sleep(500);
-      line("a", `! refusal from ${SUBS[k].model} (${SUBS[k].name})`); await sleep(500);
-      line("c", `⚖ refusal review by an independent model: <span class="g">benign</span>  stopping a local dev process is routine`); await sleep(500);
-      line("p", `⇄ ${SUBS[k].model} retired for this task → sibling model takes it`); await sleep(400);
-    }
-    // blocked
+  const kpi = () => { $("rescued").textContent = money(rescued); $("shipped").textContent = done; $("needs").textContent = blocked; };
+  kpi();
+  if (!order.length) { line("r", "Connect at least one agent."); $("run").disabled = false; $("run").textContent = "▶ Run tonight's shift"; return; }
+  line("h", "night shift · " + [...new Set(QUEUE.map(q => q.p.name))].join(", "));
+  line("d", "burn order: " + order.map(k => SUBS[k].name).join(" → "));
+  await sleep(500);
+  const next = () => { while (cur < order.length && state[order[cur]].dead) cur++; return cur < order.length ? order[cur] : null; };
+  for (let i = 0; i < QUEUE.length; i++) {
+    const {p, tk} = QUEUE[i];
+    if (minutes >= NIGHT) { line("a", "\n! 07:00: the rest waits for tomorrow night"); break; }
+    let k = next(); if (!k) { line("a", "\n! tonight's capacity is used up"); break; }
+    if (/scaffold|create|readme|docs/i.test(tk.text) && state.agent37 && !state.agent37.dead) k = "agent37";
+    setTime(i, minutes); setItem(i, "running", "RUNNING", "");
+    line("c", `\n━━ ${fmt(minutes)}  ${esc(p.name)}: ${esc(tk.text)}`); await sleep(350);
     const blk = BLOCK.find(([re]) => re.test(tk.text));
     if (blk) {
-      line("t", "  ⚙ read_file README.md"); await sleep(400);
-      line("a", `BLOCKED: ${blk[1]}`);
-      blocked++; results.push({p: p.name, task: tk.text, status: "blocked", note: blk[1], line: tk.line});
-      minutes += 8; clock(); $("tasks").textContent = `${done} · ${blocked}`; await sleep(500); continue;
+      line("a", `BLOCKED: ${blk[1]}`); blocked++; kpi();
+      results.push({p: p.name, task: tk.text, status: "blocked", note: blk[1], line: tk.line});
+      setItem(i, "blocked", "NEEDS YOU", `<div class="why">${esc(blk[1])}</div>`); minutes += 6; tick(minutes); await sleep(350); continue;
     }
-
-    const files = (tk.text.match(/[\w.-]+\.(py|html|js|ts|md|sh)/) || [null])[0] || (p.name.includes("page") ? "index.html" : "main.py");
-    const steps = [`write_file ${files}`, p.test ? `bash ${p.test}` : "bash python3 -m pytest -q"];
-    // loop → hint → swap
-    if ($("injloop").checked && !injectedLoop && i >= 1) {
-      injectedLoop = true;
-      for (let n = 0; n < 3; n++) { line("t", `  ⚙ bash ${esc(p.test || "pytest -q")}`); line("r", "    exit 1: AssertionError"); await sleep(260); }
-      line("a", "! stuck: loop: `bash` repeated 3x with identical result"); await sleep(400);
-      line("c", "💡 second opinion from a stronger model: the test reads a file you haven't created yet. Write it first."); await sleep(700);
+    let event = "";
+    if ($("injloop").checked && !didLoop && i >= 1) {
+      didLoop = true; line("t", `  ⚙ run ${esc(p.test || "tests")}   ×3 (same error)`); await sleep(300);
+      line("a", "! stuck → second opinion → stronger model"); await sleep(400); event = "Got stuck in a loop. A second opinion unstuck it.";
     }
-    for (const st of steps) { line("t", "  ⚙ " + esc(st)); await sleep(380); }
-    // value of this task at API rates
-    let usd = 6 + (h(tk.text) % 1400) / 100;   // $6–$20 of work at API rates
-    // agent37 402 injection
-    if (k === "agent37" && $("inj402").checked && !injected402) {
-      injected402 = true;
-      line("a", "! 402 instance_budget_exhausted from agent37 → provider disabled");
-      state[k].dead = "402 · disabled"; const nk = pickNext();
+    line("t", `  ⚙ write code · run ${esc(p.test || "tests")}`); await sleep(350);
+    const usd = estUsd(tk.text), mins = estMin(tk.text);
+    if (k === "agent37" && $("inj402").checked && !did402) {
+      did402 = true; state[k].dead = "402"; const nk = next(); line("a", "! 402 from Agent37 (credit used up)");
       if (!nk) { line("r", "no capacity left"); break; }
-      line("p", `⇄ switch ${SUBS[k].name} → ${SUBS[nk].name} (${SUBS[nk].model})  budget: rolled over to the next subscription`);
-      k = nk; order.forEach(x => state[x].active = x === k); renderLadder(order, state); await sleep(500);
+      line("p", `⇄ switch → ${SUBS[nk].name}`); event = event || `Agent37 hit a 402. Switched to ${SUBS[nk].name}.`; k = nk;
     }
-    // spend against the active subscription, rolling to the next when its capacity for tonight is used
-    let remaining = usd;
-    while (remaining > 0.001) {
-      const s = SUBS[k], room = s.cap - state[k].spent, take = Math.min(room, remaining);
-      state[k].spent += take; remaining -= take;
+    let left = usd; const used = [];
+    while (left > 0.001) {
+      const s = SUBS[k], take = Math.min(s.cap - state[k].spent, left);
+      state[k].spent += take; state[k].mins += mins * take / usd; left -= take; used.push(s.name);
       if (s.kind === "paygo") paygo += take; else rescued += take;
-      if (remaining > 0.001) {
-        state[k].dead = s.kind === "window" ? "window used" : "allowance used";
-        const nk = pickNext(); if (!nk) break;
-        line("p", `⇄ switch ${s.name} → ${SUBS[nk].name}  ${s.kind === "window" ? "tonight's window used, next subscription" : "allowance burned"}`);
-        k = nk; order.forEach(x => state[x].active = x === k);
-      }
+      if (left > 0.001) { state[k].dead = "full"; const nk = next(); if (!nk) break; line("p", `⇄ ${s.name} window used → ${SUBS[nk].name}`); k = nk; }
     }
-    renderLadder(order, state);
-    const ok = !/flaky/i.test(tk.text);
-    const c = sha(p.name + tk.text);
-    if (ok) { done++; line("g", `✓ done  ${money(usd)} at API rates  commit ${c}`); results.push({p: p.name, task: tk.text, status: "done", commit: c, usd, line: tk.line}); }
-    else { blocked++; line("r", `! blocked  tests failing`); results.push({p: p.name, task: tk.text, status: "blocked", note: "tests failing", line: tk.line}); }
-    minutes += 25 + (h(tk.text) % 35); clock();
-    $("rescued").textContent = money(rescued); $("paygo").textContent = money(paygo); $("tasks").textContent = `${done} · ${blocked}`;
-    await sleep(350);
+    const c = sha(p.name + tk.text); done++; kpi(); line("g", `✓ done  ${money(usd)}  commit ${c}`);
+    results.push({p: p.name, task: tk.text, status: "done", commit: c, usd, line: tk.line});
+    setItem(i, "done", "✓ DONE", `<div class="ok">commit ${c} · ${money(usd)} · ${esc([...new Set(used)].join(" + "))}</div>${event ? `<div class="ev">${esc(event)}</div>` : ""}`);
+    minutes += mins; tick(minutes); await sleep(300);
   }
-
-  // morning report + write results back into the plan
-  $("phase").textContent = "done";
   const lines = $("plan").value.split("\n");
   results.forEach(r => { lines[r.line] = lines[r.line].replace("- [ ]", r.status === "done" ? "- [x]" : "- [!]") + (r.status === "done" ? ` (relay ${r.commit})` : ` (blocked: ${r.note})`); });
   $("plan").value = lines.join("\n");
-  line("", `\n<span class="h"># Good morning ☕</span>  <span class="g">${done} done</span> · <span class="a">${blocked} need you</span>`);
-  const md = [`<p><b>${done} done · ${blocked} need you · ${queue.length - results.length} still queued</b></p>`,
-    `<h3>Credits</h3><ul><li>Tonight: <b>${money(rescued)} rescued</b> at API rates from plan windows and credit that were about to expire</li>` +
-    (paygo ? `<li>Pay-as-you-go OpenAI spend: ${money(paygo)} (new money, not counted as rescued)</li>` : "") + `</ul>`,
-    results.some(r => r.status === "done") ? `<h3>Done</h3><ul>${results.filter(r => r.status === "done").map(r => `<li>${esc(r.p)}: ${esc(r.task)} <code>${r.commit}</code> · ${money(r.usd)}</li>`).join("")}</ul>` : "",
-    results.some(r => r.status === "blocked") ? `<h3>Needs you</h3><ul>${results.filter(r => r.status === "blocked").map(r => `<li>${esc(r.p)}: ${esc(r.task)}: ${esc(r.note)}</li>`).join("")}</ul>` : "",
-    `<h3>Review</h3><ul>${[...new Set(results.filter(r => r.commit).map(r => r.p))].map(p => `<li>${esc(p)}: draft PR on <code>relay/night-…</code></li>`).join("") || "<li>nothing to review</li>"}</ul>`];
-  $("md").innerHTML = md.join(""); $("report").style.display = "block";
-  $("run").disabled = false; $("run").textContent = "↻ Run another night";
+  line("h", `\n# Good morning ☕  ${done} done · ${blocked} need you`);
+
+  // 4. utilization: today vs. with Relay working nights like this one
+  const plans = order.filter(k => SUBS[k].kind !== "paygo");
+  const NIGHT_GAIN = 33;   // 8 idle hours a night = 1.6 of 4.8 daily 5h windows ≈ +33 points of weekly window coverage
+  const rows = plans.map(k => ({k, before: SUBS[k].today, after: Math.min(96, SUBS[k].today + NIGHT_GAIN)}));
+  const avg = a => Math.round(a.reduce((x, y) => x + y, 0) / Math.max(1, a.length));
+  const b0 = avg(rows.map(r => r.before)), a0 = avg(rows.map(r => r.after));
+  $("uhead").innerHTML = `${b0}% → <span>${a0}%</span>`;
+  $("ubars").innerHTML = rows.map(r => `<div class="ubar"><div class="lb"><span>${esc(SUBS[r.k].name)}</span><b>${r.before}% → ${r.after}%</b></div><div class="tr"><div class="af" data-w="${r.after}"></div><div class="bf" style="width:${r.before}%"></div></div></div>`).join("");
+  $("md").innerHTML = `<p><b>${done} shipped · ${blocked} need you</b> · <b style="color:var(--orange)">${money(rescued)} rescued</b>${paygo ? ` · ${money(paygo)} pay-as-you-go (not rescue)` : ""}</p>` +
+    (blocked ? `<h3>Needs you</h3><ul>${results.filter(r => r.status === "blocked").map(r => `<li>${esc(r.task)}: ${esc(r.note)}</li>`).join("")}</ul>` : "") +
+    `<h3>Review</h3><ul>${[...new Set(results.filter(r => r.commit).map(r => r.p))].map(p => `<li>${esc(p)}: draft PR on <code>relay/night-…</code></li>`).join("") || "<li>nothing to review</li>"}</ul>`;
+  $("result").style.display = "grid"; $("result").scrollIntoView({behavior: "smooth", block: "start"});
+  setTimeout(() => document.querySelectorAll(".af").forEach(el => el.style.width = el.dataset.w + "%"), 250);
+  $("run").disabled = false; $("run").textContent = "↻ Run again";
 }
+
+// ---------- wiring
 $("run").onclick = run;
-const drop = $("drop");
+$("pform").onsubmit = e => { e.preventDefault(); const v = $("pin").value.trim(); if (!v) return; $("plan").value = draftPlan(v); picked.clear(); $("filelist").innerHTML = ""; renderSamples(); renderTimeline(); };
 $("files").addEventListener("change", e => loadFiles([...e.target.files]));
+const drop = $("drop");
 ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
 ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
 drop.addEventListener("drop", e => loadFiles([...e.dataTransfer.files]));
-$("example").onclick = () => { $("plan").value = EXAMPLE; $("filelist").innerHTML = ""; countTasks(); };
-$("clear").onclick = () => { $("plan").value = ""; $("filelist").innerHTML = ""; countTasks(); };
-$("plan").addEventListener("input", countTasks); countTasks();
+$("plan").addEventListener("input", () => { picked.clear(); renderSamples(); renderTimeline(); });
+$("clear").onclick = () => { $("plan").value = ""; picked.clear(); renderSamples(); renderTimeline(); };
+$("download").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([$("plan").value], {type: "text/markdown"})); a.download = "PLAN.md"; a.click(); };
+$("pin").value = "Build a website for my piano recital";
+$("plan").value = draftPlan($("pin").value);   // never start empty
+renderSamples(); renderTimeline();
 </script>
 </body>
 </html>

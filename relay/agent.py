@@ -10,7 +10,7 @@ from .blockers import BlockerDetector, looks_like_refusal
 from .providers import ProviderError
 from .router import NoModelAvailable, Router
 from .telemetry import Telemetry
-from .tools import SCHEMAS, Escalate, Toolbox
+from .tools import Escalate, Toolbox, available_schemas
 
 SYSTEM = """You are Relay, an autonomous coding agent working in {cwd} on {os}.
 Use the tools to inspect files, edit code and run commands. Verify your work by running it.
@@ -84,7 +84,7 @@ class Agent:
             provider = self.router.providers[spec.provider]
             ui.thinking(step, spec.id, self.router.tier)
             try:
-                comp = provider.chat(spec.model, self.messages, SCHEMAS)
+                comp = provider.chat(spec.model, self.messages, available_schemas())
             except ProviderError as err:
                 why = self.router.record_error(spec.id, err, approx_context=_approx_tokens(self.messages))
                 ui.warn(why)

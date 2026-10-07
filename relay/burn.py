@@ -190,6 +190,15 @@ def burn(plan_path: str, cfg: dict, root: str = ".", now: bool = False, hours: f
     else:
         stop_reason = "queue empty"
 
+    deploys = {}
+    for p in plan.projects:
+        if (p.deploy or "").lower() == "instacloud" and p.name in workspaces and any(
+                r["project"] == p.name and r["status"] == "done" for r in results):
+            from .sponsors import instacloud_deploy
+            deploys[p.name] = instacloud_deploy(str(workspaces[p.name]), branch)
+            tel.emit("deploy", project=p.name, target="instacloud", result=deploys[p.name])
+            print(ui.c("1;36", f"⬆ InstaCloud {p.name}: {deploys[p.name]}"))
+
     prs = {}
     for name, ws in workspaces.items():
         done = [r for r in results if r["project"] == name and r.get("commit")]
@@ -202,6 +211,9 @@ def burn(plan_path: str, cfg: dict, root: str = ".", now: bool = False, hours: f
 
     t = router.totals()
     report = morning_report(plan, results, prs, caps, router, stop_reason, ledger=str(ledger))
+    if deploys:
+        report = report.replace("## Capacity burned", "## Previews (InstaCloud)\n" + "".join(
+            f"- {k}: {v}\n" for k, v in deploys.items()) + "\n## Capacity burned")
     (root_p / "MORNING.md").write_text(report)
     tel.emit("shift_end", usd=t["usd"], baseline_usd=router.counterfactual_usd(), done=sum(r["status"] == "done" for r in results),
              blocked=sum(r["status"] == "blocked" for r in results), stop=stop_reason)

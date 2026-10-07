@@ -32,6 +32,17 @@ $ relay savings --month 2026-09            # example month: 2x Claude Max 20x + 
 - **Rescued** = night-shift work that drew on capacity that expires (plan windows, monthly credit), capped per night at that night's allowance. Pay-as-you-go API spend is **never** counted as rescued.
 - The numbers above come from `examples/savings-demo` (`demo/make_savings_fixture.py`), which is example data. Run it on your own logs: `relay savings`.
 
+### Sponsor integrations (`relay sponsors` checks them all)
+
+| Sponsor | What Relay uses it for | Set |
+|---|---|---|
+| Agent37 | hosts the night shift; LLM router; budget API; platform crons; supervisor over hosted agents | `AGENT37_API_KEY` |
+| OpenAI | model provider in the ladder | `OPENAI_API_KEY` |
+| Supabase | telemetry: every call, switch and shift in `relay_events` | `SUPABASE_URL`, `SUPABASE_KEY` |
+| Monid | `find_tool`: agents discover paid tools at runtime | `monid` CLI + `monid keys add` |
+| InstaCloud | preview deploy of each night branch (`deploy: instacloud` in the plan) | `INSTA_TOKEN` + `insta` CLI |
+| Context.dev | `web_fetch`: agents read docs pages as markdown | `CONTEXT_DEV_API_KEY` |
+
 ### Integrate with your harness
 
 | How | For | Command |

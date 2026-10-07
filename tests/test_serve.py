@@ -259,6 +259,24 @@ class Serve(ServeCase):
         self.assertEqual(status, 404)
         self.assertIn("error", json.loads(text))
 
+    def test_shape_errors_are_400_before_any_spend(self):
+        status, _, text = self.call("POST", "/v1/chat/completions", chat(stream=True, stream_options=True))
+        self.assertEqual(status, 400, text)
+        self.assertEqual(json.loads(text)["error"]["param"], "stream_options")
+        self.assertFalse([r for r in self.ledger() if r["event"] in ("call", "provider_error")])
+        self.assertEqual(self.call("PUT", "/v1/chat/completions", chat())[0], 405)
+        status, _, text = self.call("DELETE", "/v1/nothing")
+        self.assertEqual((status, json.loads(text)["error"]["code"]), (404, "not_found"))
+
+    def test_dns_rebinding_host_is_refused_without_a_key(self):
+        evil = {"Host": "attacker.example:8037"}
+        status, _, text = self.call("GET", "/v1/relay/status", headers=evil)
+        self.assertEqual((status, json.loads(text)["error"]["code"]), (403, "host_not_allowed"))
+        self.assertEqual(self.call("GET", "/v1/relay/savings", headers=evil)[0], 403)
+        self.assertEqual(self.call("GET", "/health", headers=evil)[0], 200)
+        for ok in ("localhost:8037", "127.0.0.1", "[::1]:8037", "host.docker.internal:8037", "mybox.local", "mybox"):
+            self.assertEqual(self.call("GET", "/v1/models", headers={"Host": ok})[0], 200, ok)
+
     def test_browser_origins_other_than_loopback_are_refused(self):
         self.assertEqual(self.call("GET", "/v1/models", headers={"Origin": "http://evil.example"})[0], 403)
         self.assertEqual(self.call("POST", "/v1/chat/completions", chat(), {"Origin": "http://evil.example"})[0], 403)
@@ -287,6 +305,8 @@ class Auth(ServeCase):
         # with a key, a browser origin is allowed through to the key check
         self.assertEqual(self.call("GET", "/v1/models", headers={"Origin": "http://evil.example"})[0], 401)
         self.assertEqual(self.call("GET", "/v1/models", headers={"Origin": "http://evil.example", **ok})[0], 200)
+        # and so is any Host name (a TLS reverse proxy in front, say)
+        self.assertEqual(self.call("GET", "/v1/models", headers={"Host": "relay.example.com", **ok})[0], 200)
 
     def test_no_key_means_open_on_loopback(self):
         self.start()
@@ -346,6 +366,26 @@ class Failure(ServeCase):
         self.assertEqual(status, 503)
         self.assertEqual(len(json.loads(text)["error"]["relay"]["attempts"]), 1)
 
+    def test_provider_pointing_back_at_the_proxy_is_disabled_not_looped(self):
+        # `export OPENAI_BASE_URL=<this proxy>` for the harness, then start relay serve in the same shell
+        import socket
+        with socket.socket() as s:
+            s.bind(("127.0.0.1", 0))
+            port = s.getsockname()[1]
+        os.environ["RELAY_TEST_LOOP_URL"] = f"http://localhost:{port}/v1"
+        self.srv = make_server({"providers": {"openai": {"base_url": "${RELAY_TEST_LOOP_URL:-https://api.openai.com/v1}"}},
+                                "models": [{"id": "oai", "provider": "openai", "model": "gpt-x"}]},
+                               "127.0.0.1", port, self.dir, include_claude=False, max_wait=0)
+        threading.Thread(target=self.srv.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True).start()
+        self.addCleanup(self.srv.server_close)
+        self.addCleanup(self.srv.shutdown)
+        self.root = self.srv.base_url[: -len("/v1")]
+        self.assertIn("loop back", self.srv.proxy.router.dead_providers["openai"])
+        status, _, text = self.call("POST", "/v1/chat/completions", chat())
+        self.assertEqual((status, json.loads(text)["error"]["code"]), (503, "relay_no_model_available"))
+        self.assertIn("loop back", json.loads(text)["error"]["message"])
+        self.assertFalse([r for r in self.ledger() if r["event"] in ("call", "provider_error")])
+
 
 class _FakeOpenAI(BaseHTTPRequestHandler):
     def log_message(self, *a):
@@ -354,7 +394,12 @@ class _FakeOpenAI(BaseHTTPRequestHandler):
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         self.server.seen.append(body)
-        if self.server.reject_temperature and "temperature" in body:
+        if getattr(self.server, "reject_tool_order", False) and any(m.get("role") == "tool" for m in body["messages"]):
+            status, out = 400, {"error": {
+                "message": "Invalid parameter: messages with role 'tool' must be a response to a preceeding "
+                           "message with 'tool_calls'.",
+                "type": "invalid_request_error", "param": "messages.[1].role", "code": None}}
+        elif self.server.reject_temperature and "temperature" in body:
             status, out = 400, {"error": {
                 "message": "Unsupported value: 'temperature' does not support 0.2 with this model. "
                            "Only the default (1) value is supported.",
@@ -418,6 +463,36 @@ class Passthrough(ServeCase):
         self.assertEqual((headers["X-Relay-Switches"], headers["X-Relay-Attempts"]), ("0", "1"))
         state = json.loads(self.call("GET", "/v1/relay/status")[2])["models"][0]
         self.assertEqual(state["state"], "ok")   # not retired as a "bad model"
+
+
+class Rejected(ServeCase):
+    """An upstream 400 about the request itself must not cool the shared ladder or turn into a retryable 503."""
+
+    def test_malformed_request_is_400_and_leaves_the_ladder_warm(self):
+        up = ThreadingHTTPServer(("127.0.0.1", 0), _FakeOpenAI)
+        up.seen, up.reject_temperature, up.reject_tool_order = [], False, True
+        threading.Thread(target=up.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True).start()
+        self.addCleanup(up.server_close)
+        self.addCleanup(up.shutdown)
+        url = f"http://127.0.0.1:{up.server_address[1]}/v1"
+        self.start({"providers": {"p1": {"base_url": url}, "p2": {"base_url": url}},
+                    "models": [{"id": "m1", "provider": "p1", "model": "one", "price_in": 0.1},
+                               {"id": "m2", "provider": "p2", "model": "two", "price_in": 0.2}]})
+        bad = chat(messages=[{"role": "user", "content": "hi"}, {"role": "tool", "tool_call_id": "x", "content": "?"}])
+        status, _, text = self.call("POST", "/v1/chat/completions", bad)
+        self.assertEqual(status, 400, text)
+        err = json.loads(text)["error"]
+        self.assertEqual((err["type"], err["param"]), ("invalid_request_error", "messages.[1].role"))
+        self.assertIn("must be a response to a preceeding message", err["message"])
+        self.assertEqual([a["model"] for a in err["relay"]["attempts"]], ["m1", "m2"])   # other models got a fair try
+        self.assertEqual([m["model"] for m in up.seen], ["one", "two"])
+        # nothing cooled, nothing retired: the next (valid) request is served at once by the cheapest model
+        st = {m["id"]: m for m in json.loads(self.call("GET", "/v1/relay/status")[2])["models"]}
+        self.assertEqual({k: (v["state"], v["errors"]) for k, v in st.items()}, {"m1": ("ok", 0), "m2": ("ok", 0)})
+        status, headers, _ = self.call("POST", "/v1/chat/completions", chat())
+        self.assertEqual((status, headers["X-Relay-Model"], headers["X-Relay-Switches"]), (200, "m1", "0"))
+        rows = [r for r in self.ledger() if r["event"] == "provider_error"]
+        self.assertTrue(rows and all(r.get("rejected") for r in rows))
 
 
 class Cli(unittest.TestCase):

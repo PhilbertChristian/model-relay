@@ -33,6 +33,25 @@ SCHEMAS = [
 ]
 
 
+_SPONSOR_TOOLS = {
+    "web_fetch": _schema("web_fetch", "Read a web page (docs, READMEs, API references) as markdown. Powered by Context.dev.",
+                         {"url": {"type": "string"}}, ["url"]),
+    "find_tool": _schema("find_tool", "Find a paid tool or API for a job (search, enrichment, scraping...). Powered by Monid.",
+                         {"query": {"type": "string"}}, ["query"]),
+}
+
+
+def available_schemas() -> list[dict]:
+    """Core tools, plus sponsor tools whose keys/CLIs are configured on this machine."""
+    import shutil
+    extra = []
+    if os.environ.get("CONTEXT_DEV_API_KEY"):
+        extra.append(_SPONSOR_TOOLS["web_fetch"])
+    if shutil.which("monid"):
+        extra.append(_SPONSOR_TOOLS["find_tool"])
+    return SCHEMAS + extra
+
+
 class ToolError(Exception):
     pass
 
@@ -125,6 +144,14 @@ class Toolbox:
         if p.returncode != 0:
             raise ToolError(out)
         return out
+
+    def t_web_fetch(self, url: str) -> str:
+        from .sponsors import context_fetch
+        return context_fetch(url)
+
+    def t_find_tool(self, query: str) -> str:
+        from .sponsors import monid_discover
+        return monid_discover(query)
 
     def t_escalate(self, reason: str) -> str:
         raise Escalate(reason)
