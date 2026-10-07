@@ -68,6 +68,9 @@ class Router:
     min_context: int = 0
     clean_steps: int = 0
     dead_providers: dict[str, str] = field(default_factory=dict)
+    # night shift: [{"name", "providers", "usd", "spent"}] allowances, and provider -> burn order
+    allowances: list[dict] = field(default_factory=list)
+    provider_priority: dict[str, int] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self.tier = self.start_tier
@@ -96,7 +99,8 @@ class Router:
         )
 
     def _cost_rank(self, m: ModelSpec) -> tuple:
-        return (m.price_in + m.price_out * 3, self.state[m.id].errors)
+        # burn expiring subscriptions first, then cheapest
+        return (self.provider_priority.get(m.provider, 99), m.price_in + m.price_out * 3, self.state[m.id].errors)
 
     def pick(self) -> tuple[ModelSpec, Switch | None]:
         """Cheapest healthy model at the current tier; else nearest tier, preferring up."""
@@ -138,6 +142,13 @@ class Router:
         s.output_tokens += output_tokens
         s.usd += usd
         s.errors = 0
+        for a in self.allowances:
+            if m.provider in a["providers"]:
+                a["spent"] = a.get("spent", 0.0) + usd
+                if a["usd"] is not None and a["spent"] >= a["usd"]:
+                    for prov in a["providers"]:
+                        self.dead_providers.setdefault(prov, f"tonight's {a['name']} allowance burned (${a['spent']:.4f})")
+                    self._pending_reason = f"allowance: {a['name']} burned ${a['spent']:.4f} of ${a['usd']:.4f} tonight"
         # soft limits
         if m.max_usd is not None and s.usd >= m.max_usd:
             self._retire(model_id, f"soft_limit: ${s.usd:.4f} >= ${m.max_usd} cap")
@@ -193,6 +204,9 @@ class Router:
     def _retire(self, model_id: str, reason: str) -> None:
         self.state[model_id].retired = reason
         self._pending_reason = reason
+
+    def has_capacity(self) -> bool:
+        return any(m.provider not in self.dead_providers and self.state[m.id].retired is None for m in self.models)
 
     # ---------------------------------------------------------------- report
     def totals(self) -> dict[str, Any]:

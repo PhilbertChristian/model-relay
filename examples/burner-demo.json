@@ -1,0 +1,33 @@
+{
+  "_comment": "Offline night-shift demo. Agent37 credit expires first so it burns first; when tonight's Agent37 allowance is gone (or the provider 402s), relay rolls over to OpenAI. Mock models follow scripted plans per task keyword.",
+  "idle": {"timezone": "America/Los_Angeles", "weekday": "23:00-07:00", "weekend": "all"},
+  "subscriptions": [
+    {"name": "agent37", "kind": "agent37_budget", "providers": ["agent37"], "monthly_usd": 5.00, "reserve_pct": 20,
+     "daytime_usd_per_day": 0.05, "instance": "$AGENT37_INSTANCE_ID"},
+    {"name": "openai", "kind": "api_budget", "providers": ["openai"], "monthly_usd": 20.00, "reset_day": 1,
+     "reserve_pct": 50, "daytime_usd_per_day": 0.40},
+    {"name": "claude-max", "kind": "rolling_window", "providers": ["claude-plan"], "window_hours": 5,
+     "windows_per_week": 30, "weekly_reset": "mon 09:00", "windows_used_this_week": 9}
+  ],
+  "deescalate_after": 3,
+  "max_steps": 12,
+  "providers": {
+    "agent37": {"kind": "mock", "mock": {"delay": 0.25, "models": {
+      "flash": {"behaviour": "solve", "fail_after": 7, "fail_with": "budget", "plans": {
+        "scaffold greet.py": [["write_file", {"path": "greet.py", "content": "print('Hello, world')\n"}], ["bash", {"command": "python3 greet.py"}]],
+        "--name flag": [["write_file", {"path": "greet.py", "content": "import argparse\np = argparse.ArgumentParser()\np.add_argument('--name', default='world')\nprint(f'Hello, {p.parse_args().name}')\n"}], ["bash", {"command": "python3 greet.py --name Ada"}]],
+        "publish to pypi": "BLOCKED: publishing needs a PyPI API token (TWINE_PASSWORD). Everything else is ready: run `python3 -m build && twine upload dist/*`.",
+        "hero section": [["write_file", {"path": "index.html", "content": "<!doctype html><title>Weekend</title><h1>Ship on weekends</h1>\n"}]]
+      }}}}},
+    "openai": {"kind": "mock", "mock": {"delay": 0.25, "models": {
+      "mini": {"behaviour": "solve", "plans": {
+        "hero section": [["write_file", {"path": "index.html", "content": "<!doctype html><title>Weekend</title><h1>Ship on weekends</h1>\n"}]],
+        "pricing section": [["write_file", {"path": "index.html", "content": "<!doctype html><title>Weekend</title><h1>Ship on weekends</h1>\n<section id=\"pricing\"><h2>Free</h2></section>\n"}], ["bash", {"command": "grep -c pricing index.html"}]],
+        "health()": [["write_file", {"path": "api.py", "content": "def health():\n    return 'ok'\n"}], ["bash", {"command": "python3 -c 'import api; print(api.health())'"}]]
+      }}}}}
+  },
+  "models": [
+    {"id": "a37-flash", "provider": "agent37", "model": "flash", "tier": 0, "price_in": 0.10, "price_out": 0.40},
+    {"id": "oai-mini",  "provider": "openai",  "model": "mini",  "tier": 0, "price_in": 0.25, "price_out": 2.00}
+  ]
+}

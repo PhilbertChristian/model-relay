@@ -1,6 +1,7 @@
 """python3 -m unittest discover tests"""
 import io
 import json
+import subprocess
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -155,3 +156,48 @@ class Refusals(unittest.TestCase):
         self.assertIn("refusal upheld", out)
         self.assertNotIn("switch a37-flash", out)   # no model-shopping
         self.assertIn("can't help", final)
+
+
+class NightShift(unittest.TestCase):
+    def test_plan_parse_and_mark(self):
+        from relay.plan import parse
+        d = Path(tempfile.mkdtemp()) / "PLAN.md"
+        d.write_text("# T\n\n## a\ntest: true\nbudget: $1.5\npriority: 2\n- [ ] one\n- [x] two\n\n## b\npriority: 1\n- [ ] three\n")
+        pl = parse(d)
+        self.assertEqual([t.text for _, t in pl.queue], ["three", "one"])   # priority order
+        self.assertEqual(pl.projects[0].budget, 1.5)
+        pl.mark(pl.projects[0].tasks[0], "x", "relay abc")
+        self.assertIn("- [x] one (relay abc)", d.read_text())
+
+    def test_idle_windows_merge_weekend(self):
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        from relay.capacity import current_or_next_window
+        cfg = {"timezone": "America/Los_Angeles", "weekday": "23:00-07:00", "weekend": "all"}
+        fri_noon = datetime(2026, 10, 9, 12, 0, tzinfo=ZoneInfo("America/Los_Angeles"))
+        s, e, active = current_or_next_window(cfg, fri_noon)
+        self.assertFalse(active)
+        self.assertEqual((s.weekday(), s.hour), (4, 23))     # Friday 23:00
+        self.assertEqual((e.weekday(), e.hour), (0, 7))      # runs through the weekend to Monday 07:00
+
+    def test_burn_order_prefers_capacity_most_likely_wasted(self):
+        from relay.capacity import assess
+        cfg = json.loads((ROOT / "examples" / "burner-demo.json").read_text())
+        caps = assess(cfg, "/nonexistent")
+        self.assertEqual(caps[0].name, "agent37")
+
+    def test_night_shift_end_to_end(self):
+        from relay.burn import burn
+        d = Path(tempfile.mkdtemp())
+        (d / "PLAN.md").write_text((ROOT / "examples" / "PLAN.md").read_text())
+        cfg = json.loads((ROOT / "examples" / "burner-demo.json").read_text())
+        with redirect_stdout(io.StringIO()):
+            res = burn(str(d / "PLAN.md"), cfg, str(d), now=True, pr=False)
+        status = {r["task"]: r["status"] for r in res["results"]}
+        self.assertEqual(status["publish to PyPI"], "blocked")
+        self.assertEqual(sum(v == "done" for v in status.values()), 5)
+        self.assertIn("- [!] publish to PyPI", (d / "PLAN.md").read_text())
+        self.assertTrue((d / "MORNING.md").exists())
+        log = subprocess.run(["git", "log", "--oneline", "relay/night-" + __import__("datetime").datetime.now().strftime("%Y%m%d")],
+                             cwd=d / "greet-cli", capture_output=True, text=True).stdout
+        self.assertIn("add a --name flag", log)

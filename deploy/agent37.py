@@ -14,6 +14,13 @@ plus OpenAI directly if you pass OPENAI_API_KEY.
     python3 deploy/agent37.py stats                  # usage, switches, savings on the instance
     python3 deploy/agent37.py supervise "task"       # unstick the instance's own hosted agent (Hermes etc.)
     python3 deploy/agent37.py budget [--top-up 1]    # read / raise the instance budget
+
+  night shift (burn expiring capacity on your plan while you sleep):
+    python3 deploy/agent37.py create --always-on --budget 5
+    python3 deploy/agent37.py push --plan PLAN.md --burner burner.json
+    python3 deploy/agent37.py schedule --at 23:00 --tz America/Los_Angeles   # Agent37 platform cron
+    python3 deploy/agent37.py burn-now                                       # or start a shift right away
+    python3 deploy/agent37.py morning                                        # MORNING.md + plan status
     python3 deploy/agent37.py destroy
 """
 from __future__ import annotations
@@ -33,7 +40,9 @@ from pathlib import Path
 API = "https://api.agent37.com/v1"
 ROOT = Path(__file__).resolve().parent.parent
 STATE = ROOT / ".relay" / "instance.json"
-FORWARD_ENV = ["OPENAI_API_KEY", "SUPABASE_URL", "SUPABASE_KEY", "SUPABASE_TABLE"]
+FORWARD_ENV = ["OPENAI_API_KEY", "SUPABASE_URL", "SUPABASE_KEY", "SUPABASE_TABLE", "GITHUB_TOKEN"]
+BURN_CMD = ("cd ~/work && PYTHONPATH=~/relay-app NO_COLOR=1 nohup python3 -m relay -C ~/work burn run "
+            "~/relay-app/PLAN.md -b ~/relay-app/burner.json --now > ~/work/burn.log 2>&1 &")
 
 
 def key() -> str:
@@ -73,7 +82,8 @@ def exec_(iid: str, command: str, quiet: bool = False) -> dict:
 
 def cmd_create(args) -> None:
     env = {k: os.environ[k] for k in FORWARD_ENV if os.environ.get(k)}
-    body = {"name": args.name, "auto_sleep": True,
+    # a night shift runs for hours from a detached process: keep the box awake (auto-sleep would park it)
+    body = {"name": args.name, "auto_sleep": not args.always_on,
             "budget": {"credit_micros": int(args.budget * 1_000_000)}}
     if env:
         body["env"] = env
@@ -92,6 +102,9 @@ def cmd_push(args) -> None:
         cfg = Path(args.config) if args.config else ROOT / "relay.json"
         if cfg.exists():
             tar.add(cfg, arcname="relay.json")
+        for src, name in ((args.plan, "PLAN.md"), (args.burner, "burner.json")):
+            if src:
+                tar.add(Path(src), arcname=name)
     b64 = base64.b64encode(buf.getvalue()).decode()
     exec_(iid, "rm -rf ~/relay-app && mkdir -p ~/relay-app ~/work && rm -f /tmp/relay.b64", quiet=True)
     chunk = 60_000
@@ -134,6 +147,31 @@ def cmd_supervise(args) -> None:
     supervise(instance_id(args), " ".join(args.task), ladder, args.agent, hang_s=args.hang)
 
 
+def cmd_schedule(args) -> None:
+    """Agent37 platform cron: fires even while the instance sleeps, wakes it, and asks its hosted agent to start
+    the night shift as a detached process. A crontab inside the container would stop firing once it sleeps."""
+    iid = instance_id(args)
+    hh, mm = args.at.split(":")
+    body = {"name": "relay night shift", "schedule": f"{int(mm)} {int(hh)} * * {args.days}", "timezone": args.tz,
+            "prompt": "Run exactly this shell command once, without changing it, then reply with only the word "
+                      f"started:\n\n{BURN_CMD}"}
+    cron = call("POST", f"/instances/{iid}/crons", body)
+    print(json.dumps({k: cron.get(k) for k in ("id", "name", "schedule", "timezone", "next_run")}, indent=2))
+
+
+def cmd_burn_now(args) -> None:
+    exec_(instance_id(args), BURN_CMD + " echo started night shift; sleep 2; tail -5 ~/work/burn.log")
+
+
+def cmd_morning(args) -> None:
+    exec_(instance_id(args), "cat ~/work/MORNING.md 2>/dev/null || (echo 'no report yet; log tail:'; "
+                             "tail -20 ~/work/burn.log); echo; grep -E '^- \\[' ~/relay-app/PLAN.md")
+
+
+def cmd_capacity(args) -> None:
+    _relay(instance_id(args), "burn capacity -b ~/relay-app/burner.json")
+
+
 def cmd_shell(args) -> None:
     exec_(instance_id(args), " ".join(args.command))
 
@@ -159,7 +197,11 @@ def main() -> None:
     ap.add_argument("--instance", help="instance id (default: the one from `create`)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("create"); c.add_argument("--name", default="relay"); c.add_argument("--budget", type=float, default=2.0)
-    p = sub.add_parser("push"); p.add_argument("--config")
+    c.add_argument("--always-on", action="store_true", help="disable auto-sleep (recommended for night shifts)")
+    p = sub.add_parser("push"); p.add_argument("--config"); p.add_argument("--plan"); p.add_argument("--burner")
+    sc = sub.add_parser("schedule"); sc.add_argument("--at", default="23:00"); sc.add_argument("--tz", default="America/Los_Angeles")
+    sc.add_argument("--days", default="*", help="cron day-of-week field, e.g. 5,6 for Fri+Sat nights")
+    sub.add_parser("burn-now"); sub.add_parser("morning"); sub.add_parser("capacity")
     r = sub.add_parser("run"); r.add_argument("task", nargs="+"); r.add_argument("--tier", type=int); r.add_argument("--max-steps", type=int)
     sub.add_parser("doctor"); sub.add_parser("models"); sub.add_parser("stats")
     v = sub.add_parser("supervise"); v.add_argument("task", nargs="+"); v.add_argument("--models")
@@ -168,7 +210,7 @@ def main() -> None:
     b = sub.add_parser("budget"); b.add_argument("--top-up", type=float)
     sub.add_parser("destroy")
     args = ap.parse_args()
-    globals()[f"cmd_{args.cmd}"](args)
+    globals()[f"cmd_{args.cmd.replace('-', '_')}"](args)
 
 
 if __name__ == "__main__":

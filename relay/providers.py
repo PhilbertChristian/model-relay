@@ -200,7 +200,12 @@ class Provider:
             # keeps running the same failing command: the blocker detector should catch this
             msg = call("bash", {"command": "python3 -c 'import missing_module_xyz'"})
         elif behaviour == "solve":
-            plan = spec.get("plan") or [
+            first_user = next((str(m.get("content")) for m in messages if m.get("role") == "user"), "").lower()
+            by_kw = next((v for k, v in (spec.get("plans") or {}).items() if k in first_user), None)
+            if isinstance(by_kw, str):  # a plain string means: answer with this text, no tools
+                return Completion(message={"role": "assistant", "content": by_kw}, input_tokens=tokens_in,
+                                  output_tokens=40, latency_s=0.15)
+            plan = by_kw or spec.get("plan") or [
                 ["write_file", {"path": "hello_relay.py", "content": "print('hello from relay')\n"}],
                 ["bash", {"command": "python3 hello_relay.py"}],
             ]

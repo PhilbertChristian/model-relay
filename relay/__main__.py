@@ -6,6 +6,8 @@
   python3 -m relay doctor                          check providers and the ladder
   python3 -m relay stats                           usage, switches and savings so far
   python3 -m relay supervise --instance ID "task"  unstick an agent hosted on Agent37
+  python3 -m relay burn capacity -b burner.json    what subscription capacity expires, and when you're idle
+  python3 -m relay burn run PLAN.md -b burner.json night shift: burn it on your plan, open PRs, write MORNING.md
 """
 from __future__ import annotations
 
@@ -53,7 +55,41 @@ def main(argv: list[str] | None = None) -> int:
     sv.add_argument("--models", help="comma-separated ladder of the instance's model ids (default: from GET /v1/models)")
     sv.add_argument("--agent", help="harness on the instance: hermes, openclaw, opencode, claude-code, codex, ...")
     sv.add_argument("--hang", type=float, default=180, help="seconds without any agent event before the turn counts as hung")
+    bn = sub.add_parser("burn", help="night shift: burn expiring subscription capacity on your planning docs")
+    bn.add_argument("action", choices=["capacity", "plan", "run"])
+    bn.add_argument("plan", nargs="?", help="planning doc (markdown checklist)")
+    bn.add_argument("-b", "--burner", default="burner.json", help="subscriptions + downtime + model ladder")
+    bn.add_argument("--now", action="store_true", help="start even if you're not in a downtime window")
+    bn.add_argument("--wait", action="store_true", help="sleep until the next downtime window, then start")
+    bn.add_argument("--hours", type=float, help="stop after this many hours")
+    bn.add_argument("--max-tasks", type=int)
+    bn.add_argument("--no-pr", action="store_true", help="leave the branch local")
     args = ap.parse_args(argv)
+
+    if args.cmd == "burn":
+        from . import capacity
+        from .config import DEFAULT
+        from .plan import parse
+        bcfg = load(args.burner)
+        bcfg = {**DEFAULT, **bcfg} if "models" not in bcfg else bcfg
+        if args.action == "capacity":
+            print(capacity.report(capacity.assess(bcfg, os.path.join(args.cwd, ".relay/events.jsonl")), bcfg))
+            return 0
+        if not args.plan:
+            ap.error("burn plan/run needs a planning doc")
+        if args.action == "plan":
+            pl = parse(args.plan)
+            print(capacity.report(capacity.assess(bcfg, os.path.join(args.cwd, ".relay/events.jsonl")), bcfg))
+            print(ui.c("1", f"\nqueue · {pl.title}"))
+            for proj, t in pl.queue:
+                print(f"  {proj.name:<18} {t.text}")
+            done = sum(t.state == "x" for p in pl.projects for t in p.tasks)
+            print(ui.c("2", f"  ({len(pl.queue)} queued, {done} done)"))
+            return 0
+        from .burn import burn
+        res = burn(args.plan, bcfg, args.cwd, now=args.now, hours=args.hours, max_tasks=args.max_tasks,
+                   wait=args.wait, pr=not args.no_pr)
+        return 0 if res.get("status") in ("finished", "waiting") else 1
 
     if args.cmd == "supervise":
         from .supervise import supervise

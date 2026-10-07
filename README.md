@@ -1,6 +1,38 @@
-# Relay: unstick trapped AI agents by switching models
+# Relay Night Shift: your AI subscriptions work while you sleep
 
 **Live page + demo:** https://philbertchristian.github.io/model-relay/
+
+You pay for AI capacity that mostly goes unused: Agent37 credit, an OpenAI budget, Claude/ChatGPT plan windows that reset whether you used them or not. Meanwhile your weekend projects sit in a planning doc.
+
+**Relay Night Shift** reads your planning docs, finds your downtime and the subscription capacity that will expire unused, and spends it overnight. It builds, tests, and commits each task on a branch and opens a draft PR. You wake up to `MORNING.md`: what got done, what needs you, and how much capacity it used.
+
+```bash
+python3 -m relay burn capacity -b burner.json            # what expires, when you're idle, burn order
+python3 -m relay burn plan PLAN.md -b burner.json        # tonight's queue
+python3 -m relay burn run PLAN.md -b burner.json --wait  # sleep until downtime, then work the queue
+```
+
+- **Capacity planner** (`relay/capacity.py`): Agent37 budget (live from the API), metered API budgets (from Relay's ledger), and rolling-window coding plans (Claude Max/Pro, ChatGPT Pro/Codex). It computes tonight's allowance per subscription, keeps a reserve for your daytime use, and burns whatever is most likely to be wasted first.
+- **Plans → queue** (`relay/plan.py`): a markdown checklist; `## project` with `repo:`/`dir:`, `test:`, `budget:`, `priority:`, `notes:`. Results are written back as `[x]` and `[!] blocked: …`.
+- **Night shift** (`relay/burn.py`): one agent per task, a test gate after every task, a commit per task on `relay/night-<date>`, and a draft PR per project (with `GITHUB_TOKEN`). Tasks that need a human end as `BLOCKED:` instead of guessing.
+- **Runs on Agent37**: an always-on instance, started by an Agent37 **platform cron** that fires even while the box sleeps (`deploy/agent37.py schedule`).
+- **Never stalls overnight**: the Relay engine below fails over on limits and unsticks loops, hangs and dead ends with nobody awake.
+
+### Night shift on Agent37
+
+```bash
+export AGENT37_API_KEY=sk_live_...  OPENAI_API_KEY=sk-...  GITHUB_TOKEN=ghp_...
+python3 deploy/agent37.py create --always-on --budget 5
+python3 deploy/agent37.py push --plan PLAN.md --burner burner.json
+python3 deploy/agent37.py schedule --at 23:00 --tz America/Los_Angeles --days 5,6   # Fri + Sat nights
+python3 deploy/agent37.py morning
+```
+
+Offline demo (no keys): `python3 -m relay -C /tmp/night burn run examples/PLAN.md -b examples/burner-demo.json --now`
+
+---
+
+## The engine: Relay, an agent that unsticks itself
 
 Agents get stuck all the time. They hit a rate limit or budget wall, retry the same broken command forever, start a process that never exits, keep digging down the wrong path, or refuse an ordinary task. Relay detects all of these, then climbs an **unstick ladder**:
 
@@ -77,6 +109,9 @@ Run `supabase/schema.sql`, then set `SUPABASE_URL` + `SUPABASE_KEY`. Every call,
 ## Layout
 
 ```
+relay/capacity.py   subscription capacity + downtime windows + burn order
+relay/plan.py       planning doc <-> task queue
+relay/burn.py       night shift orchestrator: queue -> agents -> tests -> commits -> PRs -> MORNING.md
 relay/router.py     model ladder: tiers, cooldowns, dead providers, context floor, soft caps, de-escalation
 relay/blockers.py   loop, error-streak, hung, no-progress, malformed, refusal detection
 relay/agent.py      agent loop + unstick ladder (hint → swap → reset)

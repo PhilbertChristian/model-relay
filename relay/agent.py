@@ -16,6 +16,8 @@ SYSTEM = """You are Relay, an autonomous coding agent working in {cwd} on {os}.
 Use the tools to inspect files, edit code and run commands. Verify your work by running it.
 Be concise. When the task is complete, reply with a short summary and no tool calls.
 If you are stuck after a couple of attempts, call `escalate` with the reason: a stronger model will take over.
+If the task cannot be finished without a human (credentials, payment, a product decision), stop and reply
+starting with `BLOCKED:` and what you need.
 You may be one of several models working on this task in turn; earlier turns may be from another model."""
 
 
@@ -35,11 +37,12 @@ def _compact(messages: list[dict], keep: int = 12) -> list[dict]:
 
 
 class Agent:
-    def __init__(self, router: Router, tools: Toolbox, telemetry: Telemetry, max_steps: int = 40):
+    def __init__(self, router: Router, tools: Toolbox, telemetry: Telemetry, max_steps: int = 40, summary: bool = True):
         self.router = router
         self.tools = tools
         self.tel = telemetry
         self.max_steps = max_steps
+        self.summary = summary
         self.blockers = BlockerDetector()
         self.rung = 0              # position on the unstick ladder
         self.rung_clean = 0
@@ -59,6 +62,7 @@ class Agent:
 
     def run(self, task: str) -> str:
         self.task = task
+        self.outcome = "max_steps"
         self.messages.append({"role": "user", "content": task})
         final = ""
         for step in range(1, self.max_steps + 1):
@@ -72,6 +76,7 @@ class Agent:
                     continue
                 ui.error("no model available:\n" + str(e))
                 self.tel.emit("abort", reason="no model available")
+                self.outcome = "no_capacity"
                 break
             if switch:
                 self._switch_note(switch.old, switch.new, switch.reason)
@@ -106,8 +111,10 @@ class Agent:
                     if self._triage_refusal(spec.id, msg["content"]):
                         continue          # over-refusal: another model takes the task
                     final = msg["content"]
+                    self.outcome = "refused"
                     break                 # refusal upheld: stop, do not model-shop
                 final = msg["content"]
+                self.outcome = "blocked" if final.strip().upper().startswith("BLOCKED") else "done"
                 break
 
             blocker = None
@@ -143,7 +150,8 @@ class Agent:
         t = self.router.totals()
         baseline = self.router.counterfactual_usd()
         self.tel.emit("session_end", usd=t["usd"], baseline_usd=baseline, **{k: v for k, v in t.items() if k != "usd"})
-        ui.summary(self.router, baseline)
+        if self.summary:
+            ui.summary(self.router, baseline)
         return final
 
     # ---------------------------------------------------------------- unstick
