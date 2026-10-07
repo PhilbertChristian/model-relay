@@ -318,15 +318,16 @@ router = build_router(load("burner.json"))
 spec, switch = router.pick()   <span class="c"># fails over for you</span>
 print(value.render(value.month()))</pre></div>
     <div class="card wide"><div class="col"><span class="badge">ORCHESTRATOR · ORCA</span><h3>Run it inside Orca</h3>
-      <p>Orca's coordinator asks Relay what's about to expire and what matters most, then runs each task as a supervised worker in its own worktree. You watch every worker live in Orca, and anything that needs you waits as a decision gate.</p>
+      <p>Orca's coordinator asks Relay what's about to expire and what matters most, then runs each task as a supervised worker on its own branch, in its own worktree. When a worker stalls, the coordinator keeps it driving or hands it the next task.</p>
+      <p><b>No human in the loop.</b> Nothing touches main, so every branch is safe to keep or delete in the morning.</p>
       <p>Install the <a href="https://github.com/PhilbertChristian/model-relay/tree/main/skills/agent-relay">agent-relay skill</a> next to Orca's orchestration skill.</p></div>
 <pre class="snip"><span class="c">$ claude mcp add relay -- python3 -m relay.mcp</span>
 <span class="c">$ cp -r skills/agent-relay ~/.claude/skills/</span>
-<span class="c"># the coordinator, every shift:</span>
+<span class="c"># the coordinator, every shift, unattended:</span>
 <span class="o">relay_capacity</span>    what expires, in burn order
 <span class="o">relay_plan_list</span>   tonight's tasks, by priority
 orca orchestration worker-start --spec "…" --agent claude
-orca orchestration gate-create   <span class="c"># BLOCKED → asks you</span></pre></div>
+orca orchestration reply   <span class="c"># stuck? keep it driving</span></pre></div>
   </div>
 </div></section>
 
