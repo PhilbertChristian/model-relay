@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Try Relay Night Shift: run a night in your browser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f6f6f6; --ink:#191919; --ink-2:#4a4a4a; --muted:#7a7a7a; --line:#e4e4e4; --orange:#ff5c00; --orange-soft:#fff1e8; --dark:#313131; --green:#1f9d63;
+          --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 var(--sans); -webkit-font-smoothing:antialiased; }
+  a { color:inherit; }
+  header { position:sticky; top:0; z-index:10; background:rgba(246,246,246,.9); backdrop-filter:blur(10px); border-bottom:1px solid rgba(0,0,0,.05); }
+  header .w { max-width:1320px; margin:0 auto; padding:0 20px; height:64px; display:flex; align-items:center; gap:18px; }
+  .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:19px; letter-spacing:-.03em; text-decoration:none; }
+  .logo i { width:26px; height:26px; border-radius:8px; background:var(--orange); display:grid; place-items:center; color:#fff; font:700 14px var(--mono); font-style:normal; }
+  .pill { font:600 11px var(--mono); letter-spacing:.06em; background:var(--orange-soft); color:var(--orange); padding:5px 9px; border-radius:8px; }
+  header .r { margin-left:auto; display:flex; gap:10px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 18px; border-radius:14px; font:500 15px var(--sans); border:0; cursor:pointer; text-decoration:none; white-space:nowrap; }
+  .btn.orange { background:var(--orange); color:#fff; } .btn.dark { background:var(--ink); color:#fff; } .btn.ghost { background:#fff; border:1px solid var(--line); color:var(--ink); }
+  .btn:disabled { opacity:.5; cursor:default; }
+  main { max-width:1320px; margin:0 auto; padding:22px 20px 60px; display:grid; grid-template-columns:380px 1fr 300px; gap:16px; }
+  @media (max-width:1180px) { main { grid-template-columns:1fr; } }
+  .card { background:#fff; border-radius:20px; padding:18px; }
+  .card h2 { font-size:15px; margin:0 0 10px; font-weight:600; letter-spacing:-.01em; display:flex; justify-content:space-between; align-items:center; }
+  .card h2 small { font:500 11px var(--mono); color:var(--muted); letter-spacing:.04em; }
+  textarea { width:100%; height:300px; border:1px solid var(--line); border-radius:12px; background:var(--bg); padding:12px; font:12.5px/1.55 var(--mono); resize:vertical; color:var(--ink); }
+  .subs label { display:flex; align-items:center; gap:10px; padding:9px 2px; border-top:1px solid #f1f1f1; font-size:14px; cursor:pointer; }
+  .subs label:first-of-type { border-top:0; }
+  .subs input { accent-color:var(--orange); width:16px; height:16px; }
+  .subs small { color:var(--muted); display:block; font-size:12px; }
+  .subs .price { margin-left:auto; font:500 12px var(--mono); color:var(--ink-2); }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+  .row label { font-size:12.5px; color:var(--muted); } select { width:100%; height:40px; border-radius:10px; border:1px solid var(--line); background:var(--bg); padding:0 10px; font:14px var(--sans); }
+  .tog label { display:flex; gap:9px; align-items:center; font-size:13.5px; padding:5px 0; cursor:pointer; } .tog input { accent-color:var(--orange); }
+  .term { background:#141414; border-radius:20px; overflow:hidden; display:flex; flex-direction:column; min-height:680px; }
+  .bar { display:flex; align-items:center; gap:6px; padding:12px 16px; border-bottom:1px solid #2a2a2a; color:#9a9a9a; font:12px var(--mono); }
+  .bar i { width:10px; height:10px; border-radius:50%; background:#3a3a3a; }
+  .bar .clock { margin-left:auto; color:#ffb27f; }
+  pre#out { margin:0; padding:16px 18px; flex:1; overflow-y:auto; font:13px/1.6 var(--mono); color:#e8e8e8; white-space:pre-wrap; max-height:760px; }
+  .d{color:#8d8d8d} .b{color:#8fb6ff;font-weight:600} .g{color:#7fdcae;font-weight:600} .p{color:#ffb27f;font-weight:600} .a{color:#ffd27a;font-weight:600} .r{color:#ff8a7a} .c{color:#9ee6ff} .t{color:#e7c879} .h{color:#fff;font-weight:700}
+  .stat { background:var(--bg); border-radius:14px; padding:12px 14px; margin-top:10px; }
+  .stat small { display:block; font-size:12px; color:var(--muted); }
+  .stat b { font-size:28px; font-weight:600; letter-spacing:-.03em; }
+  .stat b.o { color:var(--orange); }
+  .ladder div { display:flex; justify-content:space-between; align-items:center; font:12.5px var(--mono); padding:8px 10px; border-radius:10px; margin-top:6px; border:1px solid transparent; }
+  .ladder div.on { border-color:var(--orange); background:var(--orange-soft); }
+  .ladder div.off { opacity:.45; text-decoration:line-through; }
+  .ladder span.s { font-size:11px; color:var(--muted); text-decoration:none; }
+  .win { height:8px; background:#eee; border-radius:99px; overflow:hidden; margin-top:4px; } .win i { display:block; height:100%; width:0; background:var(--orange); transition:width .3s; }
+  #report { display:none; grid-column:1 / -1; }
+  #report .md { font-size:14.5px; } #report h3 { margin:14px 0 6px; font-size:16px; }
+  #report ul { margin:0; padding-left:20px; } #report li { margin:3px 0; }
+  .note { font-size:12px; color:var(--muted); margin-top:10px; }
+  code { font:12.5px var(--mono); background:#f0f0f0; padding:1px 6px; border-radius:6px; }
+</style>
+</head>
+<body>
+<header><div class="w">
+  <a class="logo" href="./"><i>R</i>Relay</a><span class="pill">LIVE DEMO · RUNS IN YOUR BROWSER</span>
+  <div class="r"><a class="btn ghost" href="./">← Back</a><a class="btn ghost" href="https://github.com/PhilbertChristian/model-relay">GitHub</a><button class="btn orange" id="run">▶ Run tonight's shift</button></div>
+</div></header>
+
+<main>
+  <section>
+    <div class="card"><h2>1 · Your plan <small>PLAN.md · edit me</small></h2>
+<textarea id="plan" spellcheck="false"># Weekend side projects
+
+## greet-cli
+test: python3 greet.py | grep Hello
+- [ ] scaffold greet.py that prints a greeting
+- [ ] add a --name flag
+- [ ] publish to PyPI
+
+## landing-page
+test: grep -q "&lt;h1" index.html
+- [ ] create index.html with a hero section
+- [ ] add a pricing section
+- [ ] kill whatever is running on port 8000 and add a dev server script
+
+## api-stub
+test: python3 -c "import api; assert api.health() == 'ok'"
+- [ ] create api.py with a health() function
+- [ ] add rate limiting to the health endpoint
+- [ ] connect Stripe payments with my live key</textarea>
+      <div class="note">Format: <code>## project</code>, an optional <code>test:</code> gate, then <code>- [ ] task</code> lines.</div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>2 · Your subscriptions <small>burn order is automatic</small></h2>
+      <div class="subs">
+        <label><input type="checkbox" data-sub="claude-a" checked><span>Claude Max 20× · seat A<small>5h windows · idle ones expire</small></span><span class="price">$200/mo</span></label>
+        <label><input type="checkbox" data-sub="claude-b" checked><span>Claude Max 20× · seat B<small>5h windows · idle ones expire</small></span><span class="price">$200/mo</span></label>
+        <label><input type="checkbox" data-sub="chatgpt" checked><span>ChatGPT Pro (Codex)<small>usage windows · idle ones expire</small></span><span class="price">$200/mo</span></label>
+        <label><input type="checkbox" data-sub="agent37" checked><span>Agent37 credit<small>monthly credit · router models</small></span><span class="price">$25/mo</span></label>
+        <label><input type="checkbox" data-sub="openai"><span>OpenAI API (pay-as-you-go)<small>new money, never counted as rescued</small></span><span class="price">$50 cap</span></label>
+      </div>
+      <div class="row">
+        <div><label>Downtime</label><select id="window"><option value="23-7" selected>23:00 → 07:00</option><option value="1-7">01:00 → 07:00</option><option value="22-9">22:00 → 09:00 (weekend)</option></select></div>
+        <div><label>Speed</label><select id="speed"><option value="1">normal</option><option value="2.5" selected>fast</option><option value="6">very fast</option></select></div>
+      </div>
+      <div class="tog" style="margin-top:10px">
+        <label><input type="checkbox" id="inj402" checked> Agent37 returns 402 mid-shift</label>
+        <label><input type="checkbox" id="injloop" checked> A model gets stuck in a loop</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="term">
+    <div class="bar"><i></i><i></i><i></i><span style="margin-left:8px">relay burn run PLAN.md -b burner.json</span><span class="clock" id="clock">22:59</span></div>
+    <pre id="out"><span class="d">Edit the plan, pick your subscriptions, and press ▶ Run tonight's shift.
+
+This is a simulation of the real `relay burn run`, built from the same rules:
+burn order, per-night allowances, failover on limits, the unstick ladder,
+refusal review, BLOCKED tasks, and test gates. It runs in your browser,
+with no keys and nothing leaving the page.</span></pre>
+  </section>
+
+  <section>
+    <div class="card"><h2>Tonight <small id="phase">ready</small></h2>
+      <div class="stat"><small>Rescued at API rates (expiring capacity)</small><b class="o" id="rescued">$0.00</b></div>
+      <div class="stat"><small>Tasks shipped · need you</small><b id="tasks">0 · 0</b></div>
+      <div class="stat"><small>Pay-as-you-go spend (not rescue)</small><b id="paygo" style="font-size:20px">$0.00</b></div>
+    </div>
+    <div class="card ladder" style="margin-top:16px"><h2>Burn order <small>most likely wasted first</small></h2><div id="ladder"></div></div>
+  </section>
+
+  <section class="card" id="report"><h2>☕ MORNING.md <small>also written back into your PLAN.md</small></h2><div class="md" id="md"></div>
+    <div class="note">Simulated. Run it for real: <code>python3 -m relay burn run PLAN.md -b burner.json --now</code>. Your measured month: <code>relay savings</code>.</div></section>
+</main>
+
+<script>
+const SUBS = {
+  "claude-a": {name: "Claude Max 20× · A", model: "claude-opus-5-5", kind: "window", cap: 62, rate: [4, 20]},
+  "claude-b": {name: "Claude Max 20× · B", model: "claude-opus-5-5", kind: "window", cap: 62, rate: [4, 20]},
+  "chatgpt":  {name: "ChatGPT Pro", model: "gpt-5.5-codex", kind: "window", cap: 48, rate: [1.25, 10]},
+  "agent37":  {name: "Agent37 credit", model: "a37-deepseek", kind: "credit", cap: 1.10, rate: [0.15, 0.6]},
+  "openai":   {name: "OpenAI API", model: "gpt-5-mini", kind: "paygo", cap: 6, rate: [0.25, 2]},
+};
+const $ = id => document.getElementById(id);
+const out = $("out");
+let speed = 2.5, t = 0, minutes = 0, endMin = 480;
+
+function h(s) { let x = 2166136261; for (const ch of s) { x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619); } return (x >>> 0); }
+function sha(s) { return h(s).toString(16).padStart(8, "0").slice(0, 7); }
+function esc(x) { return String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function money(v) { return "$" + v.toFixed(2); }
+function line(cls, text) { const d = document.createElement("div"); if (cls) d.className = cls; d.innerHTML = text; out.appendChild(d); out.scrollTop = out.scrollHeight; }
+const sleep = ms => new Promise(r => setTimeout(r, ms / speed));
+function clock() { const [s] = $("window").value.split("-").map(Number); const m = (s * 60 + minutes) % 1440; $("clock").textContent = String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); }
+
+function parsePlan(text) {
+  const projects = []; let cur = null;
+  text.split("\n").forEach((ln, i) => {
+    if (ln.startsWith("## ")) { cur = {name: ln.slice(3).trim(), test: null, tasks: []}; projects.push(cur); }
+    else if (cur && /^test:\s*/i.test(ln)) cur.test = ln.replace(/^test:\s*/i, "");
+    else if (cur && /^\s*- \[ \] /.test(ln)) cur.tasks.push({text: ln.replace(/^\s*- \[ \] /, "").trim(), line: i});
+  });
+  return projects;
+}
+
+function renderLadder(order, state) {
+  $("ladder").innerHTML = order.map(k => {
+    const s = SUBS[k], st = state[k];
+    const pct = s.kind === "window" ? Math.min(100, st.spent / s.cap * 100) : Math.min(100, st.spent / s.cap * 100);
+    const label = st.dead ? st.dead : (s.kind === "paygo" ? "pay-as-you-go" : money(st.spent) + " used");
+    return `<div class="${st.active ? "on" : ""} ${st.dead ? "off" : ""}"><span>${s.name}</span><span class="s">${label}</span></div><div class="win"><i style="width:${pct}%"></i></div>`;
+  }).join("");
+}
+
+const BLOCK = [[/stripe|payment|live key|billing/i, "needs your live payment key; never handled unattended"],
+               [/publish|pypi|npm publish/i, "needs a PyPI token (TWINE_PASSWORD); everything else is ready"],
+               [/domain|dns/i, "needs DNS access for your domain"],
+               [/password|credential|secret/i, "needs credentials only you have"]];
+
+async function run() {
+  $("run").disabled = true; $("report").style.display = "none"; out.innerHTML = "";
+  speed = +$("speed").value; minutes = 0; t = 0;
+  const [ws, we] = $("window").value.split("-").map(Number); endMin = ((we - ws + 24) % 24) * 60;
+  const chosen = [...document.querySelectorAll("[data-sub]")].filter(c => c.checked).map(c => c.dataset.sub);
+  // burn order: windows that will expire unused first, then expiring credit, pay-as-you-go last
+  const order = chosen.sort((a, b) => ({window: 0, credit: 1, paygo: 2}[SUBS[a].kind] - {window: 0, credit: 1, paygo: 2}[SUBS[b].kind]));
+  const state = Object.fromEntries(order.map(k => [k, {spent: 0, dead: null, active: false}]));
+  let rescued = 0, paygo = 0, done = 0, blocked = 0, rung = 0;
+  const results = [];
+  const projects = parsePlan($("plan").value);
+  const queue = projects.flatMap(p => p.tasks.map(tk => ({p, tk})));
+  $("phase").textContent = "running"; renderLadder(order, state); clock();
+
+  line("d", "relay · night shift · " + (projects.length ? projects.map(p => p.name).join(", ") : "empty plan"));
+  line("", `<span class="h">downtime window:</span> ${$("window").selectedOptions[0].text}`);
+  line("d", "burn order (most likely wasted first):");
+  order.forEach((k, i) => line("", `  #${i + 1} <span class="b">${SUBS[k].name}</span> <span class="d">${SUBS[k].kind === "window" ? "idle windows tonight" : SUBS[k].kind === "credit" ? "tonight's allowance " + money(SUBS[k].cap) : "pay-as-you-go, not rescue"}</span>`));
+  if (!order.length) { line("r", "no subscriptions selected"); $("run").disabled = false; return; }
+  line("", `\n<span class="h">queue:</span> ${queue.length} tasks · branch relay/night-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`);
+  await sleep(900);
+
+  let cur = 0;
+  const pickNext = () => { while (cur < order.length && state[order[cur]].dead) cur++; return cur < order.length ? order[cur] : null; };
+  let injected402 = false, injectedLoop = false;
+
+  for (let i = 0; i < queue.length; i++) {
+    const {p, tk} = queue[i];
+    if (minutes >= endMin) { line("a", "\n! downtime window ended: remaining tasks stay queued for tomorrow"); break; }
+    let k = pickNext();
+    if (!k) { line("a", "\n! all of tonight's capacity is used: remaining tasks stay queued"); break; }
+    // simple tasks go to the cheap tier (Agent37's router) while its credit lasts, as the real router does
+    if (/scaffold|create|readme|docs/i.test(tk.text) && state["agent37"] && !state["agent37"].dead) k = "agent37";
+    order.forEach(x => state[x].active = x === k); renderLadder(order, state);
+    line("", `\n<span class="c">━━ [${i + 1}/${queue.length}] ${esc(p.name)}: ${esc(tk.text)}</span>`);
+    await sleep(500);
+
+    // refusal review
+    if (/\bkill\b/i.test(tk.text)) {
+      line("", `I'm sorry, but I can't help with killing processes.`); await sleep(500);
+      line("a", `! refusal from ${SUBS[k].model} (${SUBS[k].name})`); await sleep(500);
+      line("c", `⚖ refusal review by an independent model: <span class="g">benign</span>  stopping a local dev process is routine`); await sleep(500);
+      line("p", `⇄ ${SUBS[k].model} retired for this task → sibling model takes it`); await sleep(400);
+    }
+    // blocked
+    const blk = BLOCK.find(([re]) => re.test(tk.text));
+    if (blk) {
+      line("t", "  ⚙ read_file README.md"); await sleep(400);
+      line("a", `BLOCKED: ${blk[1]}`);
+      blocked++; results.push({p: p.name, task: tk.text, status: "blocked", note: blk[1], line: tk.line});
+      minutes += 8; clock(); $("tasks").textContent = `${done} · ${blocked}`; await sleep(500); continue;
+    }
+
+    const files = (tk.text.match(/[\w.-]+\.(py|html|js|ts|md|sh)/) || [null])[0] || (p.name.includes("page") ? "index.html" : "main.py");
+    const steps = [`write_file ${files}`, p.test ? `bash ${p.test}` : "bash python3 -m pytest -q"];
+    // loop → hint → swap
+    if ($("injloop").checked && !injectedLoop && i >= 1) {
+      injectedLoop = true;
+      for (let n = 0; n < 3; n++) { line("t", `  ⚙ bash ${esc(p.test || "pytest -q")}`); line("r", "    exit 1: AssertionError"); await sleep(260); }
+      line("a", "! stuck: loop: `bash` repeated 3x with identical result"); await sleep(400);
+      line("c", "💡 second opinion from a stronger model: the test reads a file you haven't created yet. Write it first."); await sleep(700);
+    }
+    for (const st of steps) { line("t", "  ⚙ " + esc(st)); await sleep(380); }
+    // value of this task at API rates
+    let usd = 6 + (h(tk.text) % 1400) / 100;   // $6–$20 of work at API rates
+    // agent37 402 injection
+    if (k === "agent37" && $("inj402").checked && !injected402) {
+      injected402 = true;
+      line("a", "! 402 instance_budget_exhausted from agent37 → provider disabled");
+      state[k].dead = "402 · disabled"; const nk = pickNext();
+      if (!nk) { line("r", "no capacity left"); break; }
+      line("p", `⇄ switch ${SUBS[k].name} → ${SUBS[nk].name} (${SUBS[nk].model})  budget: rolled over to the next subscription`);
+      k = nk; order.forEach(x => state[x].active = x === k); renderLadder(order, state); await sleep(500);
+    }
+    // spend against the active subscription, rolling to the next when its capacity for tonight is used
+    let remaining = usd;
+    while (remaining > 0.001) {
+      const s = SUBS[k], room = s.cap - state[k].spent, take = Math.min(room, remaining);
+      state[k].spent += take; remaining -= take;
+      if (s.kind === "paygo") paygo += take; else rescued += take;
+      if (remaining > 0.001) {
+        state[k].dead = s.kind === "window" ? "window used" : "allowance used";
+        const nk = pickNext(); if (!nk) break;
+        line("p", `⇄ switch ${s.name} → ${SUBS[nk].name}  ${s.kind === "window" ? "tonight's window used, next subscription" : "allowance burned"}`);
+        k = nk; order.forEach(x => state[x].active = x === k);
+      }
+    }
+    renderLadder(order, state);
+    const ok = !/flaky/i.test(tk.text);
+    const c = sha(p.name + tk.text);
+    if (ok) { done++; line("g", `✓ done  ${money(usd)} at API rates  commit ${c}`); results.push({p: p.name, task: tk.text, status: "done", commit: c, usd, line: tk.line}); }
+    else { blocked++; line("r", `! blocked  tests failing`); results.push({p: p.name, task: tk.text, status: "blocked", note: "tests failing", line: tk.line}); }
+    minutes += 25 + (h(tk.text) % 35); clock();
+    $("rescued").textContent = money(rescued); $("paygo").textContent = money(paygo); $("tasks").textContent = `${done} · ${blocked}`;
+    await sleep(350);
+  }
+
+  // morning report + write results back into the plan
+  $("phase").textContent = "done";
+  const lines = $("plan").value.split("\n");
+  results.forEach(r => { lines[r.line] = lines[r.line].replace("- [ ]", r.status === "done" ? "- [x]" : "- [!]") + (r.status === "done" ? ` (relay ${r.commit})` : ` (blocked: ${r.note})`); });
+  $("plan").value = lines.join("\n");
+  line("", `\n<span class="h"># Good morning ☕</span>  <span class="g">${done} done</span> · <span class="a">${blocked} need you</span>`);
+  const md = [`<p><b>${done} done · ${blocked} need you · ${queue.length - results.length} still queued</b></p>`,
+    `<h3>Credits</h3><ul><li>Tonight: <b>${money(rescued)} rescued</b> at API rates from plan windows and credit that were about to expire</li>` +
+    (paygo ? `<li>Pay-as-you-go OpenAI spend: ${money(paygo)} (new money, not counted as rescued)</li>` : "") + `</ul>`,
+    results.some(r => r.status === "done") ? `<h3>Done</h3><ul>${results.filter(r => r.status === "done").map(r => `<li>${esc(r.p)}: ${esc(r.task)} <code>${r.commit}</code> · ${money(r.usd)}</li>`).join("")}</ul>` : "",
+    results.some(r => r.status === "blocked") ? `<h3>Needs you</h3><ul>${results.filter(r => r.status === "blocked").map(r => `<li>${esc(r.p)}: ${esc(r.task)}: ${esc(r.note)}</li>`).join("")}</ul>` : "",
+    `<h3>Review</h3><ul>${[...new Set(results.filter(r => r.commit).map(r => r.p))].map(p => `<li>${esc(p)}: draft PR on <code>relay/night-…</code></li>`).join("") || "<li>nothing to review</li>"}</ul>`];
+  $("md").innerHTML = md.join(""); $("report").style.display = "block";
+  $("run").disabled = false; $("run").textContent = "↻ Run another night";
+}
+$("run").onclick = run;
+</script>
+</body>
+</html>

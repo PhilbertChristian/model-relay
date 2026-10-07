@@ -1,0 +1,188 @@
+{"ts": 1788242400.0, "session": "night1", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1788243000.0, "session": "night1", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1788243600.0, "session": "night1", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1032479, "output_tokens": 154872, "usd": 17.208}
+{"ts": 1788244200.0, "session": "night1", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2343120, "output_tokens": 351468, "usd": 39.052}
+{"ts": 1788246000.0, "session": "night1", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788246001.0, "session": "night1", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788246002.0, "session": "night1", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788246003.0, "session": "night1", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788271200.0, "session": "night1", "host": "demo", "event": "shift_end", "usd": 57.36}
+{"ts": 1788328800.0, "session": "night2", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1788329400.0, "session": "night2", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1788330000.0, "session": "night2", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1205100, "output_tokens": 180765, "usd": 20.085}
+{"ts": 1788330600.0, "session": "night2", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2745900, "output_tokens": 411885, "usd": 45.765}
+{"ts": 1788332400.0, "session": "night2", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788332401.0, "session": "night2", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788332402.0, "session": "night2", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788357600.0, "session": "night2", "host": "demo", "event": "shift_end", "usd": 66.95}
+{"ts": 1788415200.0, "session": "night3", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1788415800.0, "session": "night3", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1788416400.0, "session": "night3", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1106460, "output_tokens": 165969, "usd": 18.441}
+{"ts": 1788417000.0, "session": "night3", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2515740, "output_tokens": 377361, "usd": 41.929}
+{"ts": 1788418800.0, "session": "night3", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788418801.0, "session": "night3", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788418802.0, "session": "night3", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788422400.0, "session": "night3", "host": "demo", "event": "task", "status": "blocked"}
+{"ts": 1788444000.0, "session": "night3", "host": "demo", "event": "shift_end", "usd": 61.47}
+{"ts": 1788588000.0, "session": "night4", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1788588600.0, "session": "night4", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1788589200.0, "session": "night4", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1279080, "output_tokens": 191862, "usd": 21.318}
+{"ts": 1788589800.0, "session": "night4", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2918520, "output_tokens": 437778, "usd": 48.642}
+{"ts": 1788591600.0, "session": "night4", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788591601.0, "session": "night4", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788591602.0, "session": "night4", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788591603.0, "session": "night4", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788616800.0, "session": "night4", "host": "demo", "event": "shift_end", "usd": 71.06}
+{"ts": 1788674400.0, "session": "night5", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1788675000.0, "session": "night5", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1788675600.0, "session": "night5", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1180440, "output_tokens": 177066, "usd": 19.674}
+{"ts": 1788676200.0, "session": "night5", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2688360, "output_tokens": 403254, "usd": 44.806}
+{"ts": 1788678000.0, "session": "night5", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788678001.0, "session": "night5", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788678002.0, "session": "night5", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788703200.0, "session": "night5", "host": "demo", "event": "shift_end", "usd": 65.58}
+{"ts": 1788760800.0, "session": "night6", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1788761400.0, "session": "night6", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1788762000.0, "session": "night6", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1081800, "output_tokens": 162270, "usd": 18.03}
+{"ts": 1788762600.0, "session": "night6", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2458200, "output_tokens": 368730, "usd": 40.97}
+{"ts": 1788764400.0, "session": "night6", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788764401.0, "session": "night6", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788764402.0, "session": "night6", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788789600.0, "session": "night6", "host": "demo", "event": "shift_end", "usd": 60.1}
+{"ts": 1788933600.0, "session": "night7", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1788934200.0, "session": "night7", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1788934800.0, "session": "night7", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1254420, "output_tokens": 188163, "usd": 20.907}
+{"ts": 1788935400.0, "session": "night7", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2860980, "output_tokens": 429147, "usd": 47.683}
+{"ts": 1788937200.0, "session": "night7", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788937201.0, "session": "night7", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788937202.0, "session": "night7", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788937203.0, "session": "night7", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1788962400.0, "session": "night7", "host": "demo", "event": "shift_end", "usd": 69.69}
+{"ts": 1789020000.0, "session": "night8", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1789020600.0, "session": "night8", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1789021200.0, "session": "night8", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1155780, "output_tokens": 173367, "usd": 19.263}
+{"ts": 1789021800.0, "session": "night8", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2630819, "output_tokens": 394622, "usd": 43.847}
+{"ts": 1789023600.0, "session": "night8", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789023601.0, "session": "night8", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789023602.0, "session": "night8", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789027200.0, "session": "night8", "host": "demo", "event": "task", "status": "blocked"}
+{"ts": 1789048800.0, "session": "night8", "host": "demo", "event": "shift_end", "usd": 64.21}
+{"ts": 1789106400.0, "session": "night9", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1789107000.0, "session": "night9", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1789107600.0, "session": "night9", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1057140, "output_tokens": 158571, "usd": 17.619}
+{"ts": 1789108200.0, "session": "night9", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2400659, "output_tokens": 360098, "usd": 40.011}
+{"ts": 1789110000.0, "session": "night9", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789110001.0, "session": "night9", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789110002.0, "session": "night9", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789135200.0, "session": "night9", "host": "demo", "event": "shift_end", "usd": 58.73}
+{"ts": 1789279200.0, "session": "night10", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1789279800.0, "session": "night10", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1789280400.0, "session": "night10", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1229760, "output_tokens": 184464, "usd": 20.496}
+{"ts": 1789281000.0, "session": "night10", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2803440, "output_tokens": 420516, "usd": 46.724}
+{"ts": 1789282800.0, "session": "night10", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789282801.0, "session": "night10", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789282802.0, "session": "night10", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789282803.0, "session": "night10", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789308000.0, "session": "night10", "host": "demo", "event": "shift_end", "usd": 68.32}
+{"ts": 1789365600.0, "session": "night11", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1789366200.0, "session": "night11", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1789366800.0, "session": "night11", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1131120, "output_tokens": 169668, "usd": 18.852}
+{"ts": 1789367400.0, "session": "night11", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2573280, "output_tokens": 385992, "usd": 42.888}
+{"ts": 1789369200.0, "session": "night11", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789369201.0, "session": "night11", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789369202.0, "session": "night11", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789394400.0, "session": "night11", "host": "demo", "event": "shift_end", "usd": 62.84}
+{"ts": 1789452000.0, "session": "night12", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1789452600.0, "session": "night12", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1789453200.0, "session": "night12", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1032479, "output_tokens": 154872, "usd": 17.208}
+{"ts": 1789453800.0, "session": "night12", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2343120, "output_tokens": 351468, "usd": 39.052}
+{"ts": 1789455600.0, "session": "night12", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789455601.0, "session": "night12", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789455602.0, "session": "night12", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789480800.0, "session": "night12", "host": "demo", "event": "shift_end", "usd": 57.36}
+{"ts": 1789624800.0, "session": "night13", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1789625400.0, "session": "night13", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1789626000.0, "session": "night13", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1205100, "output_tokens": 180765, "usd": 20.085}
+{"ts": 1789626600.0, "session": "night13", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2745900, "output_tokens": 411885, "usd": 45.765}
+{"ts": 1789628400.0, "session": "night13", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789628401.0, "session": "night13", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789628402.0, "session": "night13", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789628403.0, "session": "night13", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789632000.0, "session": "night13", "host": "demo", "event": "task", "status": "blocked"}
+{"ts": 1789653600.0, "session": "night13", "host": "demo", "event": "shift_end", "usd": 66.95}
+{"ts": 1789711200.0, "session": "night14", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1789711800.0, "session": "night14", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1789712400.0, "session": "night14", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1106460, "output_tokens": 165969, "usd": 18.441}
+{"ts": 1789713000.0, "session": "night14", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2515740, "output_tokens": 377361, "usd": 41.929}
+{"ts": 1789714800.0, "session": "night14", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789714801.0, "session": "night14", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789714802.0, "session": "night14", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789740000.0, "session": "night14", "host": "demo", "event": "shift_end", "usd": 61.47}
+{"ts": 1789797600.0, "session": "night15", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1789798200.0, "session": "night15", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1789798800.0, "session": "night15", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1279080, "output_tokens": 191862, "usd": 21.318}
+{"ts": 1789799400.0, "session": "night15", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2918520, "output_tokens": 437778, "usd": 48.642}
+{"ts": 1789801200.0, "session": "night15", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789801201.0, "session": "night15", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789801202.0, "session": "night15", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789826400.0, "session": "night15", "host": "demo", "event": "shift_end", "usd": 71.06}
+{"ts": 1789970400.0, "session": "night16", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1789971000.0, "session": "night16", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1789971600.0, "session": "night16", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1180440, "output_tokens": 177066, "usd": 19.674}
+{"ts": 1789972200.0, "session": "night16", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2688360, "output_tokens": 403254, "usd": 44.806}
+{"ts": 1789974000.0, "session": "night16", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789974001.0, "session": "night16", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789974002.0, "session": "night16", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789974003.0, "session": "night16", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1789999200.0, "session": "night16", "host": "demo", "event": "shift_end", "usd": 65.58}
+{"ts": 1790056800.0, "session": "night17", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1790057400.0, "session": "night17", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1790058000.0, "session": "night17", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1081800, "output_tokens": 162270, "usd": 18.03}
+{"ts": 1790058600.0, "session": "night17", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2458200, "output_tokens": 368730, "usd": 40.97}
+{"ts": 1790060400.0, "session": "night17", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790060401.0, "session": "night17", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790060402.0, "session": "night17", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790085600.0, "session": "night17", "host": "demo", "event": "shift_end", "usd": 60.1}
+{"ts": 1790143200.0, "session": "night18", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1790143800.0, "session": "night18", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1790144400.0, "session": "night18", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1254420, "output_tokens": 188163, "usd": 20.907}
+{"ts": 1790145000.0, "session": "night18", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2860980, "output_tokens": 429147, "usd": 47.683}
+{"ts": 1790146800.0, "session": "night18", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790146801.0, "session": "night18", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790146802.0, "session": "night18", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790150400.0, "session": "night18", "host": "demo", "event": "task", "status": "blocked"}
+{"ts": 1790172000.0, "session": "night18", "host": "demo", "event": "shift_end", "usd": 69.69}
+{"ts": 1790316000.0, "session": "night19", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1790316600.0, "session": "night19", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1790317200.0, "session": "night19", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1155780, "output_tokens": 173367, "usd": 19.263}
+{"ts": 1790317800.0, "session": "night19", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2630819, "output_tokens": 394622, "usd": 43.847}
+{"ts": 1790319600.0, "session": "night19", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790319601.0, "session": "night19", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790319602.0, "session": "night19", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790319603.0, "session": "night19", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790344800.0, "session": "night19", "host": "demo", "event": "shift_end", "usd": 64.21}
+{"ts": 1790402400.0, "session": "night20", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1790403000.0, "session": "night20", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1790403600.0, "session": "night20", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1057140, "output_tokens": 158571, "usd": 17.619}
+{"ts": 1790404200.0, "session": "night20", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2400659, "output_tokens": 360098, "usd": 40.011}
+{"ts": 1790406000.0, "session": "night20", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790406001.0, "session": "night20", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790406002.0, "session": "night20", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790431200.0, "session": "night20", "host": "demo", "event": "shift_end", "usd": 58.73}
+{"ts": 1790488800.0, "session": "night21", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1790489400.0, "session": "night21", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1790490000.0, "session": "night21", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1229760, "output_tokens": 184464, "usd": 20.496}
+{"ts": 1790490600.0, "session": "night21", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2803440, "output_tokens": 420516, "usd": 46.724}
+{"ts": 1790492400.0, "session": "night21", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790492401.0, "session": "night21", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790492402.0, "session": "night21", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790517600.0, "session": "night21", "host": "demo", "event": "shift_end", "usd": 68.32}
+{"ts": 1790661600.0, "session": "night22", "host": "demo", "event": "shift_start", "capacity": [{"name": "claude-max-a", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["claude-plan"], "expires": true}, {"name": "chatgpt-pro", "kind": "rolling_window", "unit": "windows", "tonight": 1.0, "providers": ["codex-plan"], "expires": true}, {"name": "agent37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.1, "providers": ["agent37"], "expires": true}]}
+{"ts": 1790662200.0, "session": "night22", "host": "demo", "event": "call", "model": "a37-deepseek", "provider": "agent37", "input_tokens": 66000, "output_tokens": 9900, "usd": 1.1}
+{"ts": 1790662800.0, "session": "night22", "host": "demo", "event": "call", "model": "gpt-5.5-codex", "provider": "codex-plan", "input_tokens": 1130760, "output_tokens": 169614, "usd": 18.846}
+{"ts": 1790663400.0, "session": "night22", "host": "demo", "event": "call", "model": "claude-opus-5-5", "provider": "claude-plan", "input_tokens": 2572439, "output_tokens": 385865, "usd": 42.874}
+{"ts": 1790665200.0, "session": "night22", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790665201.0, "session": "night22", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790665202.0, "session": "night22", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790665203.0, "session": "night22", "host": "demo", "event": "task", "status": "done"}
+{"ts": 1790690400.0, "session": "night22", "host": "demo", "event": "shift_end", "usd": 62.82}

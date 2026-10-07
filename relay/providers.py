@@ -167,7 +167,8 @@ class Provider:
             status = {"rate_limit": 429, "budget": 402, "context": 400, "auth": 401}.get(kind, 503)
             raise ProviderError(kind, f"mock {model}: simulated {kind}", status, retry_after=spec.get("retry_after"))
 
-        tokens_in = sum(len(str(m.get("content") or "")) for m in messages) // 4 + 50
+        scale = float(self.mock.get("tokens_scale", 1))   # demo realism: make mock calls cost real-looking amounts
+        tokens_in = int((sum(len(str(m.get("content") or "")) for m in messages) // 4 + 50) * scale)
         behaviour = spec.get("behaviour", "solve")
         last_tool = next((m for m in reversed(messages) if m.get("role") == "tool"), None)
 
@@ -219,4 +220,4 @@ class Provider:
                 msg = {"role": "assistant", "content": spec.get("final", f"Done. Last output:\n{out}".strip())}
         else:
             msg = {"role": "assistant", "content": spec.get("final", "ok")}
-        return Completion(message=msg, input_tokens=tokens_in, output_tokens=60, latency_s=0.15)
+        return Completion(message=msg, input_tokens=tokens_in, output_tokens=int(60 * scale), latency_s=0.15)

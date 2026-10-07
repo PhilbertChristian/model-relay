@@ -132,10 +132,14 @@ def burn(plan_path: str, cfg: dict, root: str = ".", now: bool = False, hours: f
     router = build_router(cfg)
     router.provider_priority = {p: i for i, c in enumerate(caps) for p in c.providers}
     router.allowances = [{"name": c.name, "providers": set(c.providers), "usd": c.tonight if c.unit == "usd" else None,
-                          "spent": 0.0} for c in caps]
+                          "spent": 0.0, "kind": c.kind,
+                          "expires": c.kind != "api_budget" or bool(next((s.get("expires") for s in cfg.get("subscriptions", [])
+                                                                           if s.get("name") == c.name), False))} for c in caps]
     tel = Telemetry(str(root_p / ".relay"))
     tel.emit("shift_start", plan=plan.title, queue=len(plan.queue),
-             capacity=[{"name": c.name, "tonight": c.tonight, "unit": c.unit} for c in caps])
+             capacity=[{"name": c.name, "kind": c.kind, "tonight": c.tonight, "unit": c.unit, "providers": c.providers,
+                       "expires": c.kind != "api_budget" or bool(next((s.get("expires") for s in cfg.get("subscriptions", [])
+                                                                       if s.get("name") == c.name), False))} for c in caps])
 
     queue = plan.queue[:max_tasks] if max_tasks else plan.queue
     branch = f"relay/night-{datetime.now():%Y%m%d}"
@@ -179,7 +183,7 @@ def burn(plan_path: str, cfg: dict, root: str = ".", now: bool = False, hours: f
             sha = commit(ws, f"WIP (blocked): {task.text}\n\n{why}")
             plan.mark(task, "!", f"blocked: {why}")
         ui.say(ui.c("1;32" if status == "done" else "1;31", f"{'✓' if status == 'done' else '!'} {status}") +
-               ui.c("2", f"  ${spent:.4f}  {note}"))
+               ui.c("2", f"  ${spent:,.2f}  {note}"))
         results.append({"project": proj.name, "task": task.text, "status": status, "note": note,
                         "usd": spent, "commit": sha})
         tel.emit("task", project=proj.name, task=task.text, status=status, usd=spent, note=note)
@@ -197,7 +201,7 @@ def burn(plan_path: str, cfg: dict, root: str = ".", now: bool = False, hours: f
         prs[name] = open_pr(ws, branch, f"Night shift: {len(done)} task(s)", body) if pr else f"branch `{branch}` at {ws}"
 
     t = router.totals()
-    report = morning_report(plan, results, prs, caps, router, stop_reason)
+    report = morning_report(plan, results, prs, caps, router, stop_reason, ledger=str(ledger))
     (root_p / "MORNING.md").write_text(report)
     tel.emit("shift_end", usd=t["usd"], baseline_usd=router.counterfactual_usd(), done=sum(r["status"] == "done" for r in results),
              blocked=sum(r["status"] == "blocked" for r in results), stop=stop_reason)
@@ -205,13 +209,30 @@ def burn(plan_path: str, cfg: dict, root: str = ".", now: bool = False, hours: f
     return {"status": "finished", "results": results, "prs": prs, "usd": t["usd"]}
 
 
-def morning_report(plan: Plan, results: list[dict], prs: dict, caps, router, stop: str) -> str:
+def morning_report(plan: Plan, results: list[dict], prs: dict, caps, router, stop: str,
+                   ledger: str | None = None) -> str:
+    from . import value
     done = [r for r in results if r["status"] == "done"]
     blocked = [r for r in results if r["status"] == "blocked"]
     lines = [f"# Good morning ☕  {plan.title}", "",
              f"**{len(done)} done · {len(blocked)} need you · {len(plan.queue)} still queued** · stopped: {stop}", ""]
+    tonight = paygo = 0.0
+    for a in router.allowances:
+        if not a.get("expires", True):
+            paygo += a["spent"]          # pay-as-you-go is new money, never rescued
+            continue
+        tonight += min(a["spent"], a["usd"]) if a["usd"] is not None else a["spent"]
+    lines += ["## Credits", f"- Tonight: **{value.money(tonight)} rescued** at API rates from capacity that was about to expire"]
+    if paygo >= 0.01:
+        lines.append(f"- Pay-as-you-go spend: {value.money(paygo)} (new money, not counted as rescued)")
+    if ledger:
+        m = value.month(ledgers=[ledger], include_claude=os.environ.get("RELAY_CLAUDE_LOGS", "1") != "0")
+        if m.used_usd >= 0.01 and m.nights > 1:
+            lines.append(f"- This month: **{value.money(m.used_usd)} used at API rates · {value.money(m.rescued_usd)} rescued** "
+                         f"({m.rescue_rate:.1%}) over {m.nights} night shift(s)")
+    lines.append("")
     if done:
-        lines += ["## Done"] + [f"- {r['project']}: {r['task']}  (`{r['commit']}`, ${r['usd']:.4f})" for r in done] + [""]
+        lines += ["## Done"] + [f"- {r['project']}: {r['task']}  (`{r['commit']}`, ${r['usd']:,.2f})" for r in done] + [""]
     if blocked:
         lines += ["## Needs you"] + [f"- {r['project']}: {r['task']} — {r['note']}" for r in blocked] + [""]
     if prs:

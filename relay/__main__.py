@@ -8,6 +8,9 @@
   python3 -m relay supervise --instance ID "task"  unstick an agent hosted on Agent37
   python3 -m relay burn capacity -b burner.json    what subscription capacity expires, and when you're idle
   python3 -m relay burn run PLAN.md -b burner.json night shift: burn it on your plan, open PRs, write MORNING.md
+  python3 -m relay savings                         this month: used at API rates vs. rescued from expiring
+  python3 -m relay serve -c burner.json            OpenAI-compatible endpoint for any harness (failover + savings)
+  python3 -m relay mcp                             MCP server: capacity, savings, plan, burn tools for agents
 """
 from __future__ import annotations
 
@@ -37,6 +40,15 @@ def _confirm_factory(auto_yes: bool):
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if "serve" in argv:   # everything after `serve` belongs to relay.serve's own parser
+        i = argv.index("serve")
+        pre = argparse.ArgumentParser(add_help=False)
+        pre.add_argument("-c", "--config"); pre.add_argument("-C", "--cwd")
+        top, _ = pre.parse_known_args(argv[:i])
+        from .serve import main as serve_main
+        fwd = (["-c", top.config] if top.config else []) + (["-C", top.cwd] if top.cwd else []) + argv[i + 1:]
+        return serve_main(fwd) or 0
     ap = argparse.ArgumentParser(prog="relay", description="Coding agent that switches models on limits and blockers.")
     ap.add_argument("-c", "--config", help="path to relay.json (default: ./relay.json, ~/.relay.json, built-in ladder)")
     ap.add_argument("-C", "--cwd", default=".", help="workspace directory for the agent")
@@ -55,6 +67,14 @@ def main(argv: list[str] | None = None) -> int:
     sv.add_argument("--models", help="comma-separated ladder of the instance's model ids (default: from GET /v1/models)")
     sv.add_argument("--agent", help="harness on the instance: hermes, openclaw, opencode, claude-code, codex, ...")
     sv.add_argument("--hang", type=float, default=180, help="seconds without any agent event before the turn counts as hung")
+    sub.add_parser("mcp", help="serve Relay's tools over MCP on stdio (Claude Code, Codex, OpenCode, Hermes...)")
+    sub.add_parser("serve", help="OpenAI-compatible endpoint: point any harness's base_url here (see relay serve -h)")
+    sv2 = sub.add_parser("savings", help="this month's usage at API rates, and how much Relay rescued from expiring")
+    sv2.add_argument("--month", help="YYYY-MM (default: this month, UTC)")
+    sv2.add_argument("--ledger", action="append", help="relay events.jsonl (repeatable; default: <cwd>/.relay/events.jsonl)")
+    sv2.add_argument("--claude-logs", help="Claude Code projects dir(s), comma-separated (default: ~/.claude/projects)")
+    sv2.add_argument("--no-claude", action="store_true", help="skip Claude Code logs")
+    sv2.add_argument("--json", action="store_true")
     bn = sub.add_parser("burn", help="night shift: burn expiring subscription capacity on your planning docs")
     bn.add_argument("action", choices=["capacity", "plan", "run"])
     bn.add_argument("plan", nargs="?", help="planning doc (markdown checklist)")
@@ -64,7 +84,28 @@ def main(argv: list[str] | None = None) -> int:
     bn.add_argument("--hours", type=float, help="stop after this many hours")
     bn.add_argument("--max-tasks", type=int)
     bn.add_argument("--no-pr", action="store_true", help="leave the branch local")
-    args = ap.parse_args(argv)
+    args, extra = ap.parse_known_args(argv)
+
+    # stdout belongs to the protocol: dispatch before any banner or print
+    if args.cmd == "mcp":
+        from .mcp import main as mcp_main
+        return mcp_main(["-C", args.cwd])
+    if extra:
+        ap.error(f"unrecognized arguments: {' '.join(extra)}")
+
+    if args.cmd == "savings":
+        from . import value
+        m = value.month(args.month, args.ledger or [os.path.join(args.cwd, ".relay/events.jsonl")],
+                        args.claude_logs, include_claude=not args.no_claude)
+        if args.json:
+            import json as _json
+            print(_json.dumps({"period": m.period, "used_usd": round(m.used_usd, 2), "rescued_usd": round(m.rescued_usd, 2),
+                               "rescue_rate": round(m.rescue_rate, 4), "nights": m.nights, "tasks_done": m.tasks_done,
+                               "tasks_blocked": m.tasks_blocked, "by_source": m.by_source, "by_model": m.by_model,
+                               "unpriced": sorted(m.unpriced)}, indent=2))
+        else:
+            print(value.render(m, color=sys.stdout.isatty() and not os.environ.get("NO_COLOR")))
+        return 0
 
     if args.cmd == "burn":
         from . import capacity

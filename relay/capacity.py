@@ -183,6 +183,9 @@ def assess(cfg: dict, ledger: str = ".relay/events.jsonl", now: datetime | None 
             pace = float(sub.get("daytime_usd_per_day", 0))
             days_left = max(0.0, (m_end - utc_now).total_seconds() / 86400)
             expiring = max(0.0, remaining - pace * days_left)
+            if kind == "api_budget" and not sub.get("expires"):
+                expiring = 0.0   # a pay-as-you-go cap you set yourself: nothing expires, spending it is new money
+                note = (note + "; " if note else "") + "pay-as-you-go: burned last, never counted as rescued"
             tonight = burnable / nights                      # spread what you won't use over the idle nights left
             out.append(Capacity(name, kind, providers, "usd", remaining, m_end.astimezone(tz),
                                 round(tonight, 4), round(expiring, 4), source, note))
@@ -201,7 +204,7 @@ def assess(cfg: dict, ledger: str = ".relay/events.jsonl", now: datetime | None 
                 for s, e in idle_intervals(idle, now, days=8) if s < reset)
             idle_windows = int(idle_h_before_reset // wh)
             tonight = min(remaining, max(1, int(window_h // wh)) if window_h else 0)
-            expiring = min(remaining * (1 - reserve), idle_windows)
+            expiring = float(int(min(remaining * (1 - reserve), idle_windows)))   # whole windows, rounded down
             out.append(Capacity(name, kind, providers, "windows", remaining, reset, float(tonight),
                                 float(expiring), "config",
                                 f"{idle_windows} x {wh:g}h windows fall in your idle time before reset"))
@@ -209,10 +212,19 @@ def assess(cfg: dict, ledger: str = ".relay/events.jsonl", now: datetime | None 
     return out
 
 
-def report(caps: list[Capacity], cfg: dict, now: datetime | None = None) -> str:
+def report(caps: list[Capacity], cfg: dict, now: datetime | None = None, width: int | None = None) -> str:
+    import shutil
     idle = cfg.get("idle", {})
     s, e, active = current_or_next_window(idle, now)
     when = "now" if active else s.strftime("%a %H:%M")
+    if (width or shutil.get_terminal_size((120, 20)).columns) < 110:   # narrow terminal: one card per subscription
+        lines = [f"downtime: {when} -> {e.strftime('%a %H:%M')}", ""]
+        for i, c in enumerate(caps, 1):
+            fmt = (lambda v: f"${v:,.2f}") if c.unit == "usd" else (lambda v: f"{v:g} windows")
+            lines.append(f"#{i} {c.name}  ({c.kind.replace('_', ' ')})")
+            lines.append(f"   left {fmt(c.remaining)} · resets {c.resets_at.strftime('%a %b %d')}")
+            lines.append(f"   tonight {fmt(c.tonight)} · would expire {fmt(c.expiring)}")
+        return "\n".join(lines)
     lines = [f"downtime window: {when} -> {e.strftime('%a %H:%M')} ({_tz(idle)})", "",
              f"{'subscription':<16}{'kind':<16}{'left':>10}{'resets':>14}{'tonight':>10}{'expiring':>10}  burn order"]
     for i, c in enumerate(caps, 1):

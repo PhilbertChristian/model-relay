@@ -1,6 +1,6 @@
 # Relay Night Shift: your AI subscriptions work while you sleep
 
-**Live page + demo:** https://philbertchristian.github.io/model-relay/
+**Live page:** https://philbertchristian.github.io/model-relay/ · **Try it in your browser:** https://philbertchristian.github.io/model-relay/try.html · **Demo video:** https://philbertchristian.github.io/model-relay/demo.mp4
 
 You pay for AI capacity that mostly goes unused: Agent37 credit, an OpenAI budget, Claude/ChatGPT plan windows that reset whether you used them or not. Meanwhile your weekend projects sit in a planning doc.
 
@@ -17,6 +17,32 @@ python3 -m relay burn run PLAN.md -b burner.json --wait  # sleep until downtime,
 - **Night shift** (`relay/burn.py`): one agent per task, a test gate after every task, a commit per task on `relay/night-<date>`, and a draft PR per project (with `GITHUB_TOKEN`). Tasks that need a human end as `BLOCKED:` instead of guessing.
 - **Runs on Agent37**: an always-on instance, started by an Agent37 **platform cron** that fires even while the box sleeps (`deploy/agent37.py schedule`).
 - **Never stalls overnight**: the Relay engine below fails over on limits and unsticks loops, hangs and dead ends with nobody awake.
+
+### What it's worth: `relay savings`
+
+```
+$ relay savings --month 2026-09            # example month: 2x Claude Max 20x + ChatGPT Pro ($600/mo)
+  RELAY SAVINGS · September 2026
+  Used at API rates         $5,180.40
+  Rescued before reset      $1,412.60
+  ████████░░░░░░░░░░░░░░░░░░░░  27.3% rescued
+```
+
+- **Used** = your Claude Code logs (`~/.claude/projects`, deduped; reader ported from Max) + Relay's own calls, priced at API **list** rates (`relay/value.py`, rates as of 2026-09-25, longest-prefix match, unknown models never guessed). It's value at API rates, not a bill.
+- **Rescued** = night-shift work that drew on capacity that expires (plan windows, monthly credit), capped per night at that night's allowance. Pay-as-you-go API spend is **never** counted as rescued.
+- The numbers above come from `examples/savings-demo` (`demo/make_savings_fixture.py`), which is example data. Run it on your own logs: `relay savings`.
+
+### Integrate with your harness
+
+| How | For | Command |
+|---|---|---|
+| **OpenAI-compatible endpoint** | any harness (OpenCode, Hermes, Aider, LangChain, scripts) | `relay serve -c burner.json` then `OPENAI_BASE_URL=http://127.0.0.1:8037/v1`, model `relay/auto` |
+| **MCP server** | Claude Code, Codex, OpenCode, Hermes | `claude mcp add relay -- python3 -m relay.mcp` |
+| **Agent37 night shift** | laptop closed | `deploy/agent37.py create → push → schedule` |
+| **Python library** | your own harness | `from relay.config import build_router; from relay import value, capacity` |
+
+`relay serve` fails over on 429/402/quota/context and adds `X-Relay-Model`, `X-Relay-Switches` and `X-Relay-Usd` headers. Every proxied call lands in the savings ledger. Set `RELAY_SERVE_KEY` to require a bearer token (required to bind `0.0.0.0`).
+`relay mcp` exposes `relay_capacity`, `relay_savings`, `relay_plan_list`, `relay_plan_add` (queue work for tonight) and `relay_burn`. Unattended burns are opt-in only, via `RELAY_MCP_ALLOW_BURN=1`.
 
 ### Night shift on Agent37
 
@@ -111,6 +137,9 @@ Run `supabase/schema.sql`, then set `SUPABASE_URL` + `SUPABASE_KEY`. Every call,
 ```
 relay/capacity.py   subscription capacity + downtime windows + burn order
 relay/plan.py       planning doc <-> task queue
+relay/value.py      API-rate valuation: Claude Code logs + Relay ledger -> used / rescued
+relay/serve.py      OpenAI-compatible proxy for any harness
+relay/mcp.py        stdio MCP server (capacity, savings, plan, burn)
 relay/burn.py       night shift orchestrator: queue -> agents -> tests -> commits -> PRs -> MORNING.md
 relay/router.py     model ladder: tiers, cooldowns, dead providers, context floor, soft caps, de-escalation
 relay/blockers.py   loop, error-streak, hung, no-progress, malformed, refusal detection
@@ -119,7 +148,7 @@ relay/tools.py      read/write/edit/list/bash (process-group watchdog)/escalate
 relay/providers.py  OpenAI-compatible client, error → limit-kind classifier, scripted mock
 relay/supervise.py  supervisor for Agent37-hosted agents (SSE stream watch + cancel + model switch)
 deploy/agent37.py   create / push / run / supervise / stats / budget / destroy
-docs/index.html     GitHub Pages site
+docs/index.html     GitHub Pages site · docs/try.html in-browser demo · docs/demo.mp4 (demo/nightshift.tape)
 ```
 
 Built at the Agent37 "Build an Agent" hackathon (Oct 7, 2026). MIT.

@@ -201,3 +201,34 @@ class NightShift(unittest.TestCase):
         log = subprocess.run(["git", "log", "--oneline", "relay/night-" + __import__("datetime").datetime.now().strftime("%Y%m%d")],
                              cwd=d / "greet-cli", capture_output=True, text=True).stdout
         self.assertIn("add a --name flag", log)
+
+
+class Savings(unittest.TestCase):
+    def test_rates_current_and_conservative(self):
+        from relay import value
+        self.assertEqual(value.lookup("claude-opus-5-5"), (4.0, 20.0, 0.20))          # not the older opus-5 row
+        self.assertEqual(value.lookup("anthropic/claude-sonnet-5-5")[:2], (2.0, 10.0))  # provider prefix normalized
+        self.assertIsNone(value.lookup("gpt-5"))                                        # unknown: never guessed
+        self.assertAlmostEqual(value.price("claude-fable-5-1", {k: 1_000_000 for k in value.TOKEN_FIELDS}), 72.75)
+
+    def test_paygo_is_not_rescue_and_rescue_is_capped(self):
+        from relay import value
+        d = Path(tempfile.mkdtemp())
+        rows = [{"ts": 1790000000, "session": "n1", "event": "shift_start", "capacity": [
+                    {"name": "a37", "kind": "agent37_budget", "unit": "usd", "tonight": 1.0, "providers": ["agent37"]},
+                    {"name": "oai", "kind": "api_budget", "unit": "usd", "tonight": 5.0, "providers": ["openai"]},
+                    {"name": "max", "kind": "rolling_window", "unit": "windows", "tonight": 1, "providers": ["claude-plan"]}]},
+                {"ts": 1790000001, "session": "n1", "event": "call", "provider": "agent37", "model": "x", "usd": 3.0},
+                {"ts": 1790000002, "session": "n1", "event": "call", "provider": "openai", "model": "y", "usd": 4.0},
+                {"ts": 1790000003, "session": "n1", "event": "call", "provider": "claude-plan", "model": "z", "usd": 10.0}]
+        (d / "e.jsonl").write_text("\n".join(json.dumps(r) for r in rows))
+        m = value.month("2026-09", [str(d / "e.jsonl")], include_claude=False)
+        self.assertAlmostEqual(m.used_usd, 17.0)
+        self.assertAlmostEqual(m.rescued_usd, 11.0)   # 1.0 (capped agent37) + 10.0 (plan window); openai excluded
+
+    def test_example_month_fixture(self):
+        from relay import value
+        ex = ROOT / "examples" / "savings-demo"
+        m = value.month("2026-09", [str(ex / "events.jsonl")], claude_logs=str(ex / "claude"))
+        self.assertEqual(round(m.used_usd, 2), 5180.40)
+        self.assertEqual(round(m.rescued_usd, 2), 1412.60)
