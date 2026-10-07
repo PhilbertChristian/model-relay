@@ -70,8 +70,8 @@ AGENTS = [("CC", (217, 119, 87), "Claude Code", "Max 20× · $200/mo"), ("CX", (
           ("37", (91, 76, 240), "Hermes on Agent37", "$25 credit"), ("CC", (217, 119, 87), "Claude Code", "Max 20× · seat B")]
 UTIL = [("Claude Code · Max A", 38, 71), ("Claude Code · Max B", 31, 64), ("Codex · ChatGPT Pro", 24, 57)]
 
-SCENES = [("title", 0, 4.5), ("problem", 4.5, 11), ("prompt", 11, 20), ("agents", 20, 26.5), ("night", 26.5, 39),
-          ("morning", 39, 44), ("util", 44, 53.5), ("end", 53.5, 58)]
+SCENES = [("title", 0, 4.5), ("problem", 4.5, 11), ("prompt", 11, 19.5), ("repo", 19.5, 27), ("agents", 27, 33.5),
+          ("night", 33.5, 46), ("morning", 46, 51), ("util", 51, 60.5), ("end", 60.5, 65)]
 DURATION = SCENES[-1][2]
 
 
@@ -98,7 +98,7 @@ def scene_problem(d, t):
 
 
 def scene_prompt(d, t):
-    header(d, 1, "Tell it what to build", "Type a prompt, or drop your PLAN.md", t, 0)
+    header(d, 1, "Tell it what to build", "Type a prompt, pick a repo, or drop your PLAN.md", t, 0)
     box = (80, 260, W - 80, 330)
     rr(d, box, 18, fill=CARD, outline=mix(LINE, ORANGE, seg(t, 0.6, 1.0)), width=3)
     prompt = "Build a website for my piano recital"
@@ -115,6 +115,48 @@ def scene_prompt(d, t):
         rr(d, (80 + (1 - k) * 30, y, W - 80, y + 40), 12, fill=mix(BG, CARD, k), outline=mix(BG, LINE, k))
         rr(d, (98 + (1 - k) * 30, y + 11, 116 + (1 - k) * 30, y + 29), 5, outline=mix(BG, MUTED, k), width=2)
         text(d, (132 + (1 - k) * 30, y + 20), task, F(22), fill=mix(BG, INK, k), anchor="lm")
+
+
+REPOS = [("model-relay", "Python"), ("max", "Python · 1 star"), ("living-network-crm", "Python · 1 star"), ("polymarket", "JavaScript"),
+         ("sentiment_evaluator_bot", "Python")]
+REPO_TASKS = ["Add tests for 5-hour window reconstruction", "Price cache reads per model", "Week view in the menubar",
+              "Export usage as CSV", "Homebrew formula"]
+
+
+def scene_repo(d, t):
+    header(d, 1, "…or pick one of your GitHub repos", "Its PLAN.md, TODO.md or open issues become tonight's tasks", t, 0)
+    x0, y0 = 80, 262
+    rr(d, (x0, y0, x0 + 390, y0 + 60), 16, fill=CARD, outline=LINE, width=2)
+    text(d, (x0 + 22, y0 + 30), "github.com/", F(22), fill=MUTED, anchor="lm")
+    text(d, (x0 + 22 + F(22).getlength("github.com/"), y0 + 30), "PhilbertChristian", F(22, bold=True), anchor="lm")
+    sx = x0 + 410
+    chosen = 1 if t >= 3.0 else None
+    label = REPOS[chosen][0] if chosen is not None else "Choose a repo…"
+    rr(d, (sx, y0, W - 80, y0 + 60), 16, fill=CARD, outline=mix(LINE, ORANGE, seg(t, 0.8, 1.1)), width=2)
+    text(d, (sx + 22, y0 + 30), label, F(22, bold=chosen is not None), fill=INK if chosen is not None else MUTED, anchor="lm")
+    d.polygon([(W - 116, y0 + 24), (W - 100, y0 + 24), (W - 108, y0 + 34)], fill=MUTED)
+    open_k = seg(t, 1.1, 1.4) * (1 - seg(t, 3.0, 3.25))
+    if open_k > 0:                                   # the open dropdown
+        hover = 0 if t < 1.8 else 1 if t < 2.2 else 2 if t < 2.6 else 1
+        top = y0 + 70
+        rr(d, (sx, top, W - 80, top + 52 * len(REPOS) + 12), 16, fill=mix(BG, CARD, open_k), outline=mix(BG, LINE, open_k))
+        for i, (name, meta) in enumerate(REPOS):
+            yy = top + 6 + i * 52
+            if i == hover:
+                rr(d, (sx + 6, yy, W - 86, yy + 48), 12, fill=mix(CARD, ORANGE_SOFT, open_k))
+            text(d, (sx + 24, yy + 24), name, F(22, bold=i == hover), fill=mix(BG, INK, open_k), anchor="lm")
+            text(d, (W - 104, yy + 24), meta, F(17, mono=True), fill=mix(BG, MUTED, open_k), anchor="rm")
+    if t >= 3.3:
+        k = seg(t, 3.3, 3.7)
+        text(d, (x0, y0 + 86), "5 tasks loaded from PhilbertChristian/max", F(20, bold=True), fill=mix(BG, GREEN, k))
+        for i, task in enumerate(REPO_TASKS):
+            kk = seg(t, 3.6 + i * 0.3, 4.0 + i * 0.3)
+            if kk <= 0:
+                continue
+            y = y0 + 126 + i * 48
+            rr(d, (80 + (1 - kk) * 30, y, W - 80, y + 40), 12, fill=mix(BG, CARD, kk), outline=mix(BG, LINE, kk))
+            rr(d, (98 + (1 - kk) * 30, y + 11, 116 + (1 - kk) * 30, y + 29), 5, outline=mix(BG, MUTED, kk), width=2)
+            text(d, (132 + (1 - kk) * 30, y + 20), task, F(22), fill=mix(BG, INK, kk), anchor="lm")
 
 
 def scene_agents(d, t):
@@ -215,7 +257,7 @@ def scene_end(d, t):
     text(d, (W / 2, 510), "Agent37 · OpenAI · Supabase · Monid · InstaCloud · Context.dev", F(19, mono=True), fill=MUTED, anchor="mm")
 
 
-DRAW = {"title": scene_title, "problem": scene_problem, "prompt": scene_prompt, "agents": scene_agents, "night": scene_night,
+DRAW = {"title": scene_title, "problem": scene_problem, "prompt": scene_prompt, "repo": scene_repo, "agents": scene_agents, "night": scene_night,
         "morning": scene_morning, "util": scene_util, "end": scene_end}
 
 
@@ -237,6 +279,28 @@ def frame(t):
     return img
 
 
+def cues():
+    """(time, kind, arg) for every sound, aligned to the animations above."""
+    at = {name: a for name, a, _ in SCENES}
+    c = [(at[n] + 0.05, "whoosh", 0) for n, _, _ in SCENES[1:]]
+    c += [(0.3, "chime", 0), (1.0, "pad_start", 0)]
+    c += [(at["problem"] + 1.2, "rise", 1.8), (at["problem"] + 3.0, "buzz", 0)]
+    prompt = "Build a website for my piano recital"
+    c += [(at["prompt"] + 0.8 + 2.2 * i / len(prompt), "key", i) for i in range(len(prompt))]
+    c += [(at["prompt"] + 3.0, "click", 0)] + [(at["prompt"] + 3.6 + i * 0.35, "pop", i) for i in range(len(TASKS))]
+    c += [(at["repo"] + 1.1, "click", 0), (at["repo"] + 1.8, "tick", 0), (at["repo"] + 2.2, "tick", 1), (at["repo"] + 2.6, "tick", 0),
+          (at["repo"] + 3.0, "click", 1)] + [(at["repo"] + 3.6 + i * 0.3, "pop", i) for i in range(len(REPO_TASKS))]
+    c += [(at["agents"] + 1.0 + i * 0.6, "toggle", i) for i in range(len(AGENTS))]
+    for i in range(len(TASKS)):
+        c.append((at["night"] + 0.8 + i * 1.5, "tick", 0))
+        c.append((at["night"] + 0.8 + (i + 1) * 1.5, "buzz" if i == 5 else "done", i))
+    c += [(at["night"] + 3.6, "swoosh", 0), (at["night"] + 6.6, "swoosh", 1)]
+    c += [(at["morning"] + 0.6, "whoosh", 1)] + [(at["morning"] + 1.2 + i * 0.4, "pop", i) for i in range(4)]
+    c += [(at["util"] + 1.0, "rise", 2.4), (at["util"] + 3.4, "success", 0)]
+    c += [(at["end"] + 0.3, "final", 0)]
+    return sorted(c)
+
+
 def main():
     cmd = ["ffmpeg", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS),
            "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "24", "-preset", "medium", "-movflags", "+faststart", str(OUT)]
@@ -248,6 +312,9 @@ def main():
             print(f"{i}/{n}", file=sys.stderr)
     p.stdin.close()
     p.wait()
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import sound                                     # music bed + effects, mixed onto the video
+    sound.mux(OUT, cues(), DURATION)
     print("wrote", OUT)
 
 
