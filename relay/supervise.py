@@ -24,6 +24,7 @@ import urllib.request
 from collections import Counter
 
 from . import ui
+from .blockers import looks_like_refusal
 from .telemetry import Telemetry
 
 LIMIT_RE = re.compile(r"rate.?limit|\b429\b|\b402\b|quota|budget[_ ]exhausted|insufficient[_ ]balance|"
@@ -162,6 +163,13 @@ def supervise(instance: str, task: str, ladder: list[str] | None = None, agent: 
             session_id, answer, done = hosted.turn(message, model, session_id, watch)
             if LIMIT_RE.search(answer[:600]) and len(answer) < 1500:
                 raise Stuck("limit", answer.strip()[:160])
+            if looks_like_refusal(answer):
+                # no independent judge in supervisor mode: surface it, never model-shop around a refusal
+                ui.say(answer)
+                ui.error("hosted agent refused the task; relay will not switch models to get around a refusal. "
+                         "Review it, rephrase with context, or run locally with `relay run` (refusal triage).")
+                tel.emit("refusal_upheld", model=model, reason="supervisor mode: refusals are surfaced, not retried")
+                return answer
             if last_answer is not None and answer.strip() == last_answer.strip():
                 raise Stuck("loop", "same answer as the previous attempt")
             ui.say(answer)

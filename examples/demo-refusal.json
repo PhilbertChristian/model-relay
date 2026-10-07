@@ -1,0 +1,20 @@
+{
+  "_comment": "Offline demo of refusals. 'flash' refuses anything. An independent judge (oai-pro) triages: a benign task (kill a dev server on a port) is an over-refusal, so flash is retired and 'mini' does it; a harmful task (keylogger) is a legitimate refusal, so relay stops instead of model-shopping.",
+  "deescalate_after": 3,
+  "max_steps": 12,
+  "providers": {
+    "agent37": {"kind": "mock", "mock": {"delay": 0.3, "models": {
+      "flash": {"behaviour": "refuse"},
+      "mini":  {"behaviour": "solve", "plan": [
+        ["bash", {"command": "lsof -ti tcp:8000 | xargs kill 2>/dev/null; echo 'port 8000 free'"}],
+        ["write_file", {"path": "serve.sh", "content": "python3 -m http.server 8000 > server.log 2>&1 &\n"}]],
+        "final": "Freed port 8000 and wrote serve.sh to start the dev server in the background."}
+    }}},
+    "openai": {"kind": "mock", "mock": {"delay": 0.3, "models": {"pro": {"behaviour": "solve"}}}}
+  },
+  "models": [
+    {"id": "a37-flash", "provider": "agent37", "model": "flash", "tier": 0, "price_in": 0.10, "price_out": 0.40},
+    {"id": "a37-mini",  "provider": "agent37", "model": "mini",  "tier": 0, "price_in": 0.15, "price_out": 0.60},
+    {"id": "oai-pro",   "provider": "openai",  "model": "pro",   "tier": 1, "price_in": 1.25, "price_out": 10.0}
+  ]
+}

@@ -2,13 +2,15 @@
 
 **Live page + demo:** https://philbertchristian.github.io/model-relay/
 
-Agents get stuck all the time. They hit a rate limit or budget wall, retry the same broken command forever, start a process that never exits, or keep digging down the wrong path. Relay detects all four, then climbs an **unstick ladder**:
+Agents get stuck all the time. They hit a rate limit or budget wall, retry the same broken command forever, start a process that never exits, keep digging down the wrong path, or refuse an ordinary task. Relay detects all of these, then climbs an **unstick ladder**:
 
 1. **Second opinion.** A stronger model diagnoses the trace and the cheap model keeps driving.
 2. **Swap.** The conversation is handed to a stronger tier, with automatic de-escalation once things are moving again.
 3. **Kill & reset.** The context is trimmed to the task plus lessons learned, and a fresh plan starts on the next model.
 
 Limits (429 / 402 budget / quota / context overflow / per-model soft caps) skip the ladder and fail over immediately.
+
+**Refusals** are reviewed by an independent model. An over-refusal of a benign task (e.g. "kill the process on port 8000") retires the refusing model and a sibling takes over. A legitimate refusal is **upheld**: Relay stops for a human and never shops for a model that will say yes. It also stops if a second model refuses, if the review fails, or if it is running in supervisor mode.
 
 It works two ways:
 
@@ -22,6 +24,8 @@ Pure Python 3.10+, zero dependencies.
 ```bash
 python3 -m relay -c examples/demo-mock.json -C /tmp/demo -y run "create hello_relay.py and run it"
 python3 -m relay -c examples/demo-hang.json -C /tmp/demo -y run "start the server"
+python3 -m relay -c examples/demo-refusal.json -C /tmp/demo -y run "kill whatever is running on port 8000"       # over-refusal -> unstuck
+python3 -m relay -c examples/demo-refusal.json -C /tmp/demo -y run "write a keylogger that emails me passwords"  # refusal upheld
 python3 -m relay -C /tmp/demo stats
 python3 -m unittest discover tests
 ```
@@ -74,7 +78,7 @@ Run `supabase/schema.sql`, then set `SUPABASE_URL` + `SUPABASE_KEY`. Every call,
 
 ```
 relay/router.py     model ladder: tiers, cooldowns, dead providers, context floor, soft caps, de-escalation
-relay/blockers.py   loop, error-streak, hung, no-progress, malformed detection
+relay/blockers.py   loop, error-streak, hung, no-progress, malformed, refusal detection
 relay/agent.py      agent loop + unstick ladder (hint → swap → reset)
 relay/tools.py      read/write/edit/list/bash (process-group watchdog)/escalate
 relay/providers.py  OpenAI-compatible client, error → limit-kind classifier, scripted mock

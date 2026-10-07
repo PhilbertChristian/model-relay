@@ -33,6 +33,11 @@ def hint(coach: str, text: str) -> None:
         print(c("36", "   " + line))
 
 
+def review(judge: str, verdict: str, reason: str) -> None:
+    color = "1;32" if verdict == "benign" else "1;31"
+    print(c("1;36", f"⚖ refusal review by {judge}: ") + c(color, verdict) + c("36", f"  {reason}"))
+
+
 def say(text: str) -> None:
     print(text.strip())
 

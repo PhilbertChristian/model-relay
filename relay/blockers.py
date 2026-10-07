@@ -3,12 +3,25 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections import deque
 from dataclasses import dataclass, field
 
 
 def _h(*parts: str) -> str:
     return hashlib.sha1("\x00".join(parts).encode()).hexdigest()[:12]
+
+
+REFUSAL_RE = re.compile(
+    r"\b(i\s*(?:can(?:no|')t|cannot|won'?t|will not|am not able to|'m not able to|am unable to|'m unable to)\s+"
+    r"(?:help|assist|comply|do that|complete|provide|fulfil|perform|carry out|create|write|run)"
+    r"|against (?:my|the) (?:guidelines|policies|policy)|not (?:something|a request) i can help with)", re.I)
+
+
+def looks_like_refusal(text: str) -> bool:
+    """A short final reply that declines the task (not a long answer that merely mentions a limitation)."""
+    t = (text or "").strip()
+    return bool(t) and len(t) < 900 and bool(REFUSAL_RE.search(t[:400]))
 
 
 @dataclass

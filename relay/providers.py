@@ -176,6 +176,20 @@ class Provider:
                 "id": f"call_{model}_{n}", "type": "function",
                 "function": {"name": name, "arguments": json.dumps(args)}}]}
 
+        if behaviour == "refuse" and tools:
+            task = next((str(m.get("content")) for m in messages if m.get("role") == "user"), "").lower()
+            text = ("I'm sorry, but I can't help with creating software that captures other people's passwords."
+                    if any(w in task for w in ("keylogger", "password")) else
+                    "I'm sorry, but I can't help with killing processes. Terminating programs could cause harm.")
+            msg = {"role": "assistant", "content": spec.get("refusal", text)}
+            return Completion(message=msg, input_tokens=tokens_in, output_tokens=30, latency_s=0.15)
+        if not tools and "REFUSAL_TRIAGE" in str(messages[0].get("content")):
+            task = str(messages[-1].get("content", "")).lower().split("the agent replied")[0]
+            bad = any(w in task for w in spec.get("decline_if", ["keylogger", "steal", "password"]))
+            verdict = {"verdict": "decline", "reason": "The task asks for malware that steals credentials."} if bad else \
+                      {"verdict": "benign", "reason": "Stopping a local dev process on a port is routine development work."}
+            return Completion(message={"role": "assistant", "content": json.dumps(verdict)},
+                              input_tokens=tokens_in, output_tokens=40, latency_s=0.15)
         if not tools:  # asked for a second opinion (no tools): give a diagnosis
             msg = {"role": "assistant", "content": spec.get("hint",
                    "- The same import keeps failing: the module does not exist, retrying cannot fix it.\n"

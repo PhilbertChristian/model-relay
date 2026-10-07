@@ -6,7 +6,7 @@ import os
 import platform
 
 from . import ui
-from .blockers import BlockerDetector
+from .blockers import BlockerDetector, looks_like_refusal
 from .providers import ProviderError
 from .router import NoModelAvailable, Router
 from .telemetry import Telemetry
@@ -44,6 +44,7 @@ class Agent:
         self.rung = 0              # position on the unstick ladder
         self.rung_clean = 0
         self.lessons: list[str] = []
+        self.refusals = 0
         self.task = ""
         self.messages: list[dict] = [{"role": "system", "content": SYSTEM.format(cwd=tools.root, os=platform.system())}]
         self.tel.emit("session_start", cwd=str(tools.root), models=[m.id for m in router.models])
@@ -101,6 +102,11 @@ class Agent:
                     if blocker:
                         self._blocked(blocker)
                     continue
+                if looks_like_refusal(msg["content"]):
+                    if self._triage_refusal(spec.id, msg["content"]):
+                        continue          # over-refusal: another model takes the task
+                    final = msg["content"]
+                    break                 # refusal upheld: stop, do not model-shop
                 final = msg["content"]
                 break
 
@@ -191,6 +197,51 @@ class Agent:
                               f"{coach.id}:\n{hint}\nDo not repeat what failed. Apply this advice now."})
         self.blockers.reset()
         return True
+
+    # ---------------------------------------------------------------- refusals
+    # A refusal is only a blocker when it is an *over*-refusal of a benign task. Relay asks an
+    # independent model to triage it. If the judge agrees the task should be declined, if no judge is
+    # available, or if a second model refuses too, the refusal stands and the run stops: Relay unsticks
+    # agents, it does not shop for a model that will do what others rightly declined.
+    def _triage_refusal(self, model_id: str, text: str) -> bool:
+        import time
+        self.refusals += 1
+        ui.warn(f"refusal from {model_id}")
+        self.tel.emit("refusal", model=model_id, text=text[:300], n=self.refusals)
+        if self.refusals > 1:
+            return self._uphold(model_id, "a second model also declined; treating the refusal as legitimate")
+        now = time.time()
+        judges = [m for m in self.router.models if m.id != model_id and self.router._healthy(m, now)]
+        if not judges:
+            return self._uphold(model_id, "no independent model available to review the refusal")
+        judge = max(judges, key=lambda m: (m.tier, -m.price_in))
+        ask = [{"role": "system", "content": "REFUSAL_TRIAGE. You review refusals by coding agents. Answer with JSON only."},
+               {"role": "user", "content":
+                f"Task given to the agent:\n{self.task}\n\nThe agent replied:\n{text}\n\n"
+                "Is this an over-refusal of a benign, legitimate task (e.g. a routine dev/ops action misread as "
+                "harmful), or a correct refusal of a harmful, unsafe or disallowed request? "
+                'Reply {"verdict": "benign" | "decline", "reason": "<one sentence>"}. When in doubt, choose decline.'}]
+        try:
+            comp = self.router.providers[judge.provider].chat(judge.model, ask, [])
+            self.router.record_success(judge.id, comp.input_tokens, comp.output_tokens, comp.cost_usd)
+            raw = comp.message.get("content") or ""
+            verdict = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])
+        except (ProviderError, ValueError) as e:
+            return self._uphold(model_id, f"refusal review failed ({e})")
+        reason = str(verdict.get("reason", ""))[:200]
+        ui.review(judge.id, str(verdict.get("verdict")), reason)
+        self.tel.emit("refusal_verdict", model=judge.id, verdict=verdict.get("verdict"), reason=reason)
+        if verdict.get("verdict") != "benign":
+            return self._uphold(model_id, f"{judge.id} agrees the task should be declined: {reason}")
+        self.messages.pop()  # drop the refusal so the next model starts from the task, not from "no"
+        self.router._retire(model_id, f"over-refusal: {model_id} declined a benign task ({reason})")
+        self.blockers.reset()
+        return True
+
+    def _uphold(self, model_id: str, why: str) -> bool:
+        self.tel.emit("refusal_upheld", model=model_id, reason=why)
+        ui.error(f"refusal upheld: {why.rstrip('.')}. Relay will not route around it; stopping for a human to review.")
+        return False
 
     def _reset(self, reason: str) -> None:
         """Rung 3: throw away the poisoned context and restart from the task plus what we learned."""

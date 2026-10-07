@@ -68,6 +68,12 @@
   pre.code { background: #07080c; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; overflow-x: auto; font: 13px/1.6 ui-monospace, Menlo, monospace; }
   .arch { font: 13px/1.5 ui-monospace, Menlo, monospace; color: var(--dim); white-space: pre; overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
   .arch b { color: var(--text); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
+  .two pre { margin: 0; padding: 14px 16px; height: 330px; overflow-y: auto; font: 12.5px/1.55 ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: pre-wrap; }
+  .verdict { padding: 10px 14px; border-top: 1px solid var(--line); font-size: 13.5px; }
+  .verdict.ok { color: var(--green); } .verdict.stop { color: var(--red); }
+  .note { background: #1a1408; border: 1px solid #4a3a12; border-radius: 12px; padding: 14px 18px; color: #e9d7a8; font-size: 15px; margin-top: 16px; }
   footer { color: var(--dim); font-size: 14px; padding: 60px 0 80px; border-top: 1px solid var(--line); margin-top: 80px; }
   .sponsors { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
   .sponsors span { border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px; font-size: 13px; color: var(--dim); }
@@ -78,7 +84,7 @@
   <header>
     <span class="tag">Build an Agent hackathon · Agent37 × OpenAI</span>
     <h1>When your agent gets <em>trapped</em>,<br>Relay switches the model and gets it moving again.</h1>
-    <p class="lede">Agents get stuck all the time. They hit a rate limit or budget wall, retry the same broken command forever, start a process that never exits, or keep digging down the wrong path. Relay watches for all four, then climbs an <b>unstick ladder</b>: a cheap second opinion first, then a stronger model, then a clean reset. It drops back to the cheap model as soon as the agent is moving again, so you only pay for the big model when you actually need it.</p>
+    <p class="lede">Agents get stuck all the time. They hit a rate limit or budget wall, retry the same broken command forever, start a process that never exits, keep digging down the wrong path, or refuse a perfectly ordinary task. Relay watches for all of these, then climbs an <b>unstick ladder</b>: a cheap second opinion first, then a stronger model, then a clean reset. It drops back to the cheap model as soon as the agent is moving again, so you only pay for the big model when you actually need it.</p>
     <div class="cta">
       <a class="btn primary" href="#demo">Watch it unstick ↓</a>
       <a class="btn ghost" href="https://github.com/PhilbertChristian/model-relay">GitHub repo</a>
@@ -115,12 +121,29 @@
     </div>
   </div>
 
-  <h2>Four ways an agent gets trapped</h2>
+  <h2 id="refusal">Failure case: the agent refuses</h2>
+  <p class="sub">Sometimes an agent stops by declining the task. Usually that's an <b>over-refusal</b>, where routine dev work gets misread as harmful. Sometimes the refusal is <b>correct</b>. Relay has an independent model review the refusal and handles the two cases differently.</p>
+  <div class="two">
+    <div class="term">
+      <div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="t">"kill whatever is running on port 8000…"</span><button class="rp" data-k="a">↻</button></div>
+      <pre id="ra"></pre>
+      <div class="verdict ok" id="va">&nbsp;</div>
+    </div>
+    <div class="term">
+      <div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="t">"write a keylogger that emails me passwords"</span><button class="rp" data-k="b">↻</button></div>
+      <pre id="rb"></pre>
+      <div class="verdict stop" id="vb">&nbsp;</div>
+    </div>
+  </div>
+  <div class="note"><b>Relay doesn't shop for a model that will say yes.</b> A refusal only counts as a blocker when an independent reviewer judges the task benign. If the reviewer agrees with the refusal, if the review fails, if no reviewer is available, or if a second model also refuses, the refusal stands and Relay stops for a human. In supervisor mode there's no independent reviewer, so a refusal from a hosted agent is always reported, never retried.</div>
+
+  <h2>Five ways an agent gets trapped</h2>
   <p class="sub">Relay detects each one, both in its own agent loop and live on an agent hosted on Agent37.</p>
   <div class="grid">
     <div class="card"><span class="k">limit</span><h3>Hits a wall</h3><p>A 429 rate limit, a 402 <code>instance_budget_exhausted</code> or <code>insufficient_quota</code>, a context-window overflow, or a soft $/token cap you set per model. Relay fails over right away: it cools the model down, disables the provider, or moves to a model with a bigger context window.</p></div>
     <div class="card"><span class="k">loop</span><h3>Retries the same thing</h3><p>The same tool call with the same result 3 times, or 3 tool errors in a row. On a hosted agent, Relay counts identical <code>tool_call.started</code> events live in the stream and cancels the turn.</p></div>
     <div class="card"><span class="k">hung</span><h3>Process never returns</h3><p>Every shell command runs in its own process group under a watchdog. If it hangs, the whole group is killed. The model is told to background servers, and the event counts as a blocker. On a hosted agent: if nothing but keepalives arrives for N seconds, Relay cancels the turn.</p></div>
+    <div class="card"><span class="k">refusal</span><h3>Declines the task</h3><p>A short "I can't help with that" reply. An independent model reviews it. If the refusal was an over-refusal, the refusing model is retired and a sibling takes over. If the refusal was correct, it stands and the run stops.</p></div>
     <div class="card"><span class="k">wrong approach</span><h3>Busy, but going nowhere</h3><p>10 steps without changing a file, or a reply identical to the previous attempt. The agent is active but not making progress.</p></div>
   </div>
 
@@ -156,6 +179,7 @@
     <tr><td>Watchdogs</td><td>Every external action gets a deadline. Kill the whole process group, not just the shell, and say why.</td><td><code>Toolbox.t_bash</code></td></tr>
     <tr><td>Critic / reflection</td><td>A second model critiques the trajectory, and its verbal feedback is fed back in (Reflexion, self-critique). Cheaper than switching drivers.</td><td>Rung 1 <code>Agent._hint</code></td></tr>
     <tr><td>Context reset / compaction</td><td>A long, error-filled context keeps pulling the model back into the same mistakes. Keep the task and the lessons, drop the rest.</td><td>Rung 3 <code>Agent._reset</code>, <code>_compact</code></td></tr>
+    <tr><td>Refusal triage</td><td>Treat a refusal as a signal, not a verdict. A second model checks whether it was an over-refusal. Never retry a refusal the reviewer agrees with, and stop when two models decline.</td><td><code>Agent._triage_refusal</code></td></tr>
     <tr><td>Escalate as a tool</td><td>Let the model raise its hand. A self-reported blocker is the cheapest signal you can get.</td><td><code>escalate</code> tool</td></tr>
     <tr><td>Budgets as guardrails</td><td>Per-model $/token caps retire a model before it drains the wallet. Per-instance budgets on Agent37 are a second line of defence.</td><td><code>max_usd</code> / <code>max_tokens</code></td></tr>
   </table>
@@ -164,6 +188,7 @@
 <pre class="code"><span class="c-dim"># offline demo: no keys needed</span>
 git clone https://github.com/PhilbertChristian/model-relay && cd model-relay
 python3 -m relay -c examples/demo-mock.json -C /tmp/demo -y run "create hello_relay.py and run it"
+python3 -m relay -c examples/demo-refusal.json -C /tmp/demo -y run "kill whatever is running on port 8000"
 
 <span class="c-dim"># real models: OpenAI locally, or the full ladder on Agent37</span>
 export OPENAI_API_KEY=sk-...  AGENT37_API_KEY=sk_live_...
@@ -244,6 +269,41 @@ function play(i = 0) {
 document.getElementById("replay").onclick = () => { reset(); play(); };
 const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); reset(); play(); } }, {threshold: .3});
 io.observe(screen);
+
+// Refusal replays (real runs of examples/demo-refusal.json)
+const R = {
+  a: {el: "ra", v: "va", verdict: "✓ over-refusal: refusing model retired, cheap sibling finished the task ($0.0009)", lines: [
+    [300, "c-green", "▶ starting on a37-flash  (tier 0)"],
+    [600, "c-dim", "\n[1] <span class='c-blue'>a37-flash</span> (tier 0)"],
+    [700, "", "I'm sorry, but I can't help with killing processes.\nTerminating programs could cause harm."],
+    [600, "c-amber", "! refusal from a37-flash"],
+    [900, "c-cyan", "⚖ refusal review by oai-pro: <span class='c-green'>benign</span>\n  Stopping a local dev process on a port is routine development work."],
+    [700, "c-pink", "⇄ switch a37-flash → a37-mini  over-refusal: a37-flash retired for this task"],
+    [600, "c-dim", "\n[2] <span class='c-blue'>a37-mini</span> (tier 0)"],
+    [500, "c-tool", "  ⚙ bash lsof -ti tcp:8000 | xargs kill; echo 'port 8000 free'"],
+    [300, "c-dim", "    port 8000 free"],
+    [500, "c-tool", "  ⚙ write_file serve.sh"],
+    [600, "", "\nFreed port 8000 and wrote serve.sh to start the dev server\nin the background."]]},
+  b: {el: "rb", v: "vb", verdict: "■ legitimate refusal: upheld, no model-shopping, stopped for a human", lines: [
+    [300, "c-green", "▶ starting on a37-flash  (tier 0)"],
+    [600, "c-dim", "\n[1] <span class='c-blue'>a37-flash</span> (tier 0)"],
+    [700, "", "I'm sorry, but I can't help with creating software that\ncaptures other people's passwords."],
+    [600, "c-amber", "! refusal from a37-flash"],
+    [900, "c-cyan", "⚖ refusal review by oai-pro: <span class='c-red'>decline</span>\n  The task asks for malware that steals credentials."],
+    [700, "c-red", "✗ refusal upheld: Relay will not route around it;\n  stopping for a human to review."],
+    [500, "c-dim", "\n  a37-mini, oai-pro never asked to do the task."]]},
+};
+const rt = {};
+function playR(k, i = 0) {
+  const r = R[k], el = document.getElementById(r.el);
+  if (i === 0) { clearTimeout(rt[k]); el.innerHTML = ""; document.getElementById(r.v).innerHTML = "&nbsp;"; }
+  if (i >= r.lines.length) { document.getElementById(r.v).textContent = r.verdict; return; }
+  const [d, cls, text] = r.lines[i];
+  rt[k] = setTimeout(() => { const line = document.createElement("div"); line.className = cls; line.innerHTML = text; el.appendChild(line); el.scrollTop = el.scrollHeight; playR(k, i + 1); }, d);
+}
+document.querySelectorAll(".rp").forEach(b => b.onclick = () => playR(b.dataset.k));
+const io2 = new IntersectionObserver(es => { if (es[0].isIntersecting) { io2.disconnect(); playR("a"); playR("b"); } }, {threshold: .3});
+io2.observe(document.getElementById("ra"));
 </script>
 </body>
 </html>
