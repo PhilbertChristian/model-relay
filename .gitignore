@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.relay/
+relay.json
+.env

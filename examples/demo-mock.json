@@ -1,0 +1,21 @@
+{
+  "_comment": "Offline demo. 'flash' gets rate-limited, 'mini' loops on a broken command until the blocker detector escalates, 'pro' solves it, then relay drops back down.",
+  "start_tier": 0,
+  "deescalate_after": 3,
+  "base_cooldown": 30,
+  "max_steps": 20,
+  "providers": {
+    "agent37": {"kind": "mock", "mock": {"delay": 0.3, "models": {
+      "flash": {"behaviour": "loop", "fail_after": 1, "fail_with": "rate_limit"},
+      "mini":  {"behaviour": "loop"}
+    }}},
+    "openai": {"kind": "mock", "mock": {"delay": 0.3, "models": {
+      "pro": {"behaviour": "solve", "final": "Fixed: wrote hello_relay.py and verified it runs."}
+    }}}
+  },
+  "models": [
+    {"id": "a37-flash", "provider": "agent37", "model": "flash", "tier": 0, "price_in": 0.10, "price_out": 0.40},
+    {"id": "a37-mini",  "provider": "agent37", "model": "mini",  "tier": 0, "price_in": 0.15, "price_out": 0.60},
+    {"id": "oai-pro",   "provider": "openai",  "model": "pro",   "tier": 1, "price_in": 1.25, "price_out": 10.0}
+  ]
+}

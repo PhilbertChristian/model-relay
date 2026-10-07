@@ -1,0 +1,62 @@
+{
+  "start_tier": 0,
+  "deescalate_after": 4,
+  "max_steps": 40,
+  "providers": {
+    "agent37": {
+      "base_url": "${AGENT37_LLM_PROXY_URL:-https://api.agent37.com/llm/v1}",
+      "api_key_env": "AGENT37_MANAGED_TOKEN"
+    },
+    "openai": {
+      "base_url": "${OPENAI_BASE_URL:-https://api.openai.com/v1}",
+      "api_key_env": "OPENAI_API_KEY"
+    }
+  },
+  "models": [
+    {
+      "id": "a37-default",
+      "provider": "agent37",
+      "model": "default",
+      "tier": 0,
+      "price_in": 0.1,
+      "price_out": 0.4,
+      "context_window": 128000
+    },
+    {
+      "id": "a37-deepseek",
+      "provider": "agent37",
+      "model": "deepseek/deepseek-v4-flash",
+      "tier": 0,
+      "price_in": 0.15,
+      "price_out": 0.6,
+      "context_window": 128000
+    },
+    {
+      "id": "oai-mini",
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "tier": 1,
+      "price_in": 0.25,
+      "price_out": 2.0,
+      "context_window": 400000
+    },
+    {
+      "id": "a37-sonnet",
+      "provider": "agent37",
+      "model": "anthropic/claude-sonnet-5",
+      "tier": 2,
+      "price_in": 3.0,
+      "price_out": 15.0,
+      "context_window": 1000000
+    },
+    {
+      "id": "oai-gpt5",
+      "provider": "openai",
+      "model": "gpt-5",
+      "tier": 2,
+      "price_in": 1.25,
+      "price_out": 10.0,
+      "context_window": 400000
+    }
+  ]
+}

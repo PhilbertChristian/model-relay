@@ -1,0 +1,86 @@
+# Relay: unstick trapped AI agents by switching models
+
+**Live page + demo:** https://philbertchristian.github.io/model-relay/
+
+Agents get stuck all the time. They hit a rate limit or budget wall, retry the same broken command forever, start a process that never exits, or keep digging down the wrong path. Relay detects all four, then climbs an **unstick ladder**:
+
+1. **Second opinion.** A stronger model diagnoses the trace and the cheap model keeps driving.
+2. **Swap.** The conversation is handed to a stronger tier, with automatic de-escalation once things are moving again.
+3. **Kill & reset.** The context is trimmed to the task plus lessons learned, and a fresh plan starts on the next model.
+
+Limits (429 / 402 budget / quota / context overflow / per-model soft caps) skip the ladder and fail over immediately.
+
+It works two ways:
+
+- **`relay run`**: an OpenCode-style coding agent (read/write/edit/bash) that unsticks itself.
+- **`relay supervise`**: watches an agent already hosted on **Agent37** (Hermes, OpenClaw, OpenCode, Claude Code…) through its live event stream, cancels trapped turns, and re-sends them on the same session with a different `model`.
+
+Pure Python 3.10+, zero dependencies.
+
+## Quick start (offline, no keys)
+
+```bash
+python3 -m relay -c examples/demo-mock.json -C /tmp/demo -y run "create hello_relay.py and run it"
+python3 -m relay -c examples/demo-hang.json -C /tmp/demo -y run "start the server"
+python3 -m relay -C /tmp/demo stats
+python3 -m unittest discover tests
+```
+
+## Real models
+
+| Provider | Where | Env |
+|---|---|---|
+| Agent37 LLM router (OpenRouter catalog, metered against the instance budget) | inside an Agent37 instance only | `AGENT37_LLM_PROXY_URL`, `AGENT37_MANAGED_TOKEN` (injected automatically) |
+| OpenAI | anywhere | `OPENAI_API_KEY` |
+| Any OpenAI-compatible API | anywhere | add it to `providers` in `relay.json` |
+
+```bash
+cp relay.example.json relay.json      # edit the ladder: tiers, prices, caps
+python3 -m relay doctor               # which models are reachable
+python3 -m relay                      # interactive: /status, /tier N
+```
+
+### On Agent37
+
+```bash
+export AGENT37_API_KEY=sk_live_...  OPENAI_API_KEY=sk-...   # optional: SUPABASE_URL, SUPABASE_KEY
+python3 deploy/agent37.py create --budget 2   # instance + $2 managed-LLM headroom, env forwarded
+python3 deploy/agent37.py push                # ship relay + relay.json
+python3 deploy/agent37.py doctor
+python3 deploy/agent37.py run "build a todo CLI in python with tests"
+python3 deploy/agent37.py run --tier 2 "…"    # start this deployment on the strong tier
+python3 deploy/agent37.py supervise "…"       # unstick the instance's own hosted agent
+python3 deploy/agent37.py stats | budget --top-up 1 | destroy
+```
+
+## Config (`relay.json`)
+
+```jsonc
+{
+  "start_tier": 0, "deescalate_after": 4, "max_steps": 40,
+  "providers": { "agent37": {"base_url": "${AGENT37_LLM_PROXY_URL:-https://api.agent37.com/llm/v1}", "api_key_env": "AGENT37_MANAGED_TOKEN"} },
+  "models": [
+    {"id": "a37-default", "provider": "agent37", "model": "default", "tier": 0, "price_in": 0.1, "price_out": 0.4,
+     "context_window": 128000, "max_usd": 0.50, "max_tokens": 2000000}
+  ]
+}
+```
+
+## Telemetry (Supabase)
+
+Run `supabase/schema.sql`, then set `SUPABASE_URL` + `SUPABASE_KEY`. Every call, switch, blocker, hint, and session summary lands in `relay_events`, with views `relay_model_usage` and `relay_switches`. Events are always written locally to `.relay/events.jsonl`.
+
+## Layout
+
+```
+relay/router.py     model ladder: tiers, cooldowns, dead providers, context floor, soft caps, de-escalation
+relay/blockers.py   loop, error-streak, hung, no-progress, malformed detection
+relay/agent.py      agent loop + unstick ladder (hint → swap → reset)
+relay/tools.py      read/write/edit/list/bash (process-group watchdog)/escalate
+relay/providers.py  OpenAI-compatible client, error → limit-kind classifier, scripted mock
+relay/supervise.py  supervisor for Agent37-hosted agents (SSE stream watch + cancel + model switch)
+deploy/agent37.py   create / push / run / supervise / stats / budget / destroy
+docs/index.html     GitHub Pages site
+```
+
+Built at the Agent37 "Build an Agent" hackathon (Oct 7, 2026). MIT.

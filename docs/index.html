@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relay: unstick trapped AI agents by switching models</title>
+<meta name="description" content="Relay watches an AI agent, detects when it is trapped (limits, loops, hung processes, dead ends) and unsticks it by switching models. Built on Agent37 + OpenAI.">
+<style>
+  :root {
+    --bg: #0b0d12; --panel: #12151d; --line: #222837; --text: #e6e9f0; --dim: #8b93a7;
+    --blue: #6ea8ff; --green: #5fd38d; --pink: #e57bff; --amber: #ffc457; --red: #ff6b6b; --cyan: #5ad8e6;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif; }
+  a { color: var(--blue); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  header { padding: 72px 0 32px; }
+  .tag { display: inline-block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); border: 1px solid #1f4b52; padding: 3px 10px; border-radius: 99px; }
+  h1 { font-size: clamp(34px, 5vw, 56px); line-height: 1.08; margin: 18px 0 14px; letter-spacing: -.02em; }
+  h1 em { font-style: normal; color: var(--pink); }
+  .lede { font-size: 19px; color: var(--dim); max-width: 760px; }
+  .cta { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; }
+  .btn.primary { background: var(--text); color: var(--bg); }
+  .btn.ghost { border: 1px solid var(--line); color: var(--text); }
+  h2 { font-size: 28px; margin: 72px 0 8px; letter-spacing: -.01em; }
+  .sub { color: var(--dim); margin: 0 0 24px; }
+
+  /* demo */
+  .demo { display: grid; grid-template-columns: 1fr 280px; gap: 16px; margin-top: 8px; }
+  @media (max-width: 860px) { .demo { grid-template-columns: 1fr; } }
+  .term { background: #07080c; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .bar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); color: var(--dim); font-size: 13px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: #2a2f3d; }
+  .bar span.t { margin-left: 8px; }
+  .bar button { margin-left: auto; background: none; border: 1px solid var(--line); color: var(--dim); border-radius: 6px; padding: 2px 10px; cursor: pointer; font-size: 12px; }
+  pre#screen { margin: 0; padding: 16px 18px; height: 470px; overflow-y: auto; font: 13px/1.55 ui-monospace, "SF Mono", Menlo, Consolas, monospace; white-space: pre-wrap; }
+  .c-dim { color: var(--dim); } .c-blue { color: var(--blue); font-weight: 600; } .c-green { color: var(--green); font-weight: 600; }
+  .c-pink { color: var(--pink); font-weight: 600; } .c-amber { color: var(--amber); font-weight: 600; } .c-red { color: var(--red); }
+  .c-cyan { color: var(--cyan); } .c-tool { color: #e8c46a; } .c-bold { font-weight: 700; }
+
+  .side { display: flex; flex-direction: column; gap: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .card h4 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); }
+  .model { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; border: 1px solid transparent; margin-bottom: 6px; font: 13px ui-monospace, Menlo, monospace; transition: all .25s; }
+  .model .st { font-size: 11px; color: var(--dim); }
+  .model.active { border-color: var(--blue); background: #121c30; }
+  .model.cool { opacity: .5; } .model.cool .st { color: var(--amber); }
+  .tier { font-size: 11px; color: var(--dim); margin: 10px 0 4px; }
+  .meter { display: flex; justify-content: space-between; font: 13px ui-monospace, Menlo, monospace; margin: 4px 0; }
+  .meter b { color: var(--green); }
+  .rungs { display: flex; gap: 6px; }
+  .rung { flex: 1; text-align: center; font-size: 12px; padding: 7px 0; border-radius: 6px; border: 1px solid var(--line); color: var(--dim); transition: all .25s; }
+  .rung.on { color: var(--bg); background: var(--amber); border-color: var(--amber); font-weight: 700; }
+
+  /* grids */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .grid .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .grid .card p { margin: 0; color: var(--dim); font-size: 14.5px; }
+  .k { font: 12px ui-monospace, Menlo, monospace; color: var(--cyan); display: block; margin-bottom: 8px; }
+  .ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 760px) { .ladder { grid-template-columns: 1fr; } }
+  .num { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; align-items: center; justify-content: center; background: var(--amber); color: var(--bg); font-weight: 800; font-size: 14px; margin-right: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  td code, p code, li code { font: 13px ui-monospace, Menlo, monospace; background: #1a1f2b; padding: 1px 6px; border-radius: 4px; }
+  pre.code { background: #07080c; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; overflow-x: auto; font: 13px/1.6 ui-monospace, Menlo, monospace; }
+  .arch { font: 13px/1.5 ui-monospace, Menlo, monospace; color: var(--dim); white-space: pre; overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .arch b { color: var(--text); }
+  footer { color: var(--dim); font-size: 14px; padding: 60px 0 80px; border-top: 1px solid var(--line); margin-top: 80px; }
+  .sponsors { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .sponsors span { border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px; font-size: 13px; color: var(--dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="tag">Build an Agent hackathon · Agent37 × OpenAI</span>
+    <h1>When your agent gets <em>trapped</em>,<br>Relay switches the model and gets it moving again.</h1>
+    <p class="lede">Agents get stuck all the time. They hit a rate limit or budget wall, retry the same broken command forever, start a process that never exits, or keep digging down the wrong path. Relay watches for all four, then climbs an <b>unstick ladder</b>: a cheap second opinion first, then a stronger model, then a clean reset. It drops back to the cheap model as soon as the agent is moving again, so you only pay for the big model when you actually need it.</p>
+    <div class="cta">
+      <a class="btn primary" href="#demo">Watch it unstick ↓</a>
+      <a class="btn ghost" href="https://github.com/PhilbertChristian/model-relay">GitHub repo</a>
+    </div>
+    <div class="sponsors"><span>Agent37: hosts the agent + LLM router</span><span>OpenAI: direct provider</span><span>Supabase: telemetry</span></div>
+  </header>
+
+  <h2 id="demo">The demo: stuck on a limit → switched → solved</h2>
+  <p class="sub">A replay of a real <code>relay</code> run (<code>examples/demo-mock.json</code>, reproducible offline). Watch the model panel on the right.</p>
+  <div class="demo">
+    <div class="term">
+      <div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="t">relay run "create hello_relay.py that prints a greeting, and run it"</span><button id="replay">↻ replay</button></div>
+      <pre id="screen"></pre>
+    </div>
+    <div class="side">
+      <div class="card">
+        <h4>Model ladder</h4>
+        <div class="tier">tier 0 · cheap (Agent37 router)</div>
+        <div class="model" data-m="a37-flash"><span>a37-flash</span><span class="st">ready</span></div>
+        <div class="model" data-m="a37-mini"><span>a37-mini</span><span class="st">ready</span></div>
+        <div class="tier">tier 1 · strong (OpenAI)</div>
+        <div class="model" data-m="oai-pro"><span>oai-pro</span><span class="st">ready</span></div>
+      </div>
+      <div class="card">
+        <h4>Unstick ladder</h4>
+        <div class="rungs"><div class="rung" data-r="1">1 · hint</div><div class="rung" data-r="2">2 · swap</div><div class="rung" data-r="3">3 · reset</div></div>
+      </div>
+      <div class="card">
+        <h4>Spend</h4>
+        <div class="meter"><span>relay</span><span id="spent">$0.0000</span></div>
+        <div class="meter"><span>top model only</span><span id="base">$0.0000</span></div>
+        <div class="meter"><span>saved</span><b id="saved">–</b></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Four ways an agent gets trapped</h2>
+  <p class="sub">Relay detects each one, both in its own agent loop and live on an agent hosted on Agent37.</p>
+  <div class="grid">
+    <div class="card"><span class="k">limit</span><h3>Hits a wall</h3><p>A 429 rate limit, a 402 <code>instance_budget_exhausted</code> or <code>insufficient_quota</code>, a context-window overflow, or a soft $/token cap you set per model. Relay fails over right away: it cools the model down, disables the provider, or moves to a model with a bigger context window.</p></div>
+    <div class="card"><span class="k">loop</span><h3>Retries the same thing</h3><p>The same tool call with the same result 3 times, or 3 tool errors in a row. On a hosted agent, Relay counts identical <code>tool_call.started</code> events live in the stream and cancels the turn.</p></div>
+    <div class="card"><span class="k">hung</span><h3>Process never returns</h3><p>Every shell command runs in its own process group under a watchdog. If it hangs, the whole group is killed. The model is told to background servers, and the event counts as a blocker. On a hosted agent: if nothing but keepalives arrives for N seconds, Relay cancels the turn.</p></div>
+    <div class="card"><span class="k">wrong approach</span><h3>Busy, but going nowhere</h3><p>10 steps without changing a file, or a reply identical to the previous attempt. The agent is active but not making progress.</p></div>
+  </div>
+
+  <h2>The unstick ladder</h2>
+  <p class="sub">Relay starts with the cheapest fix and only escalates when that doesn't work.</p>
+  <div class="ladder">
+    <div class="card"><h3><span class="num">1</span>Second opinion</h3><p>The strongest healthy model reads the last few steps and writes a five-bullet diagnosis. The <b>cheap model keeps driving</b> with that hint. It costs one call, not a whole session on the big model.</p></div>
+    <div class="card"><h3><span class="num">2</span>Swap model</h3><p>The whole conversation is handed to the next tier with a handoff note. After N clean steps, Relay <b>de-escalates</b> back to the cheap tier.</p></div>
+    <div class="card"><h3><span class="num">3</span>Kill &amp; reset</h3><p>The context itself is the problem now. Relay trims it to the task, the lessons learned so far, and the files already changed, then starts a fresh plan on the next model.</p></div>
+  </div>
+
+  <h2>Architecture</h2>
+  <div class="arch"><b>relay</b> (python, zero dependencies)
+ ├─ <b>agent loop</b>        tools: read / write / edit / list / bash (watchdog) / escalate
+ ├─ <b>blocker detector</b>  loop · error streak · hung · no-progress · malformed
+ ├─ <b>router</b>            tiers · cooldowns · dead providers · context floor · soft caps · de-escalation
+ ├─ <b>providers</b>         any OpenAI-compatible API, errors classified → limit kind
+ │    ├─ Agent37 LLM router   https://api.agent37.com/llm/v1   (dozens of OpenRouter models, per-instance budget)
+ │    └─ OpenAI               https://api.openai.com/v1
+ ├─ <b>supervisor</b>        watches a hosted Agent37 agent's SSE stream, cancels trapped turns,
+ │                    re-sends on the same session with a different <code>model</code>
+ └─ <b>telemetry</b>         .relay/events.jsonl  +  Supabase relay_events (calls, switches, blockers, savings)
+
+ <b>Agent37 instance</b>  ← deploy/agent37.py create · push · run · supervise · stats · budget</div>
+
+  <h2>Unsticking agents: what works</h2>
+  <p class="sub">The techniques Relay builds on, and where each one appears in the code.</p>
+  <table>
+    <tr><th>Technique</th><th>Idea</th><th>In Relay</th></tr>
+    <tr><td>Model cascades</td><td>Try the cheap model first and escalate only when needed. Most steps don't need the frontier model (FrugalGPT; RouteLLM-style routers).</td><td>Tiered ladder + de-escalation, <code>router.py</code></td></tr>
+    <tr><td>Provider failover</td><td>Treat 429, 402 and quota errors as routing signals, not fatal errors. Cool the model down, honour Retry-After, and disable an exhausted provider.</td><td><code>providers.classify</code>, <code>Router.record_error</code></td></tr>
+    <tr><td>Loop / repetition detection</td><td>Hash each (action, args, result). Seeing the same hash N times means the agent isn't learning from its own feedback.</td><td><code>blockers.py</code>, <code>supervise.Watch</code></td></tr>
+    <tr><td>Watchdogs</td><td>Every external action gets a deadline. Kill the whole process group, not just the shell, and say why.</td><td><code>Toolbox.t_bash</code></td></tr>
+    <tr><td>Critic / reflection</td><td>A second model critiques the trajectory, and its verbal feedback is fed back in (Reflexion, self-critique). Cheaper than switching drivers.</td><td>Rung 1 <code>Agent._hint</code></td></tr>
+    <tr><td>Context reset / compaction</td><td>A long, error-filled context keeps pulling the model back into the same mistakes. Keep the task and the lessons, drop the rest.</td><td>Rung 3 <code>Agent._reset</code>, <code>_compact</code></td></tr>
+    <tr><td>Escalate as a tool</td><td>Let the model raise its hand. A self-reported blocker is the cheapest signal you can get.</td><td><code>escalate</code> tool</td></tr>
+    <tr><td>Budgets as guardrails</td><td>Per-model $/token caps retire a model before it drains the wallet. Per-instance budgets on Agent37 are a second line of defence.</td><td><code>max_usd</code> / <code>max_tokens</code></td></tr>
+  </table>
+
+  <h2>Run it</h2>
+<pre class="code"><span class="c-dim"># offline demo: no keys needed</span>
+git clone https://github.com/PhilbertChristian/model-relay && cd model-relay
+python3 -m relay -c examples/demo-mock.json -C /tmp/demo -y run "create hello_relay.py and run it"
+
+<span class="c-dim"># real models: OpenAI locally, or the full ladder on Agent37</span>
+export OPENAI_API_KEY=sk-...  AGENT37_API_KEY=sk_live_...
+python3 deploy/agent37.py create --budget 2     <span class="c-dim"># instance with $2 of managed-LLM headroom</span>
+python3 deploy/agent37.py push                  <span class="c-dim"># ship relay + relay.json</span>
+python3 deploy/agent37.py run "build a todo CLI with tests"
+
+<span class="c-dim"># supervise an agent already hosted on Agent37 (Hermes, OpenCode, OpenClaw...)</span>
+python3 -m relay supervise --instance ab12cd34ef --models default,sonnet,opus "fix the failing build"</pre>
+
+  <footer>
+    Relay was built in an afternoon at the Agent37 "Build an Agent" hackathon, Corgi Cafe, SF. MIT licensed. <a href="https://github.com/PhilbertChristian/model-relay">Source on GitHub</a>.
+  </footer>
+</div>
+
+<script>
+// Replay of a real run of examples/demo-mock.json, condensed.
+// [delay ms, css class, text, side-effect]
+const S = [
+  [300, "c-dim", "relay · one agent, many models · switches on limits and blockers"],
+  [400, "c-green", "▶ starting on a37-flash  (tier 0)", {active: "a37-flash"}],
+  [500, "c-dim", "\n[1] <span class='c-blue'>a37-flash</span> (tier 0)"],
+  [500, "c-tool", "  ⚙ bash python3 -c 'import missing_module_xyz'", {cost: [0.00004, 0.0002]}],
+  [300, "c-red", "    ModuleNotFoundError: No module named 'missing_module_xyz'"],
+  [500, "c-dim", "\n[2] <span class='c-blue'>a37-flash</span> (tier 0)"],
+  [700, "c-amber", "! 429 rate_limit: a37-flash cooling 30s", {cool: "a37-flash"}],
+  [500, "c-pink", "⇄ switch a37-flash → a37-mini  rate_limit: hit the wall, sibling takes over", {active: "a37-mini"}],
+  [500, "c-dim", "\n[3] <span class='c-blue'>a37-mini</span> (tier 0)"],
+  [400, "c-tool", "  ⚙ bash python3 -c 'import missing_module_xyz'", {cost: [0.0001, 0.0006]}],
+  [250, "c-red", "    ModuleNotFoundError: No module named 'missing_module_xyz'"],
+  [400, "c-dim", "\n[4] <span class='c-blue'>a37-mini</span> (tier 0)"],
+  [400, "c-tool", "  ⚙ bash python3 -c 'import missing_module_xyz'", {cost: [0.0002, 0.0012]}],
+  [250, "c-red", "    ModuleNotFoundError: No module named 'missing_module_xyz'"],
+  [400, "c-dim", "\n[5] <span class='c-blue'>a37-mini</span> (tier 0)"],
+  [400, "c-tool", "  ⚙ bash python3 -c 'import missing_module_xyz'", {cost: [0.0003, 0.0018]}],
+  [250, "c-red", "    ModuleNotFoundError: No module named 'missing_module_xyz'"],
+  [700, "c-amber", "! stuck: loop: `bash` repeated 3x with identical result", {rung: 1}],
+  [800, "c-cyan c-bold", "💡 second opinion from oai-pro:", {cost: [0.0016, 0.0030]}],
+  [300, "c-cyan", "   - The same import keeps failing: the module does not exist, retrying cannot fix it."],
+  [300, "c-cyan", "   - Stop running it. Write the file the task asks for, then run that file."],
+  [500, "c-dim", "\n[6..8] <span class='c-blue'>a37-mini</span> (tier 0)"],
+  [500, "c-tool", "  ⚙ bash python3 -c 'import missing_module_xyz'   ×3", {cost: [0.0022, 0.0060]}],
+  [700, "c-amber", "! stuck again: loop: `bash` repeated 3x with identical result", {rung: 2}],
+  [600, "c-pink", "⇄ switch a37-mini → oai-pro  escalate: the cheap model can't break out", {active: "oai-pro"}],
+  [500, "c-dim", "\n[9] <span class='c-blue'>oai-pro</span> (tier 1)"],
+  [500, "c-tool", "  ⚙ write_file hello_relay.py", {cost: [0.0038, 0.0090]}],
+  [300, "c-dim", "    wrote 26 bytes to hello_relay.py"],
+  [500, "c-dim", "\n[10] <span class='c-blue'>oai-pro</span> (tier 1)"],
+  [500, "c-tool", "  ⚙ bash python3 hello_relay.py", {cost: [0.0050, 0.0115]}],
+  [300, "c-green", "    hello from relay"],
+  [500, "c-dim", "\n[11] <span class='c-blue'>oai-pro</span> (tier 1)"],
+  [500, "", "Fixed: wrote hello_relay.py and verified it runs.", {cost: [0.0063, 0.0131], rung: 0}],
+  [600, "c-bold", "\n── usage ──"],
+  [200, "", "  a37-flash   1 calls   $0.0000\n  a37-mini    6 calls   $0.0006\n  oai-pro     4 calls   $0.0057"],
+  [300, "", "  total $0.0063 · top-tier-only $0.0131 · <span class='c-green'>saved 52%</span>", {done: true}],
+];
+const screen = document.getElementById("screen");
+let timer = null;
+function setActive(m) { document.querySelectorAll(".model").forEach(e => { e.classList.toggle("active", e.dataset.m === m); if (e.dataset.m === m) { e.classList.remove("cool"); e.querySelector(".st").textContent = "driving"; } else if (!e.classList.contains("cool")) e.querySelector(".st").textContent = "ready"; }); }
+function setCool(m) { const e = document.querySelector(`.model[data-m="${m}"]`); e.classList.add("cool"); e.classList.remove("active"); e.querySelector(".st").textContent = "429 · cooling"; }
+function setRung(r) { document.querySelectorAll(".rung").forEach(e => e.classList.toggle("on", +e.dataset.r === r)); }
+function setCost(a, b) { document.getElementById("spent").textContent = "$" + a.toFixed(4); document.getElementById("base").textContent = "$" + b.toFixed(4); document.getElementById("saved").textContent = b > 0 ? Math.round((1 - a / b) * 100) + "%" : "–"; }
+function reset() {
+  clearTimeout(timer); screen.innerHTML = "";
+  document.querySelectorAll(".model").forEach(e => { e.classList.remove("active", "cool"); e.querySelector(".st").textContent = "ready"; });
+  setRung(0); setCost(0, 0); document.getElementById("saved").textContent = "–";
+}
+function play(i = 0) {
+  if (i >= S.length) return;
+  const [d, cls, text, fx] = S[i];
+  timer = setTimeout(() => {
+    const line = document.createElement("div"); line.className = cls; line.innerHTML = text; screen.appendChild(line);
+    screen.scrollTop = screen.scrollHeight;
+    if (fx) { if (fx.active) setActive(fx.active); if (fx.cool) setCool(fx.cool); if (fx.rung !== undefined) setRung(fx.rung); if (fx.cost) setCost(...fx.cost); }
+    play(i + 1);
+  }, d);
+}
+document.getElementById("replay").onclick = () => { reset(); play(); };
+const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); reset(); play(); } }, {threshold: .3});
+io.observe(screen);
+</script>
+</body>
+</html>

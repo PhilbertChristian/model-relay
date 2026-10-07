@@ -1,0 +1,13 @@
+{
+  "_comment": "Offline demo: the cheap model starts a command that never exits; relay kills the process group and escalates.",
+  "deescalate_after": 3,
+  "max_steps": 10,
+  "providers": {
+    "agent37": {"kind": "mock", "mock": {"delay": 0.2, "models": {"flash": {"behaviour": "hang", "timeout": 2}}}},
+    "openai":  {"kind": "mock", "mock": {"delay": 0.2, "models": {"pro": {"behaviour": "solve", "final": "Done: wrote and ran hello_relay.py."}}}}
+  },
+  "models": [
+    {"id": "a37-flash", "provider": "agent37", "model": "flash", "tier": 0, "price_in": 0.10, "price_out": 0.40},
+    {"id": "oai-pro",   "provider": "openai",  "model": "pro",   "tier": 1, "price_in": 1.25, "price_out": 10.0}
+  ]
+}
