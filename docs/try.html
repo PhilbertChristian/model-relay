@@ -52,6 +52,9 @@
   .gh select:focus { outline:none; border-color:var(--orange); background-color:#fff; } .gh select:disabled { opacity:.6; cursor:default; }
   .repostatus { font-size:12.5px; color:var(--muted); margin-top:6px; min-height:19px; } .repostatus b { color:var(--ink); font-weight:600; }
   .repostatus.ok { color:var(--green); } .repostatus.ok b { color:var(--green); } .repostatus.err { color:var(--red); }
+  .draftnote { font-size:12.5px; color:var(--green); margin-top:8px; } .draftnote:empty { display:none; } .draftnote b { font-weight:600; }
+  .draftnote a { color:inherit; font-weight:600; text-underline-offset:2px; } .draftnote.pop { animation:pop .35s ease; }
+  @keyframes pop { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:none; } }
   @media (max-width:560px) { .gh { flex-direction:column; } .ghuser { flex:none; } .gh select { flex:none; } }
   .drop { display:flex; align-items:center; gap:12px; margin-top:10px; border:1.5px dashed #cfcfcf; border-radius:14px; padding:11px 14px; background:var(--bg); cursor:pointer; font-size:14px; }
   .drop:hover, .drop.over { border-color:var(--orange); background:var(--orange-soft); }
@@ -132,6 +135,7 @@
       <h2><span class="step">1</span>What do you want to build?</h2>
       <p class="sub">Describe it, pick a side project or one of your repos, or drop your own plan. You get a task list.</p>
       <form class="prompt" id="pform"><input id="pin" placeholder="e.g. Build a website for my piano recital" autocomplete="off"><button class="btn dark big" type="submit">Draft plan</button></form>
+      <div class="draftnote" id="draftnote" aria-live="polite"></div>
       <div class="or">or start from a side project</div>
       <div class="samples" id="samples"></div>
       <div class="or">or pick one of your GitHub repos</div>
@@ -205,23 +209,37 @@ const NIGHT = 480;
 const COLORS = ["#ff5c00", "#2f6fed", "#1f9d63", "#9b51e0", "#d4a017", "#e0457b"];
 
 // ---------- 1a. prompt → plan (drafted in the browser; the real CLI drafts it with your model)
+const MAINT = [["bug", "reproduce the top open bug and fix it with a regression test"], ["bug", "fix the next open bugs from the issue tracker"],
+  ["review", "review the last 20 commits and write REVIEW.md with findings"], ["test", "add tests for the least-covered module"],
+  ["doc", "update the README with setup and usage"], ["dep", "upgrade outdated dependencies and keep the tests green"]];
 const KINDS = [
-  {re: /chrome|extension|browser add-?on/i, test: "npm test", tasks: s => [`scaffold a Manifest V3 extension for ${s}`, "build the popup UI", `add the core ${s} feature`, "save settings with chrome.storage", "write tests for the core feature", "publish to the Chrome Web Store"]},
-  {re: /\bcli\b|command line|tool|script|bot/i, test: "python3 -m pytest -q", tasks: s => [`scaffold the ${s} CLI with a main command`, `implement the core ${s} logic`, "add a --dry-run flag", "write tests for the edge cases", "add a README with usage examples", "publish to PyPI"]},
-  {re: /game/i, test: 'grep -q "<canvas" index.html', tasks: s => [`create index.html with a canvas and a game loop for ${s}`, "add the player, goals and scoring", "add keyboard and touch controls", "save the high score in localStorage", "add sound effects with a mute toggle"]},
-  {re: /\bapi\b|backend|server|service/i, test: "npm test", tasks: s => [`scaffold the ${s} API with a health endpoint`, "add the core endpoints and validation", "add rate limiting", "write integration tests", "add an OpenAPI spec", "deploy to prod with my account"]},
-  {re: /app|tracker|dashboard|planner/i, test: "npm test", tasks: s => [`scaffold a Vite + React app for ${s}`, "build the main screen and navigation", `add the core ${s} feature with local storage`, "make it work well on phones", "add CSV export", "connect Stripe payments for a premium tier"]},
-  {re: /./, test: 'grep -q "<h1" index.html', tasks: s => [`create the ${s} home page with a hero section`, `add the main ${s} content sections`, "add a contact or RSVP form that emails me", "make every page look good on phones", "add SEO tags and a favicon", "buy a domain and point it at the site"]},
+  {re: /^(please\s+)?(fix|debug|review|refactor|document|test|upgrade|clean|tidy|improve|maintain|audit)\b|\bbugs?\b|^(please\s+)?(write|add|update)\s+(the\s+|some\s+|more\s+)?(docs|documentation|readme|tests?)\b/i, test: "npm test", repo: true,
+   tasks: (s, goal, prompt) => {   // maintenance work on an existing repo: lead with what was asked for
+     const want = /doc|readme/i.test(prompt) ? "doc" : /test|coverage/i.test(prompt) ? "test" : /review|audit/i.test(prompt) ? "review" : /upgrade|depend/i.test(prompt) ? "dep" : "bug";
+     return [...MAINT].sort((a, b) => (b[0] === want) - (a[0] === want)).map(t => t[1]);
+   }},
+  {re: /chrome|extension|browser add-?on/i, test: "npm test", tasks: (s, goal) => [`scaffold a Manifest V3 extension${s ? " for " + s : ""}`, "build the popup UI", goal ? `add the core feature: ${goal}` : `add the core ${s ? s + " " : ""}feature`, "save settings with chrome.storage", "write tests for the core feature", "publish to the Chrome Web Store"]},
+  {re: /\bcli\b|command line|tool|script|bot/i, test: "python3 -m pytest -q", tasks: (s, goal) => [`scaffold the ${s ? s + " " : ""}CLI with a main command`, goal ? `implement the core logic: ${goal}` : `implement the core ${s ? s + " " : ""}logic`, "add a --dry-run flag", "write tests for the edge cases", "add a README with usage examples", "publish to PyPI"]},
+  {re: /game/i, test: 'grep -q "<canvas" index.html', tasks: (s, goal) => [`create index.html with a canvas and a game loop${s ? " for " + s : ""}`, goal ? `add the gameplay: ${goal}` : "add the player, goals and scoring", "add keyboard and touch controls", "save the high score in localStorage", "add sound effects with a mute toggle"]},
+  {re: /\bapi\b|backend|server|service/i, test: "npm test", tasks: (s, goal) => [`scaffold the ${s ? s + " " : ""}API with a health endpoint`, goal ? `add the endpoints to ${goal}, with validation` : "add the core endpoints and validation", "add rate limiting", "write integration tests", "add an OpenAPI spec", "deploy to prod with my account"]},
+  {re: /app|tracker|dashboard|planner/i, test: "npm test", tasks: (s, goal) => [`scaffold a Vite + React app${s ? " for " + s : ""}`, "build the main screen and navigation", goal ? `add the core feature: ${goal}` : `add the core ${s ? s + " " : ""}feature with local storage`, "make it work well on phones", "add CSV export", "connect Stripe payments for a premium tier"]},
+  {re: /./, test: 'grep -q "<h1" index.html', tasks: (s, goal) => [`create the ${s || "site"} home page with a hero section`, goal ? `add the main content sections: ${goal}` : `add the main ${s ? s + " " : ""}content sections`, "add a contact or RSVP form that emails me", "make every page look good on phones", "add SEO tags and a favicon", "buy a domain and point it at the site"]},
 ];
+const KIND_WORDS = /\b(app|application|website|site|web ?page|landing page|cli|command line|tool|script|bot|extension|browser add-?on|game|api|backend|server|service|web ?app)\b/gi;
+const STOPWORDS = new Set(["a", "an", "the", "my", "our", "your", "that", "which", "to", "for", "of", "and", "with", "in", "on", "me"]);
 function draftPlan(prompt, topic) {   // topic (optional): short subject for the task titles, e.g. a repo name
-  const subject = prompt.replace(/^(please\s+)?(build|make|create|write|code|ship)\s+(me\s+)?(a|an|the|my)?\s*/i, "")
+  const subject = prompt.replace(/^(please\s+)?((build|make|create|write|code|ship|draft|start)\s+)?(me\s+)?((a|an|the|my|our)\s+)?/i, "")
                         .replace(/\b(website|site|web ?page|landing page)\s+for\s+(my|our|a|an|the)?\s*/i, "")
                         .replace(/[.!?]+$/, "").trim() || "my project";
   const kind = KINDS.find(k => k.re.test(prompt));
-  const core = topic || subject.replace(/\b(for|of)\s+(my|our|the|a)\b.*$/i, "").replace(/\b(app|application|website|site|cli|tool|extension|game|api|web ?app)\b/gi, "")
-                      .replace(/\s+/g, " ").trim() || subject;
-  const slug = core.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").split("-").slice(0, 3).join("-") || "project";
-  return `# ${prompt.trim()}\n\n## ${slug}\ntest: ${kind.test}\n` + kind.tasks(core).map(t => "- [ ] " + t).join("\n");
+  const forPart = ((subject.match(/\b(?:for|of)\s+(?:(?:my|our|the|a|an)\s+)?(.+)$/i) || [])[1] || "").replace(KIND_WORDS, "").replace(/\s+/g, " ").trim();
+  const core = subject.replace(/\b(for|of)\s+(my|our|the|a|an)\b.*$/i, "").replace(KIND_WORDS, "").replace(/\s+/g, " ").trim();
+  const split = core.match(/^(.*?)\s*\b(?:that|which|to)\s+(.+)$/i);   // "Chrome that blocks Twitter" → name "Chrome", goal "blocks Twitter"
+  let name = topic || (split ? split[1].trim() : core), goal = topic ? "" : (split ? split[2].trim() : "");
+  if (!name && forPart) name = forPart;
+  const words = [name, goal, name || goal ? "" : subject].join(" ").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(w => w && !STOPWORDS.has(w));
+  const slug = kind.repo && !topic ? "my-repo" : words.slice(0, 3).join("-") || "project";
+  return `# ${prompt.trim()}\n\n## ${slug}\ntest: ${kind.test}\n` + kind.tasks(name, goal, prompt).map(t => "- [ ] " + t).join("\n");
 }
 
 // ---------- 1b. samples (also downloadable from plans/*.md)
@@ -529,7 +547,7 @@ async function run() {
 
 // ---------- wiring
 $("run").onclick = run;
-$("pform").onsubmit = e => { e.preventDefault(); const v = $("pin").value.trim(); if (!v) return; $("plan").value = draftPlan(v); picked.clear(); $("filelist").innerHTML = ""; renderSamples(); renderTimeline(); };
+$("pform").onsubmit = e => { e.preventDefault(); const v = $("pin").value.trim(); if (!v) return; $("plan").value = draftPlan(v); picked.clear(); $("filelist").innerHTML = ""; renderSamples(); renderTimeline(); showDraftNote(); };
 $("files").addEventListener("change", e => loadFiles([...e.target.files]));
 const drop = $("drop");
 ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
@@ -552,6 +570,16 @@ $("samples").addEventListener("click", e => { if (e.target.tagName !== "A" && e.
 $("files").addEventListener("change", forgetRepo);
 drop.addEventListener("drop", forgetRepo);
 $("clear").addEventListener("click", forgetRepo);
+function showDraftNote() {   // the timeline sits below the fold: confirm the click right under the button
+  const ps = parsePlan($("plan").value), n = ps.reduce((a, p) => a + p.tasks.length, 0), note = $("draftnote");
+  note.innerHTML = `✓ Drafted ${n} task${n === 1 ? "" : "s"} for <b>${esc(ps[0] ? ps[0].name : "your project")}</b> · <a href="#timeline">see tonight's timeline ↓</a>`;
+  note.classList.remove("pop"); void note.offsetWidth; note.classList.add("pop");
+}
+$("draftnote").addEventListener("click", e => { if (e.target.tagName !== "A") return; e.preventDefault(); $("timeline").closest(".card").scrollIntoView({behavior: "smooth", block: "start"}); });
+const clearDraftNote = () => { $("draftnote").textContent = ""; };
+$("samples").addEventListener("click", e => { if (e.target.tagName !== "A" && e.target.closest(".sample")) clearDraftNote(); });
+["files", "repo"].forEach(id => $(id).addEventListener("change", clearDraftNote));
+drop.addEventListener("drop", clearDraftNote); $("clear").addEventListener("click", clearDraftNote); $("plan").addEventListener("input", clearDraftNote);
 $("pin").value = "Build a website for my piano recital";
 $("plan").value = draftPlan($("pin").value);   // never start empty
 renderSamples(); renderTimeline();
