@@ -311,9 +311,7 @@ def make_sandbox(root: str) -> dict:
 def demo_config(sandbox: dict, speed: float = 1.0) -> dict:
     """burner-week config for the sandbox: kind "demo" subscriptions (no keys, no network) and kind "mock" lanes
     that pose as the real ones. `speed` scales the mock lanes' pace (2.0 = twice as fast)."""
-    h = 30.0                                                              # hours to the weekly reset
-
-    def sub(name, lane, unit, used, limit):
+    def sub(name, lane, unit, used, limit, h):                            # h: hours to this plan's own reset
         return {"name": name, "kind": "demo", "lane": lane, "unit": unit, "used": used, "limit": limit,
                 "resets_in_hours": h}
 
@@ -328,11 +326,11 @@ def demo_config(sandbox: dict, speed: float = 1.0) -> dict:
         "week": {"reset": "mon 09:00", "timezone": "UTC", "target_pct": 0.97},
         "roots": [str(Path(sandbox["root"]) / "projects")], "max_depth": 2, "max_projects": 12, "per_project": 4,
         "max_agents": 8, "data_dir": sandbox["data_dir"], "ideas": {"enabled": False}, "monid": {"enabled": False},
-        "subscriptions": [sub("claude-max", "claude", "tokens", 312_000_000, 400_000_000),     # 78% used
-                          sub("codex", "codex", "tokens", 60_000_000, 100_000_000),            # 60%
-                          sub("agent37", "agent37", "usd", 11.40, 20.0),
-                          sub("openai", "relay", "usd", 7.80, 20.0),
-                          sub("monid", "monid", "credits", 420, 1000)],
+        "subscriptions": [sub("claude-max", "claude", "tokens", 312_000_000, 400_000_000, 30),  # 78% used, weekly
+                          sub("codex", "codex", "tokens", 60_000_000, 100_000_000, 76),         # 60%, its own week
+                          sub("agent37", "agent37", "usd", 11.40, 20.0, 19 * 24),              # monthly budgets
+                          sub("openai", "relay", "usd", 7.80, 20.0, 23 * 24),
+                          sub("monid", "monid", "credits", 420, 1000, 9 * 24)],
         "lane_defaults": {"speed": speed, "seconds": 20, "seed": 1},
         "lanes": [lane("claude", "claude", "claude-max", 4, 500_000),
                   lane("codex", "codex", "codex", 2, 400_000, done=0.6, blocked=0.05, failed=0.05, limited=0.3),

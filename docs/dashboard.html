@@ -6,8 +6,8 @@
 <meta name="relay-dashboard" content="burn-week">
 <meta name="color-scheme" content="light dark">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
-<meta name="description" content="Relay burn week, live: a swarm of agents spending this week's leftover AI subscription capacity on your own projects before the reset.">
-<title>Relay · Burn week</title>
+<meta name="description" content="Agent Relay burn week, live: a swarm of agents spending this week's leftover AI subscription capacity on your own projects before the reset.">
+<title>Agent Relay · Burn week</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23ff5c00'/%3E%3Ctext x='16' y='22.5' font-family='ui-monospace,Menlo,monospace' font-size='17' font-weight='700' text-anchor='middle' fill='%23fff'%3ER%3C/text%3E%3C/svg%3E">
 <style>
   :root {
@@ -313,7 +313,7 @@
 </head>
 <body>
 <header><div class="bar">
-  <div class="logo"><i>R</i><span>Relay</span></div>
+  <div class="logo"><i>R</i><span>Agent Relay</span></div>
   <span class="pill">BURN WEEK</span>
   <div class="conn" id="conn" data-state="boot" role="status" aria-live="polite"><i></i><span id="conn-text">connecting</span></div>
   <div class="meta" id="meta"></div>
@@ -332,7 +332,7 @@
       <div class="chips" id="chips">
         <span class="k-usd"><b id="n-usd">$0.00</b>spent</span>
         <span class="k-done"><b id="n-done">0</b>landed</span>
-        <span class="k-blocked"><b id="n-blocked">0</b>need you</span>
+        <span class="k-blocked"><b id="n-blocked">0</b>parked</span>
         <span class="k-failed"><b id="n-failed">0</b>failed</span>
         <span class="k-limited"><b id="n-limited">0</b>limited</span>
         <span class="k-running"><b id="n-running">0</b>running</span>
@@ -391,7 +391,7 @@ const NAMES = {claude: "Claude Code", codex: "Codex", agent37: "Agent37", relay:
 const ALIASES = [["claude", "claude"], ["codex", "codex"], ["chatgpt", "codex"], ["agent37", "agent37"],
                  ["openai", "relay"], ["relay", "relay"], ["orca", "orca"], ["monid", "monid"]];
 const ENDS = ["done", "blocked", "failed", "limited"];
-const LABEL = {running: "running", done: "done", blocked: "needs you", failed: "failed", limited: "limited"};
+const LABEL = {running: "running", done: "done", blocked: "parked", failed: "failed", limited: "limited"};
 const ICON = {done: "✓", blocked: "◆", failed: "✗", limited: "⊘"};
 const HOLD = 2600, MAX_GAP = 2.2, LOOP_PAUSE = 9000;
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -593,7 +593,7 @@ function renderTop() {
   const plans = burning().size;
   $("race-when").textContent = plans ? `${plans} plan${plans === 1 ? "" : "s"} burning` : "";
   const top = [...S.meters.values()].find(m => m.limit);
-  document.title = top ? `${(Math.min(1, usedOf(top) / top.limit) * 100).toFixed(1)}% · Relay burn week` : "Relay · Burn week";
+  document.title = top ? `${(Math.min(1, usedOf(top) / top.limit) * 100).toFixed(1)}% · Agent Relay burn week` : "Agent Relay · Burn week";
 }
 
 const meterRows = new Map();
@@ -661,7 +661,7 @@ function renderBanners() {
       const hit = top && top[1] >= S.target - 1e-9;
       body.append(el("b", null, hit ? "Week burned. " : "Run complete. "),
                   el("span", "lead", top ? `${(Math.min(1, top[1]) * 100).toFixed(1)}% of ${top[0].name} used${top[0].resetsAt ? " before its " + when(top[0].resetsAt) + " reset" : ""}.` : S.end.reason),
-                  el("small", null, [`${S.counts.done} landed`, `${S.counts.blocked} need you`, `${S.counts.failed} failed`, `${si(S.tokens)} tokens`, money(S.usd),
+                  el("small", null, [`${S.counts.done} landed`, `${S.counts.blocked} parked`, `${S.counts.failed} failed`, `${si(S.tokens)} tokens`, money(S.usd),
                                      clock(S.end.seconds), S.end.reason && top ? S.end.reason : ""].filter(Boolean).join(" · ") +
                                      ". Every task is one tested commit on a local relay/burn/* branch; nothing was pushed."));
       b.el.append(el("span", "bi", "✓"), body);
@@ -778,7 +778,7 @@ function renderLanded() {
   if (fresh.length) landTop = fresh[0].id;
   while (list.children.length > 40) list.lastChild.remove();
   const n = S.counts.done, waiting = S.counts.blocked;
-  $("landed-count").textContent = `${n} commit${n === 1 ? "" : "s"}` + (waiting ? ` · ${waiting} need you` : "");
+  $("landed-count").textContent = `${n} commit${n === 1 ? "" : "s"}` + (waiting ? ` · ${waiting} parked` : "");
   $("landed-empty").hidden = S.landed.length > 0;
 }
 function buildLanded(x) {
