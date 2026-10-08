@@ -1,0 +1,4 @@
+{"id": "0199b2c4-0000-7000-8000-000000000002", "timestamp": "2026-10-02T08:00:00.000Z", "instructions": null}
+{"type": "message", "role": "user", "content": [{"type": "input_text", "text": "<environment_context>\n<cwd>/nonexistent/relay-fixture/cli</cwd>\n</environment_context>"}]}
+{"record_type": "state"}
+{"type": "message", "role": "user", "content": [{"type": "input_text", "text": "remind me to bump the minimum Python version to 3.11"}]}
