@@ -252,7 +252,7 @@
         <div class="chh"><b>💬 What chat search finds</b><span class="tag" id="chtag">SAMPLE</span><span class="chinfo" id="chinfo"></span><button type="button" class="link" id="chreset" hidden>back to the sample</button></div>
         <div class="chgrid" id="chgrid"></div>
         <label class="chdrop" id="chdrop" for="chfile"><input type="file" id="chfile" accept=".json,application/json" hidden><span class="ico">⬆</span>
-          <span><b>Drop your ChatGPT or Claude export</b> (conversations.json). It's parsed in your browser and never uploaded. On your machine, <code>burner ideas</code> reads your local transcripts.</span></label>
+          <span><b>Drop your ChatGPT or Claude export</b> (conversations.json). It's parsed in your browser and never uploaded. On your machine, <code>relay burn ideas</code> reads your local transcripts.</span></label>
         <div class="chmsg" id="chmsg" aria-live="polite"></div>
       </div>
     </div>
@@ -491,13 +491,23 @@ function repoSources(repo) {
   }
   return SRC.get(key);
 }
+async function planTexts(o, n, repo, base) {   // list the repo root once, then fetch only plan files that exist: no 404s in the console
+  const root = await ghJson(`${GH_API}/repos/${o}/${n}/contents/?ref=${enc(repo.branch)}`);
+  if (!Array.isArray(root.data)) return Promise.all(PLAN_FILES.map(p => ghText(base + p)));   // rate-limited or offline: probe directly
+  const has = new Set(root.data.map(f => f && f.name));
+  if (root.data.some(f => f && f.name === "docs" && f.type === "dir")) {   // docs/PLAN.md: look inside docs/ before fetching
+    const d = await ghJson(`${GH_API}/repos/${o}/${n}/contents/docs?ref=${enc(repo.branch)}`);
+    if (Array.isArray(d.data) && d.data.some(f => f && f.name === "PLAN.md")) has.add("docs/PLAN.md");
+  }
+  return Promise.all(PLAN_FILES.map(p => has.has(p) ? ghText(base + p) : null));
+}
 async function fetchSources(repo, key) {
   const ss = "relay.ghsrc." + key;
   try { const c = JSON.parse(sessionStorage.getItem(ss) || "null"); if (c && c.v === 1 && Array.isArray(c.planItems) && Array.isArray(c.issues) && Array.isArray(c.prs)) return c; } catch (e) {}
   const o = enc(repo.owner), n = enc(repo.name), base = `${GH_RAW}/${o}/${n}/${repo.branch.split("/").map(enc).join("/")}/`;
   const any = repo.openIssues !== 0, none = Promise.resolve({data: []});   // open_issues_count covers issues and PRs: 0 means nothing to fetch (saves the 60/hour anonymous limit)
   const [texts, iss, prs] = await Promise.all([
-    Promise.all(PLAN_FILES.map(p => ghText(base + p))),
+    planTexts(o, n, repo, base),
     any ? ghJson(`${GH_API}/repos/${o}/${n}/issues?state=open&per_page=20`) : none,
     any ? ghJson(`${GH_API}/repos/${o}/${n}/pulls?state=open&per_page=10`) : none,
   ]);
@@ -725,7 +735,7 @@ function mineChats(convs) {
 async function loadChats(file) {
   const msg = $("chmsg"); msg.className = "chmsg"; msg.textContent = "";
   if (!file) return;
-  if (file.size > 40 * 1048576) { msg.className = "chmsg err"; msg.textContent = `That export is ${Math.round(file.size / 1048576)} MB. The demo reads up to 40 MB; burner ideas has no limit.`; return; }
+  if (file.size > 40 * 1048576) { msg.className = "chmsg err"; msg.textContent = `That export is ${Math.round(file.size / 1048576)} MB. The demo reads up to 40 MB; relay burn ideas has no limit.`; return; }
   msg.textContent = "Reading your export in this tab…";
   try {
     const data = JSON.parse(await file.text());
