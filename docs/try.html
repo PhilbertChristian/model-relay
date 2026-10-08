@@ -143,7 +143,53 @@
   .agent:has(input:checked) { border-color:#ffc6a6; background:var(--orange-soft); }
   .agent:has(input:checked) .sw { background:var(--orange); } .agent:has(input:checked) .sw::after { left:16px; }
   .s2 { margin-top:16px; }
-  .runrow { display:flex; align-items:center; gap:12px 16px; margin-top:16px; flex-wrap:wrap; } .runrow .hint { font-size:12.5px; color:var(--muted); }
+
+  /* step 2b: schedule */
+  .s2b { margin-top:16px; }
+  .sgrid { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); grid-template-areas:"win resets" "hours reserve"; gap:12px; }
+  @media (max-width:900px) { .sgrid { grid-template-columns:minmax(0,1fr); grid-template-areas:"win" "hours" "reserve" "resets"; } }
+  .tile { min-width:0; background:var(--bg); border-radius:16px; padding:14px 14px 12px; }
+  .t-win { grid-area:win; } .t-resets { grid-area:resets; } .t-hours { grid-area:hours; } .t-reserve { grid-area:reserve; }
+  .tile .lab { display:flex; align-items:center; gap:8px; color:var(--orange); margin:0 0 10px; }
+  .srow { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; font-size:14px; margin:0 0 8px; }
+  .srow b { font-weight:600; font-variant-numeric:tabular-nums; } .srow .arr { color:var(--muted); } .pair { display:inline-flex; align-items:center; gap:8px; }
+  .sel { height:34px; border:1px solid var(--line); border-radius:10px; padding:0 28px 0 10px; font:500 13.5px var(--mono); color:var(--ink); cursor:pointer; -webkit-appearance:none; appearance:none;
+         background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237a7a7a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 10px center; }
+  .sel:focus { outline:none; border-color:var(--orange); }
+  .tog { display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; color:var(--ink); user-select:none; }
+  .dim { opacity:.4; }
+  .fine { font-size:12px; line-height:1.45; color:var(--muted); margin:8px 0 0; } .fine b { color:var(--ink-2); font-weight:600; }
+  .mt { position:relative; margin:12px 0 0; padding-bottom:22px; }
+  .mt .ax { position:relative; height:16px; margin-left:56px; font:500 10.5px var(--mono); color:var(--muted); }
+  .mt .ax span { position:absolute; top:0; transform:translateX(-50%); white-space:nowrap; }
+  .mt .ax span:first-child { transform:none; } .mt .ax span:last-child { transform:translateX(-100%); }
+  @media (max-width:600px) { .mt .ax span:nth-child(even) { display:none; } }
+  .mrow { display:flex; align-items:center; height:30px; }
+  .mrow > b { flex:none; width:56px; font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .trk { position:relative; flex:1; height:22px; border-radius:7px; background:#fff; box-shadow:inset 0 0 0 1px #ececec; }
+  .win { position:absolute; top:3px; bottom:3px; border-radius:5px; background:#ffe0cc; color:#b84300; font:600 10px/16px var(--mono); padding:0 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .win.nx { background:var(--green-soft); color:var(--green); padding-left:14px; }
+  .rs { position:absolute; top:50%; width:18px; height:18px; margin:-9px 0 0 -9px; border-radius:50%; background:#fff; border:2px solid var(--green); color:var(--green); font:700 10px/14px var(--sans); text-align:center; z-index:2; }
+  .workline { position:absolute; top:12px; bottom:20px; border-left:2px dashed var(--ink); z-index:3; pointer-events:none; }
+  .workline span { position:absolute; top:100%; margin-top:4px; left:0; transform:translateX(-50%); white-space:nowrap; font:600 10.5px var(--mono); color:var(--ink); }
+  .mtnone { font-size:13px; color:var(--muted); background:#fff; border-radius:12px; padding:12px; margin-top:10px; }
+  .days { display:flex; flex-wrap:wrap; gap:5px; }
+  .day { position:relative; }
+  .day input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; }
+  .day span { display:grid; place-items:center; min-width:40px; height:30px; padding:0 6px; border-radius:9px; border:1px solid var(--line); background:#fff; font:500 12px var(--mono); color:var(--muted); }
+  .day input:checked + span { background:var(--ink); border-color:var(--ink); color:#fff; }
+  .day input:focus-visible + span { outline:2px solid var(--orange); outline-offset:2px; }
+  @media (max-width:600px) { .days { gap:4px; } .day span { min-width:33px; padding:0 3px; } }
+  .t-reserve input[type=range] { width:100%; margin:2px 0 0; accent-color:var(--orange); }
+  .rsets { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+  .rset { display:flex; align-items:center; gap:10px; min-width:0; background:#fff; border-radius:12px; padding:8px 10px; }
+  .rset .ro { flex:none; width:20px; height:20px; border-radius:6px; background:var(--ink); color:#fff; display:grid; place-items:center; font:600 11px var(--mono); }
+  .rset > div { flex:1; min-width:0; } .rset b { display:block; font-size:13.5px; font-weight:600; }
+  .rset small { display:block; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .burn { flex:none; font:600 11px var(--mono); padding:3px 8px; border-radius:7px; background:var(--orange-soft); color:var(--orange); white-space:nowrap; }
+  .burn.zero { background:#f1f1f1; color:var(--muted); }
+  .runbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px 16px; margin-top:16px; }
+  .runbar .hint { font-size:12.5px; color:var(--muted); }
   .opts { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-left:auto; font-size:13px; color:var(--ink-2); }
   .opts > span { font:600 11px var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
   .opts label { display:flex; align-items:center; gap:6px; cursor:pointer; } .opts input { accent-color:var(--orange); }
@@ -156,7 +202,7 @@
   .night .track { position:absolute; left:0; right:0; top:14px; height:6px; border-radius:99px; background:linear-gradient(90deg,#1b2a4a,#3b4f86 40%,#f0a46b 92%,#ffd27a); }
   .night .fill { position:absolute; left:0; top:14px; height:6px; border-radius:99px; background:var(--orange); width:0; transition:width .4s; }
   .night .now { position:absolute; top:7px; width:20px; height:20px; margin-left:-10px; border-radius:50%; background:#fff; border:3px solid var(--orange); left:0; transition:left .4s; box-shadow:0 2px 8px rgba(0,0,0,.15); }
-  .night .lbl { position:absolute; top:-4px; font:500 11px var(--mono); color:var(--muted); }
+  .night .lbl { position:absolute; top:-4px; font:500 11px var(--mono); color:var(--muted); } .night .lbl.mid { left:calc(50% - 18px); }
   .tl { position:relative; max-height:600px; overflow-y:auto; padding-right:4px; }
   .tl::before { content:""; position:absolute; left:63px; top:6px; bottom:6px; width:2px; background:#eee; }
   .item { position:relative; display:grid; grid-template-columns:54px 1fr; gap:18px; padding:6px 0; }
@@ -204,6 +250,8 @@
   .chmd dt { font-weight:600; white-space:nowrap; } .chmd dd { margin:0; color:var(--ink-2); overflow-wrap:anywhere; }
   @media (max-width:560px) { .chmd { grid-template-columns:minmax(0,1fr); gap:2px; } .chmd dd { margin-bottom:6px; } }
   .chnext { font-size:12px; color:var(--muted); }
+  .rline { display:flex; flex-wrap:wrap; gap:6px; margin:0; }
+  .rline span { font:500 12px var(--mono); background:var(--green-soft); color:var(--green); border-radius:8px; padding:3px 8px; } .rline b { font-weight:600; }
   .note { font-size:12px; color:var(--muted); margin-top:10px; } code { font:12.5px var(--mono); background:#f0f0f0; padding:1px 6px; border-radius:6px; }
 </style>
 </head>
@@ -269,13 +317,48 @@
       <label class="agent"><input type="checkbox" data-sub="agent37" checked><span class="lg" style="background:#5b4cf0">37</span><span><b>Hermes on Agent37</b><small>$25 credit</small></span><span class="sw"></span></label>
       <label class="agent"><input type="checkbox" data-sub="openai"><span class="lg" style="background:#191919">AI</span><span><b>OpenAI API</b><small>pay-as-you-go</small></span><span class="sw"></span></label>
     </div>
-    <div class="runrow"><button class="btn orange big" id="run">▶ Run tonight's shift</button><span class="hint">a simulated night, about 10 seconds</span>
-      <div class="opts"><span>Simulate</span>
-        <label><input type="checkbox" id="inj402" checked>Agent37 runs out (402)</label>
-        <label><input type="checkbox" id="injloop" checked>A model gets stuck</label>
-        <label><input type="checkbox" id="injask" checked>An agent asks a question</label>
-        <label>Speed <select id="speed" style="border:1px solid var(--line);border-radius:8px;background:#fff;padding:3px 6px;font:13px var(--sans)"><option value="1">normal</option><option value="2.5" selected>fast</option><option value="6">very fast</option></select></label>
+  </section>
+
+  <section class="card s2b">
+    <h2><span class="step">2b</span>Schedule</h2>
+    <p class="sub">When Agent Relay works, what it never touches, and how each plan's clock gets used.</p>
+    <div class="sgrid">
+      <div class="tile t-win">
+        <div class="lab">5-hour windows</div>
+        <div class="srow">Start my windows at <select class="sel" id="wstart" aria-label="Start my windows at"></select><span class="pair"><span class="arr">→</span><b id="firstreset">first reset 10:00</b></span></div>
+        <div class="srow"><label class="tog"><span class="switch"><input type="checkbox" id="stagger" checked><span></span></span>Stagger across plans</label>
+          <span id="wgapwrap">gap <select class="sel" id="wgap" aria-label="Gap between plans"><option value="60" selected>60</option><option value="120">120</option><option value="180">180</option></select> min</span></div>
+        <div class="mt" id="mt"></div>
+        <p class="fine" id="wsum"></p>
+        <p class="fine">Agent Relay sends a one-line prompt on your cheapest model to open each window; windows start on the hour.</p>
       </div>
+      <div class="tile t-resets">
+        <div class="lab">Leftovers before each reset <span class="tag">EXAMPLE</span></div>
+        <label class="tog"><span class="switch"><input type="checkbox" id="autoburn" checked><span></span></span>Auto-burn leftovers before each plan resets</label>
+        <div class="rsets" id="rsets"></div>
+        <p class="fine" id="eow"></p>
+      </div>
+      <div class="tile t-hours">
+        <div class="lab">Your schedule</div>
+        <div class="srow">Work hours <span class="pair"><select class="sel" id="wfrom" aria-label="Work starts"></select><span class="arr">–</span><select class="sel" id="wto" aria-label="Work ends"></select></span></div>
+        <div class="days" id="days" role="group" aria-label="Workdays"></div>
+        <p class="fine" id="hsum"></p>
+      </div>
+      <div class="tile t-reserve">
+        <div class="lab">Reserve</div>
+        <div class="srow">Keep <b id="resv">15%</b> of each plan for yourself</div>
+        <input type="range" id="reserve" min="0" max="50" step="5" value="15" aria-label="Reserve per plan, in percent">
+        <p class="fine" id="capline"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card runbar"><button class="btn orange big" id="run">▶ Run tonight's shift</button><span class="hint">a simulated night, about 10 seconds</span>
+    <div class="opts"><span>Simulate</span>
+      <label><input type="checkbox" id="inj402" checked>Agent37 runs out (402)</label>
+      <label><input type="checkbox" id="injloop" checked>A model gets stuck</label>
+      <label><input type="checkbox" id="injask" checked>An agent asks a question</label>
+      <label>Speed <select id="speed" style="border:1px solid var(--line);border-radius:8px;background:#fff;padding:3px 6px;font:13px var(--sans)"><option value="1">normal</option><option value="2.5" selected>fast</option><option value="6">very fast</option></select></label>
     </div>
   </section>
 
@@ -283,7 +366,7 @@
     <div class="card">
       <h2><span class="step">3</span>Tonight's timeline</h2>
       <p class="sub" id="tlsub">23:00 → 07:00 · one block per task</p>
-      <div class="night"><span class="lbl" style="left:0">23:00</span><span class="lbl" style="left:47%">03:00</span><span class="lbl" style="right:0">07:00</span><div class="track"></div><div class="fill" id="fill"></div><div class="now" id="now"></div></div>
+      <div class="night"><span class="lbl" style="left:0">23:00</span><span class="lbl mid" id="nlmid">03:00</span><span class="lbl" style="right:0" id="nlend">07:00</span><div class="track"></div><div class="fill" id="fill"></div><div class="now" id="now"></div></div>
       <div class="tl" id="timeline"></div>
       <details class="md"><summary>Edit as markdown (PLAN.md)</summary>
         <textarea id="plan" spellcheck="false" aria-label="PLAN.md"></textarea>
@@ -301,7 +384,7 @@ A simulation of the real `relay burn run` with the same rules: burn order, per-n
   <div id="result">
     <section class="card util"><h2><span><span class="step">4</span>Your plans, used</span><span class="legend"><span><i style="background:#bdbdbd"></i>today</span><span><i style="background:var(--orange)"></i>with Agent Relay nightly</span></span></h2>
       <div class="head" id="uhead"></div><div id="ubars"></div>
-      <div class="note">"Today" for Claude Max seat A is our measured 38% window coverage; the other seats are illustrative. "With Agent Relay" is a projection: Agent Relay working each connected plan 23:00–07:00, every night.</div></section>
+      <div class="note" id="unote">"Today" for Claude Max seat A is our measured 38% window coverage; the other seats are illustrative. "With Agent Relay" is a projection: Agent Relay working each connected plan 23:00–07:00, every night.</div></section>
     <section class="card"><h2>☕ MORNING.md</h2><div id="md"></div>
       <div class="note">Simulated. Real run: <code>relay burn run PLAN.md -b burner.json</code> · your month: <code>relay savings</code></div></section>
   </div>
@@ -315,7 +398,7 @@ function h(s) { let x = 2166136261; for (const ch of s) { x ^= ch.charCodeAt(0);
 const sha = s => h(s).toString(16).padStart(8, "0").slice(0, 7);
 const money = v => "$" + v.toFixed(2);
 const fmt = m => { const t = (23 * 60 + m) % 1440; return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0"); };
-const NIGHT = 480;
+let NIGHT = 480;   // minutes from 23:00 to the end of the shift; the schedule can end it earlier
 const COLORS = ["#ff5c00", "#2f6fed", "#1f9d63", "#9b51e0", "#d4a017", "#e0457b"];
 const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
@@ -735,7 +818,7 @@ function mineChats(convs) {
 async function loadChats(file) {
   const msg = $("chmsg"); msg.className = "chmsg"; msg.textContent = "";
   if (!file) return;
-  if (file.size > 40 * 1048576) { msg.className = "chmsg err"; msg.textContent = `That export is ${Math.round(file.size / 1048576)} MB. The demo reads up to 40 MB; relay burn ideas has no limit.`; return; }
+  if (file.size > 40 * 1048576) { msg.className = "chmsg err"; msg.textContent = `That export is ${Math.round(file.size / 1048576)} MB. The demo reads up to 40 MB; on your machine, relay burn ideas reads exports up to 512 MB.`; return; }
   msg.textContent = "Reading your export in this tab…";
   try {
     const data = JSON.parse(await file.text());
@@ -782,7 +865,7 @@ function renderTimeline() {
     return `<div class="item ${at >= NIGHT ? "later" : ""}" id="tl-${i}" style="--c:${q.color}"><div class="t">${at >= NIGHT ? "next" : fmt(at)}</div><span class="dot"></span>
       <div class="blk"><div class="title">${job ? `<span class="tj" aria-hidden="true">${JOBS[job].icon}</span>` : ""}${esc(q.tk.text)}</div><div class="meta"><span class="proj">${esc(q.p.name)}</span><span class="art a-${art}">${ART[art]}</span><span>~${est} min</span><span class="st">${at >= NIGHT ? "TOMORROW" : "QUEUED"}</span></div><div class="x"></div></div></div>`;
   }).join("") : `<div class="empty">${esc(EMPTY)}</div>`;
-  $("tlsub").textContent = QUEUE.length ? `${QUEUE.length} tasks · 23:00 → 07:00` : "23:00 → 07:00 · one block per task";
+  $("tlsub").textContent = QUEUE.length ? `${QUEUE.length} tasks · ${fmt(0)} → ${fmt(NIGHT)}` : `${fmt(0)} → ${fmt(NIGHT)} · one block per task`;
   $("run").disabled = !QUEUE.length;
 }
 function setItem(i, cls, label, extra) {
@@ -810,6 +893,88 @@ let speed = 2.5;
 const out = $("out");
 const sleep = ms => new Promise(r => setTimeout(r, ms / speed));
 function line(cls, text) { const d = document.createElement("div"); if (cls) d.className = cls; d.innerHTML = text; out.appendChild(d); out.scrollTop = out.scrollHeight; }
+// ---------- 2b. schedule: window priming, work hours, reserve, and each plan's own reset clock
+const SHORT = {"claude-a": "Max A", "claude-b": "Max B", "chatgpt": "Codex", "agent37": "Agent37", "openai": "OpenAI"};
+const RESETS = {   // example values: every plan keeps its own reset clock (real numbers: relay burn usage)
+  "claude-a": {name: "Claude Max A", when: "Thu 14:00", left: "31h left", unused: 38, soon: 31},
+  "claude-b": {name: "Claude Max B", when: "Sat 09:00", left: "3d left", unused: 12, soon: 72},
+  "chatgpt":  {name: "Codex · ChatGPT Pro", when: "Mon 07:00", left: "5d left", unused: 55, soon: 120},
+  "agent37":  {name: "Agent37", when: "Nov 1", left: "monthly credit", unused: null, soon: 600},
+  "openai":   {name: "OpenAI API", when: "", left: "pay-as-you-go, nothing expires", unused: null, soon: 1e9},
+};
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const SCHED = {start: 300, stagger: true, gap: 60, from: 540, to: 1080, days: [true, true, true, true, true, false, false], reserve: 15, autoburn: true};
+const hhmm = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); };
+const connected = () => [...document.querySelectorAll("[data-sub]")].filter(c => c.checked).map(c => c.dataset.sub);
+const capOf = (k, reserve) => SUBS[k].kind === "paygo" ? SUBS[k].cap : SUBS[k].cap * (1 - reserve / 100);   // never burn into the reserve
+function primes() {   // one window per connected Claude or Codex plan, a gap apart when staggered; windows start on the hour
+  if (SCHED.start < 0) return [];
+  return connected().filter(k => SUBS[k].kind === "window").map((k, i) => {
+    const at = SCHED.start + (SCHED.stagger ? i * SCHED.gap : 0) + 1;
+    return {k, at, reset: Math.floor(at / 60) * 60 + 300};
+  });
+}
+function dayList(flags) {   // [Mon..Sun] flags → "Mon–Fri" or "Mon, Wed"
+  const idx = DAYS.map((d, i) => i).filter(i => flags[i]);
+  const run = idx.length > 2 && idx.every((v, j) => !j || v === idx[j - 1] + 1);
+  return run ? `${DAYS[idx[0]]}–${DAYS[idx[idx.length - 1]]}` : idx.map(i => DAYS[i]).join(", ");
+}
+function options(sel, from, to, step, value, extra) {
+  const opts = []; for (let m = from; m <= to; m += step) opts.push(`<option value="${m}"${m === value ? " selected" : ""}>${hhmm(m)}</option>`);
+  sel.innerHTML = opts.join("") + (extra || "");
+}
+function renderSched() {
+  SCHED.start = +$("wstart").value; SCHED.stagger = $("stagger").checked; SCHED.gap = +$("wgap").value;
+  SCHED.from = +$("wfrom").value; SCHED.to = +$("wto").value; SCHED.days = [...$("days").querySelectorAll("input")].map(c => c.checked);
+  SCHED.reserve = +$("reserve").value; SCHED.autoburn = $("autoburn").checked;
+
+  // a. 5-hour windows: 04:00 → 14:00, one row per plan
+  const P = primes(), T0 = 240, SPAN = 600, x = m => Math.max(0, Math.min(100, (m - T0) / SPAN * 100)).toFixed(2);
+  $("wgapwrap").classList.toggle("dim", !SCHED.stagger || SCHED.start < 0);
+  $("firstreset").textContent = SCHED.start < 0 ? "priming is off" : "first reset " + hhmm(P.length ? Math.min(...P.map(q => q.reset)) : Math.floor((SCHED.start + 1) / 60) * 60 + 300);
+  if (!P.length) $("mt").innerHTML = `<div class="mtnone">${SCHED.start < 0 ? "Priming is off: each window opens with your first prompt of the day." : "Turn on a Claude Code or Codex plan in step 2 to prime its windows."}</div>`;
+  else {
+    const rows = P.map(q => {
+      const r = ((q.reset - T0) % 1440 + 1440) % 1440 + T0, inside = r <= T0 + SPAN, a = x(r - 300), b = x(r), c = x(r + 300);
+      return `<div class="mrow"><b>${esc(SHORT[q.k])}</b><div class="trk">` +
+        (b - a > 0 ? `<span class="win" style="left:${a}%;width:${(b - a).toFixed(2)}%" title="primed at ${hhmm(q.at)}">primed ${hhmm(q.at)}</span>` : "") +
+        (inside && c - b > 0 ? `<span class="win nx" style="left:${b}%;width:${(c - b).toFixed(2)}%">${hhmm(r)} fresh window</span>` : "") +
+        (inside ? `<span class="rs" style="left:${b}%" title="resets at ${hhmm(r)}">↻</span>` : "") + `</div></div>`;
+    }).join("");
+    const w = (SCHED.from - T0) / SPAN;
+    $("mt").innerHTML = `<div class="ax">${[4, 6, 8, 10, 12, 14].map(hr => `<span style="left:${(hr * 60 - T0) / SPAN * 100}%">${hhmm(hr * 60)}</span>`).join("")}</div>${rows}` +
+      (w >= 0 && w <= 1 ? `<div class="workline" style="left:calc(56px + (100% - 56px) * ${w.toFixed(4)})"><span>you start work ${hhmm(SCHED.from)}</span></div>` : "");
+  }
+  const morning = P.every(q => q.reset % 1440 >= 300 && q.reset % 1440 <= 780);
+  $("wsum").innerHTML = !P.length ? "" : SCHED.stagger && P.length > 1
+    ? P.map(q => `<b>${esc(SHORT[q.k])}</b> ${hhmm(q.at)} → ${hhmm(q.reset)}`).join(" · ") + (morning ? ": resets all morning." : ".")
+    : `${P.map(q => esc(SHORT[q.k])).join(", ").replace(/, ([^,]+)$/, " and $1")} ${P.length > 1 ? "all reset" : "resets"} at <b>${hhmm(P[0].reset)}</b>` +
+      (P[0].reset % 1440 > SCHED.from ? `, ${Math.round((P[0].reset % 1440 - SCHED.from) / 60 * 10) / 10}h after you start work.` : ", before you start work.");
+
+  // b. work hours: never burn inside them; the night shift ends by the time you start
+  const night = SCHED.from < 420 ? SCHED.from + 60 : 480, work = dayList(SCHED.days), off = dayList(SCHED.days.map(v => !v));
+  if (!running && night !== NIGHT) { NIGHT = night; renderTimeline(); }
+  $("nlmid").textContent = fmt(Math.round(NIGHT / 2)); $("nlend").textContent = fmt(NIGHT);
+  $("hsum").innerHTML = (work ? `Agent Relay never burns <b>${hhmm(SCHED.from)}–${hhmm(SCHED.to)}</b>, ${work}. ` : "No workdays picked, so every day is downtime. ") +
+    `The night shift uses your downtime: tonight <b>${fmt(0)} → ${fmt(night)}</b>${work && off ? `, and all day ${off}` : ""}.`;
+
+  // c. reserve: lowers every plan's cap for tonight
+  $("resv").textContent = SCHED.reserve + "%";
+  const caps = connected().filter(k => SUBS[k].kind !== "paygo").map(k => `${SHORT[k]} ${money(capOf(k, SCHED.reserve))}`);
+  $("capline").innerHTML = `Agent Relay never burns into it.${caps.length ? ` Tonight's caps: ${esc(caps.join(" · "))}.` : ""}`;
+
+  // d. leftovers: each plan has its own reset; burn the soonest first, down to the reserve
+  const ks = connected().sort((a, b) => RESETS[a].soon - RESETS[b].soon);
+  $("rsets").innerHTML = ks.map((k, i) => {
+    const R = RESETS[k], burn = R.unused === null ? null : Math.max(0, R.unused - SCHED.reserve);
+    const chip = k === "openai" ? `<span class="burn zero">not burned</span>` : !SCHED.autoburn ? `<span class="burn zero">off</span>`
+      : burn === null ? `<span class="burn">to ${SCHED.reserve}%</span>` : burn > 0 ? `<span class="burn">burns ${burn}%</span>` : `<span class="burn zero">at reserve</span>`;
+    return `<div class="rset"><span class="ro">${i + 1}</span><div><b>${esc(R.name)}</b><small>${R.when ? `resets ${esc(R.when)} · ` : ""}${esc(R.left)}${R.unused === null ? "" : ` · ${R.unused}% unused`}</small></div>${chip}</div>`;
+  }).join("") || `<div class="mtnone">Connect a plan in step 2 to see its reset clock.</div>`;
+  $("eow").innerHTML = SCHED.autoburn
+    ? `Agent Relay burns each plan in the hours before its own reset, down to your <b>${SCHED.reserve}% reserve</b>, starting with whichever expires soonest. Real numbers: <code>relay burn usage</code> · the burn: <code>relay burn week</code>`
+    : "Auto-burn is off: whatever is left on a plan expires at its reset.";
+}
 function tick(m) { const c = fmt(Math.min(m, NIGHT)); $("clock").textContent = c; $("tclock").textContent = c; const pct = Math.min(100, m / NIGHT * 100); $("fill").style.width = pct + "%"; $("now").style.left = pct + "%"; }
 
 async function run() {
@@ -817,6 +982,8 @@ async function run() {
   renderTimeline(); if (!QUEUE.length) return;
   running = true;
   const planAtStart = $("plan").value;   // if the plan is replaced mid-run (repo pick, sample, upload), don't stamp results onto it
+  const reserve = SCHED.reserve, P = primes().map(q => ({...q, t: ((q.at - 1380) % 1440 + 1440) % 1440, shown: false}));
+  const prime = upTo => P.filter(q => !q.shown && q.t <= upTo).forEach(q => { q.shown = true; line("v", `⏰ ${hhmm(q.at)}  ${esc(SHORT[q.k])}: open a fresh 5h window (one-line prompt, cheapest model) → ↻ ${hhmm(q.reset)}`); });
   $("run").disabled = true; $("run").textContent = "Running…"; $("result").style.display = "none"; out.innerHTML = "";
   speed = +$("speed").value; tick(0);
   const chosen = [...document.querySelectorAll("[data-sub]")].filter(c => c.checked).map(c => c.dataset.sub);
@@ -826,18 +993,22 @@ async function run() {
   let rescued = 0, paygo = 0, done = 0, parked = 0, minutes = 0, cur = 0, did402 = false, didLoop = false, didAsk = false;
   const results = [];
   const kpi = () => { $("rescued").textContent = money(rescued); $("shipped").textContent = done; $("parked").textContent = parked; };
-  const finish = label => { running = false; $("run").disabled = false; $("run").textContent = label; if (stale) { stale = false; renderTimeline(); } };
+  const finish = label => { running = false; $("run").disabled = false; $("run").textContent = label; renderSched(); if (stale) { stale = false; renderTimeline(); } };
   kpi();
   if (!order.length) { line("r", "Connect at least one agent."); finish("▶ Run tonight's shift"); return; }
   line("h", "night shift · " + esc([...new Set(QUEUE.map(q => q.p.name))].join(", ")));
   line("d", "burn order: " + order.map(k => SUBS[k].name).join(" → "));
   line("d", "every job: its own worktree and branch · nothing touches main · no human in the loop");
+  line("d", `schedule: never ${hhmm(SCHED.from)}–${hhmm(SCHED.to)}${SCHED.days.some(Boolean) ? " " + dayList(SCHED.days) : ""} · tonight ${fmt(0)} → ${fmt(NIGHT)} · reserve ${reserve}% of each plan`);
+  const soonest = connected().filter(k => k !== "openai").sort((a, b) => RESETS[a].soon - RESETS[b].soon)[0];
+  if (SCHED.autoburn && soonest) line("d", `auto-burn: each plan before its own reset, soonest first (${RESETS[soonest].name}, ${RESETS[soonest].when})`);
   await sleep(500);
   const next = () => { while (cur < order.length && state[order[cur]].dead) cur++; return cur < order.length ? order[cur] : null; };
   for (let i = 0; i < QUEUE.length; i++) {
     const {p, tk} = QUEUE[i], art = artifactOf(tk.text), br = branchOf(p.name, tk.text, art), c = sha(p.name + tk.text);
-    if (minutes >= NIGHT) { line("a", "\n! 07:00: the rest waits for tomorrow night"); break; }
-    let k = next(); if (!k) { line("a", "\n! tonight's capacity is used up"); break; }
+    prime(minutes);
+    if (minutes >= NIGHT) { line("a", `\n! ${fmt(NIGHT)}: the rest waits for tomorrow night`); break; }
+    let k = next(); if (!k) { line("a", `\n! tonight's capacity is used up${reserve ? `; your ${reserve}% reserve stays yours` : ""}`); break; }
     if (/scaffold|create|readme|docs/i.test(tk.text) && state.agent37 && !state.agent37.dead) k = "agent37";
     setTime(i, minutes); setItem(i, "running", "RUNNING", "");
     line("c", `\n━━ ${fmt(minutes)}  ${esc(p.name)}: ${esc(tk.text)}`);
@@ -846,7 +1017,7 @@ async function run() {
     const park = PARK.find(([re]) => re.test(tk.text));
     if (park) {   // nothing waits for a human: do what needs no key, leave a note on the branch, move on
       line("t", "  ⚙ do every step that needs no key · write NOTE.md"); await sleep(300);
-      const s = SUBS[k], take = Math.min(s.cap - state[k].spent, usd / 4);
+      const s = SUBS[k], take = Math.max(0, Math.min(capOf(k, reserve) - state[k].spent, usd / 4));
       state[k].spent += take; if (s.kind === "paygo") paygo += take; else rescued += take;
       line("a", `◼ parked: no agent can have ${esc(park[1])} · commit ${c}`);
       line("p", "↪ orchestrator: switched to the next job"); parked++; kpi();
@@ -875,10 +1046,10 @@ async function run() {
     }
     let left = usd; const used = [];
     while (left > 0.001) {
-      const s = SUBS[k], take = Math.min(s.cap - state[k].spent, left);
+      const s = SUBS[k], take = Math.max(0, Math.min(capOf(k, reserve) - state[k].spent, left));
       state[k].spent += take; state[k].mins += mins * take / usd; left -= take; used.push(s.name);
       if (s.kind === "paygo") paygo += take; else rescued += take;
-      if (left > 0.001) { state[k].dead = "full"; const nk = next(); if (!nk) break; line("p", `⇄ ${s.name} window used → ${SUBS[nk].name}`); k = nk; }
+      if (left > 0.001) { state[k].dead = "full"; const nk = next(); if (!nk) break; line("p", `⇄ ${s.name} ${reserve ? "reached your reserve" : "window used"} → ${SUBS[nk].name}`); k = nk; }
     }
     const extra = art === "review" ? plural(3 + h(tk.text) % 5, "finding") : art === "ideas" ? `5 sections · ${plural(chatTasks().length, "idea")} queued as tasks` : "";
     done++; kpi();
@@ -891,13 +1062,15 @@ async function run() {
   const lines = $("plan").value.split("\n");
   if ($("plan").value === planAtStart) results.forEach(r => { lines[r.line] = lines[r.line].replace("- [ ]", r.status === "done" ? "- [x]" : "- [!]") + (r.status === "done" ? ` (relay ${r.commit})` : ` (parked: ${r.note})`); });
   $("plan").value = lines.join("\n");
+  if (P.some(q => !q.shown)) { line("d", "\nwindows for the morning:"); prime(1440); }
   line("h", `\n# Good morning ☕  ${done} shipped · ${parked} parked`);
   line("d", `⎇ ${results.length} ${results.length === 1 ? "branch" : "branches"}, nothing on main · keep what you like, delete the rest`);
 
   // 4. utilization: today vs. with Agent Relay working nights like this one
   const plans = order.filter(k => SUBS[k].kind !== "paygo");
-  const NIGHT_GAIN = 33;   // 8 idle hours a night = 1.6 of 4.8 daily 5h windows ≈ +33 points of weekly window coverage
-  const rows = plans.map(k => ({k, before: SUBS[k].today, after: Math.min(96, SUBS[k].today + NIGHT_GAIN)}));
+  const NIGHT_GAIN = Math.round(33 * NIGHT / 480);   // 8 idle hours a night = 1.6 of 4.8 daily 5h windows ≈ +33 points of weekly window coverage
+  const rows = plans.map(k => ({k, before: SUBS[k].today, after: Math.max(SUBS[k].today, Math.min(96, 100 - reserve, SUBS[k].today + NIGHT_GAIN))}));
+  $("unote").textContent = `"Today" for Claude Max seat A is our measured 38% window coverage; the other seats are illustrative. "With Agent Relay" is a projection: Agent Relay working each connected plan ${fmt(0)}–${fmt(NIGHT)} every night, never past your ${reserve}% reserve.`;
   const avg = a => Math.round(a.reduce((x, y) => x + y, 0) / Math.max(1, a.length));
   const b0 = avg(rows.map(r => r.before)), a0 = avg(rows.map(r => r.after));
   $("uhead").innerHTML = `${b0}% → <span>${a0}%</span>`;
@@ -915,6 +1088,7 @@ async function run() {
     `<small class="chnext">Abandoned ideas and future plans became tasks in tonight's queue.</small></div>`;
   if (!code.length && !reviews.length && !ideas.length) md += `<p class="note">Nothing finished tonight.</p>`;
   if (parkedList.length) md += `<h3>Parked: what's missing</h3><ul class="park">${parkedList.map(r => `<li><span>${esc(r.task)}</span><small>missing ${esc(r.note)} · the rest is on ${esc(r.branch)}</small></li>`).join("")}</ul>`;
+  if (P.length) md += `<h3>Resets this morning</h3><p class="rline">${P.map(q => `<span>↻ <b>${hhmm(q.reset)}</b> ${esc(SHORT[q.k])}</span>`).join("")}</p>`;
   $("md").innerHTML = md + `<p class="note">Nothing touched main. Keep what you like, delete the rest.</p>`;
   $("result").style.display = "grid"; $("result").scrollIntoView({behavior: "smooth", block: "start"});
   setTimeout(() => document.querySelectorAll(".af").forEach(el => el.style.width = el.dataset.w + "%"), 250);
@@ -997,9 +1171,16 @@ $("chfile").addEventListener("change", e => { loadChats(e.target.files[0]); e.ta
 chdrop.addEventListener("drop", e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadChats(f); });
 $("chreset").onclick = () => { CHATS = {from: "sample", data: CHAT_SAMPLE, info: ""}; $("chmsg").textContent = ""; renderChats(); applyRepoPlan(); };
 
+// schedule controls
+options($("wstart"), 0, 1380, 60, SCHED.start, `<option value="-1">off</option>`);
+options($("wfrom"), 300, 720, 30, SCHED.from); options($("wto"), 720, 1380, 30, SCHED.to);
+$("days").innerHTML = DAYS.map((d, i) => `<label class="day"><input type="checkbox"${SCHED.days[i] ? " checked" : ""} aria-label="${d}"><span>${d}</span></label>`).join("");
+["wstart", "stagger", "wgap", "wfrom", "wto", "days", "reserve", "autoburn"].forEach(id => $(id).addEventListener(id === "reserve" ? "input" : "change", renderSched));
+document.querySelectorAll("[data-sub]").forEach(c => c.addEventListener("change", renderSched));
+
 $("pin").value = "Build a website for my piano recital";
 EMPTY = `Loading ${$("ghuser").value}'s repos…`;
-renderSamples(); renderJobs(); renderChats(); renderTimeline();
+renderSamples(); renderJobs(); renderChats(); renderSched(); renderTimeline();
 loadRepos($("ghuser").value).then(ok => {   // GitHub is the main way in (a picked repo fills the plan); if it can't be reached, start from a sample plan
   if (ok !== false) return;
   EMPTY = EMPTY_DEFAULT;
