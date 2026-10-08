@@ -17,7 +17,7 @@ SECRET_FILE_RE = re.compile(
 _SECRET_VALUE_RE = re.compile(
     r"(sk-(?:ant-|proj-)?[A-Za-z0-9_\-]{16,}|sk_(?:live|test)_[A-Za-z0-9]{8,}|gh[pousr]_[A-Za-z0-9]{20,}"
     r"|github_pat_[A-Za-z0-9_]{20,}|xox[abpr]-[A-Za-z0-9\-]{10,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_\-]{30,}"
-    r"|ctxt_secret_[A-Za-z0-9]{8,}|eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"
+    r"|ctxt_secret_[A-Za-z0-9]{8,}|monid_(?:live|test)_[A-Za-z0-9]{8,}|Bearer\s+[A-Za-z0-9._~+/=\-]{8,}|eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"
     r"|(?<![A-Za-z0-9])(?:api[_-]?key|access[_-]?token|auth[_-]?token|secret|password)[\"']?\s*[:=]\s*[\"']?[^\s\"',;]{8,})",
     re.I)
 
