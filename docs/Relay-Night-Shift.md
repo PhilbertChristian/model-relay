@@ -30,12 +30,12 @@ Without `--now` or `--wait`, outside downtime it prints the next window and exit
 
 1. Assesses capacity and orders subscriptions by burn urgency. The router prefers models from the most urgent subscription, and each subscription's tonight allowance caps its spend: once it is reached, that provider is disabled for the shift.
 2. Builds the queue: todo tasks ordered by project `priority`, then file order.
-3. For each task, prepares the project workspace on branch `relay/night-<YYYYMMDD>`, then runs one Relay agent ([Relay-Unstick-Ladder](Relay-Unstick-Ladder.md)) with an unattended prompt that tells it to reply `BLOCKED: <what you need>` rather than guess.
+3. For each task, runs one Relay agent ([Relay-Unstick-Ladder](Relay-Unstick-Ladder.md)) in the project's worktree (below) with an unattended prompt that tells it to reply `BLOCKED: <what you need>` rather than guess.
 4. If the agent finishes, runs the project's `test:` command (600 s timeout). Pass: commit, mark the task `[x]`. Fail, blocked, refused, out of steps or out of capacity: commit what exists as `WIP (blocked): …`, mark the task `[!] blocked: <why>`.
-5. Per project with at least one commit: push and open a **draft** PR against the repo's default branch when the remote is GitHub and `GITHUB_TOKEN` is set; otherwise the branch stays local.
+5. Per project with at least one commit: push the night branch, and only it, from its worktree and open a **draft** PR against the repo's default branch when the remote is GitHub and `GITHUB_TOKEN` is set; otherwise the branch stays local. The token reaches that one `git push` as an HTTP header in its environment, never `.git/config`.
 6. Writes `MORNING.md` in the working directory.
 
-Workspace per project: `dir:` if given, else a clone of `repo:` into `<root>/<slug>`, else a fresh local git repo at `<root>/<slug>`.
+Repo per project: `dir:` if given, else a clone of `repo:` into `<root>/<slug>`, else a fresh local git repo at `<root>/<slug>`. The work happens in a git worktree `<data_dir>/worktrees/<slug>/night-<YYYYMMDD>` on a fresh branch `relay/night-<YYYYMMDD>` (`-2`, `-3` … if taken) cut from the repo's HEAD, or from `branch:`; `data_dir` comes from `burner.json` (default `~/.relay-burn`). Relay never checks out, switches, stashes, resets, commits or cleans in your checkout, so its uncommitted changes and untracked files such as `.env` stay out of the night's work (`relay/burn.py`, `relay/worktree.py`); the agent is told not to commit, push, stash or change branches. Worktrees are removed after the shift unless `keep_worktrees` is set; the branch keeps the work.
 
 ## Stop conditions
 
@@ -45,7 +45,7 @@ The shift stops at the first of:
 - downtime window ended (or `--hours` elapsed; with `--now` outside a window, 8 h)
 - every provider disabled or retired ("all tonight's capacity burned")
 
-A project whose `budget:` is reached skips its remaining tasks.
+A project whose `budget:` is reached skips its remaining tasks. So does a project whose worktree can't be made, for example a `dir:` outside any git repo, which is never `git init`ed: its first task is listed under **Needs you** and all its tasks stay `[ ]`.
 
 ## MORNING.md
 

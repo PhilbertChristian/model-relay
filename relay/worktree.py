@@ -1,10 +1,11 @@
 """Burn-week worktrees: each agent works in `<data_dir>/worktrees/<slug>/<task-id>` on its own local branch
-`relay/burn/<task-id>`, made from the repo's HEAD with `git worktree add`.
+`relay/burn/<task-id>`, made from the repo's HEAD with `git worktree add`. The night shift (relay/burn.py) uses the
+same calls for one `relay/night-<date>` worktree per project.
 
 Safety (SWARM_SPEC invariants 1, 2 and 4): the user's checkout is read-only here. Nothing checks out, switches,
 stashes, resets, commits or cleans in it, and nothing talks to a remote. Commits (and the index reset before
-them) happen only inside a linked worktree on a relay/burn/* branch. They run with the user's hooks off, since a
-post-commit hook could push, and with signing off, so no key store is read. A file matching
+them) happen only inside a linked worktree on a relay/burn/* or relay/night-* branch. They run with the user's
+hooks off, since a post-commit hook could push, and with signing off, so no key store is read. A file matching
 contracts.SECRET_FILE_RE is never staged.
 """
 from __future__ import annotations
@@ -19,6 +20,8 @@ from pathlib import Path
 from .contracts import is_secret_file, redact, slugify
 
 PREFIX = "relay/burn/"
+NIGHT = "relay/night-"                           # the night shift's branches (relay/burn.py)
+OWN = (PREFIX, NIGHT)                            # the only branches finalize() commits on and remove() removes
 IDENTITY = {"user.name": "relay burn", "user.email": "relay-burn@localhost"}   # only when the repo has none
 NEVER = {"push", "pull", "fetch", "clone", "remote", "ls-remote", "submodule", "checkout", "switch", "stash", "clean",
          "restore", "merge", "rebase", "gc", "prune"}
@@ -62,22 +65,26 @@ def _safe_id(task_id: str) -> str:
     return re.sub(r"[^A-Za-z0-9_-]+", "-", str(task_id)).strip("-")[:80] or "task"
 
 
-def create(repo: str, data_dir: str, task_id: str, slug: str) -> tuple[str, str]:
-    """`git -C repo worktree add -b relay/burn/<task-id> <data_dir>/worktrees/<slug>/<task-id> HEAD` -> (path, branch).
-    If the branch or the path already exists, both get a -2, -3 ... suffix. Nothing is deleted or reused."""
+def create(repo: str, data_dir: str, task_id: str, slug: str, prefix: str = PREFIX,
+           start: str = "HEAD") -> tuple[str, str]:
+    """`git -C repo worktree add -b <prefix><task-id> <data_dir>/worktrees/<slug>/<task-id> <start>` -> (path, branch).
+    The branch must be one of OWN. If the branch or the path already exists, both get a -2, -3 ... suffix. Nothing
+    is deleted or reused."""
     repo_p = Path(repo).expanduser().resolve()
     root = Path(data_dir).expanduser().resolve() / "worktrees" / slugify(slug)
     if repo_p == root or repo_p in root.parents:
         raise ValueError(f"refusing to nest burn worktrees inside the repo itself ({root})")
     tid = _safe_id(task_id)
+    if not (prefix + tid).startswith(OWN) or start.startswith("-"):
+        raise ValueError(f"not a Relay branch or start point: {prefix + tid} from {start}")
     root.mkdir(parents=True, exist_ok=True)
     with _lock(repo_p):                          # concurrent `worktree add` on one repo races on .git/worktrees
         for n in range(1, 100):
             name = tid if n == 1 else f"{tid}-{n}"
-            path, branch = root / name, PREFIX + name
+            path, branch = root / name, prefix + name
             if path.exists() or _git(repo_p, "rev-parse", "--verify", "-q", f"refs/heads/{branch}").returncode == 0:
                 continue
-            r = _git(repo_p, "worktree", "add", "-q", "-b", branch, str(path), "HEAD")
+            r = _git(repo_p, "worktree", "add", "-q", "-b", branch, str(path), start)
             if r.returncode == 0:
                 return str(path), branch
             if not (path.exists() or "already" in r.stderr):
@@ -86,12 +93,12 @@ def create(repo: str, data_dir: str, task_id: str, slug: str) -> tuple[str, str]
 
 
 def _burn_branch(wt: Path) -> str:
-    """The relay/burn/* branch checked out in `wt`. Raises unless wt is a linked worktree on such a branch."""
+    """The Relay branch (one of OWN) checked out in `wt`. Raises unless wt is a linked worktree on such a branch."""
     ref = _git(wt, "symbolic-ref", "-q", "HEAD").stdout.strip()
     dirs = [d.strip() for d in _git(wt, "rev-parse", "--git-dir", "--git-common-dir").stdout.splitlines()]
     linked = len(dirs) == 2 and all(dirs) and (wt / dirs[0]).resolve() != (wt / dirs[1]).resolve()
-    if not (linked and ref.startswith("refs/heads/" + PREFIX)):
-        raise RuntimeError(f"refusing to commit in {wt}: not a linked {PREFIX}* worktree")
+    if not (linked and ref.startswith(tuple("refs/heads/" + p for p in OWN))):
+        raise RuntimeError(f"refusing to commit in {wt}: not a linked {PREFIX}* or {NIGHT}* worktree")
     return ref[len("refs/heads/"):]
 
 
@@ -149,15 +156,18 @@ def _shortstat(s: str) -> dict:
             "deletions": num(r"(\d+) deletions?\(-\)")}
 
 
-def finalize(path: str, message: str, test_cmd: str | None = None, timeout: float = 600) -> dict:
+def finalize(path: str, message: str, test_cmd: str | None = None, timeout: float = 600, base: str | None = None,
+             identity: dict | None = None) -> dict:
     """Stage the worktree's changes (never secret files, never .relay/), run `test_cmd` with a timeout, and commit
-    on the worktree's relay/burn branch: one commit per task, folding any commits the agent made despite the
-    prompt. Returns {"tests_ok", "tests_tail", "commit", "diffstat", "files", "insertions", "deletions"}."""
+    on the worktree's Relay branch: one commit per task, folding any commits the agent made despite the prompt
+    since `base` (default: the fork point). `identity` ({"user.name", "user.email"}) overrides the author, else
+    the repo's identity is used, else IDENTITY.
+    Returns {"tests_ok", "tests_tail", "commit", "diffstat", "files", "insertions", "deletions"}."""
     wt = Path(path).expanduser().resolve()
     wt = Path(_git(wt, "rev-parse", "--show-toplevel").stdout.strip() or wt).resolve()
     branch = _burn_branch(wt)
-    base = _base(wt, branch)
-    r = _git(wt, "reset", "-q", base, wt=True)  # index (and branch) back to the fork point; work tree untouched
+    base = base or _base(wt, branch)
+    r = _git(wt, "reset", "-q", base, wt=True)  # index (and branch) back to `base`; work tree untouched
     if r.returncode != 0:
         raise RuntimeError(f"could not reset the worktree index: {redact(r.stderr.strip())[:300]}")
     keep =[p for p in _changed(wt) if not is_secret_file(p) and not p.startswith(".relay/")]
@@ -173,7 +183,8 @@ def finalize(path: str, message: str, test_cmd: str | None = None, timeout: floa
     tests_ok, tail = (None, "") if not test_cmd else _run_tests(test_cmd, wt, timeout)
     commit = None
     if _git(wt, "diff", "--cached", "--quiet").returncode == 1:
-        ident = [a for k, v in IDENTITY.items() if not _git(wt, "config", k).stdout.strip() for a in ("-c", f"{k}={v}")]
+        who = identity or {k: v for k, v in IDENTITY.items() if not _git(wt, "config", k).stdout.strip()}
+        ident = [a for k, v in who.items() for a in ("-c", f"{k}={v}")]
         msg = redact(message.strip() or "relay burn")
         if test_cmd:
             msg += f"\n\nRelay-Tests: {'pass' if tests_ok else 'fail'} ({redact(test_cmd)})"
@@ -197,14 +208,14 @@ def _worktrees(repo: Path) -> list[dict]:
 
 
 def remove(repo: str, path: str) -> None:
-    """`git worktree remove --force <path>`: deletes a relay/burn worktree dir, untracked files too, and keeps
-    its branch."""
+    """`git worktree remove --force <path>`: deletes a Relay worktree dir (relay/burn/* or relay/night-*),
+    untracked files too, and keeps its branch."""
     repo_p, wt = Path(repo).expanduser().resolve(), Path(path).expanduser().resolve()
     entry = next((e for e in _worktrees(repo_p) if e["path"] == wt), None)
     if entry is None:
         return                                   # not (or no longer) a worktree of this repo: nothing to remove
-    if entry["main"] or not entry["branch"].startswith(PREFIX):
-        raise RuntimeError(f"refusing to remove {wt}: not a {PREFIX}* worktree")
+    if entry["main"] or not entry["branch"].startswith(OWN):
+        raise RuntimeError(f"refusing to remove {wt}: not a {PREFIX}* or {NIGHT}* worktree")
     with _lock(repo_p):
         r = _git(repo_p, "worktree", "remove", "--force", str(wt))
     if r.returncode != 0:

@@ -77,6 +77,18 @@ class Create(GitSandbox):
         self.assertTrue(Path(p1).is_dir() and Path(p2).is_dir() and Path(p3).is_dir())
         self.assertEqual((stray / "keep.txt").read_text(), "mine\n")
 
+    def test_night_branch_from_a_given_commit_and_only_relay_branches(self):
+        repo = make_repo(self.tmp)
+        first = git(repo, "rev-parse", "HEAD")
+        git(repo, "commit", "-q", "--allow-empty", "-m", "second")
+        before = checkout_state(repo)
+        path, branch = worktree.create(str(repo), str(self.data), "night-20261007", "app", prefix="relay/", start=first)
+        self.assertEqual((branch, git(path, "rev-parse", "HEAD")), ("relay/night-20261007", first))
+        self.assertEqual(checkout_state(repo), before)
+        for kw in ({"prefix": "feature/"}, {"prefix": "relay/"}, {"start": "--orphan"}):
+            with self.subTest(**kw), self.assertRaises(ValueError):
+                worktree.create(str(repo), str(self.data), "x", "app", **kw)
+
     def test_refuses_worktrees_nested_in_the_repo(self):
         repo = make_repo(self.tmp)
         with self.assertRaises(ValueError):

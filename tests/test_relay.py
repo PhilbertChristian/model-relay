@@ -192,6 +192,7 @@ class NightShift(unittest.TestCase):
         d = Path(tempfile.mkdtemp())
         (d / "PLAN.md").write_text((ROOT / "examples" / "PLAN.md").read_text())
         cfg = json.loads((ROOT / "examples" / "burner-demo.json").read_text())
+        cfg["data_dir"] = str(d / "relay-data")          # the night's worktrees, not ~/.relay-burn
         with redirect_stdout(io.StringIO()):
             res = burn(str(d / "PLAN.md"), cfg, str(d), now=True, pr=False)
         status = {r["task"]: r["status"] for r in res["results"]}

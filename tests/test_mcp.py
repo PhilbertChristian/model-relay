@@ -378,7 +378,8 @@ class BurnOptIn(unittest.TestCase):
         ws = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, ws, True)
         shutil.copy(EXAMPLES / "PLAN.md", ws / "PLAN.md")
-        shutil.copy(EXAMPLES / "burner-demo.json", ws / "burner.json")
+        burner = json.loads((EXAMPLES / "burner-demo.json").read_text())
+        (ws / "burner.json").write_text(json.dumps({**burner, "data_dir": str(ws / "relay-data")}))   # not ~/.relay-burn
         msgs, proc = run_stdio([
             INIT,
             call(2, "relay_burn", plan="PLAN.md"),                           # opted in, but now not set: schedule only
