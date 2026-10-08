@@ -8,6 +8,10 @@
   python3 -m relay supervise --instance ID "task"  unstick an agent hosted on Agent37
   python3 -m relay burn capacity -b burner.json    what subscription capacity expires, and when you're idle
   python3 -m relay burn run PLAN.md -b burner.json night shift: burn it on your plan, open PRs, write MORNING.md
+  python3 -m relay burn week -b burner-week.json   use it or lose it: a paced agent swarm spends this week's leftovers
+  python3 -m relay burn discover|ideas|usage       your repos + TODOs, local chat ideas (opt-in), what's left this week
+  python3 -m relay burn demo                       burn week on a sandbox with mock lanes: no keys, no network
+  python3 -m relay dash | web                      live burn-week dashboard in the terminal or the browser
   python3 -m relay savings                         this month: used at API rates vs. rescued from expiring
   python3 -m relay serve -c burner.json            OpenAI-compatible endpoint for any harness (failover + savings)
   python3 -m relay mcp                             MCP server: capacity, savings, plan, burn tools for agents
@@ -37,6 +41,197 @@ def _confirm_factory(auto_yes: bool):
 
     nonlocal_state = {"yes": False}
     return confirm
+
+
+# burn week|discover|ideas|usage|demo, dash, web (SWARM_SPEC "CLI"). Their modules load lazily, so the CLI keeps
+# working while they are built; a missing one prints "not built yet" instead of a traceback.
+WEEK_ACTIONS = ("week", "discover", "ideas", "usage", "demo")
+_OLD_FLAGS = dict(plan=None, burner=None, now=False, wait=False, hours=None, max_tasks=None, no_pr=False)
+_NEW_FLAGS = dict(roots=None, agents=None, ideas=False, lanes=None, dry_run=False, no_dash=False, web=None, out=None,
+                  days=None, speed=None, record=None)
+_TAKES = {"week": "plan burner roots agents hours ideas lanes dry_run no_dash web", "discover": "burner roots out",
+          "ideas": "burner days", "usage": "burner", "demo": "agents speed web record no_dash"}
+
+
+def _burn_misuse(args) -> str | None:
+    """Flags this burn action doesn't take. capacity|plan|run take exactly the flags they always took."""
+    given = {k for k, v in {**_OLD_FLAGS, **_NEW_FLAGS}.items() if getattr(args, k) != v}
+    bad = sorted(given - set(_TAKES[args.action].split() if args.action in _TAKES else _OLD_FLAGS))
+    if bad:
+        return f"burn {args.action} doesn't take " + ", ".join(
+            "a planning doc" if k == "plan" else "--" + k.replace("_", "-") for k in bad)
+    if (args.speed is not None and args.speed <= 0) or (args.agents is not None and args.agents < 1):
+        return "--speed must be > 0 and --agents at least 1"
+    return None
+
+
+def _week_main(args) -> int:
+    """Run a burn-week handler; a sibling module (or function) that isn't there yet is reported, not raised."""
+    import re
+    try:
+        return globals()["_burn_" + args.action if args.cmd == "burn" else "_" + args.cmd](args) or 0
+    except KeyboardInterrupt:
+        print()
+        return 130
+    except (ImportError, AttributeError) as e:
+        name = getattr(e, "name", None) or ""
+        m = (re.search(r"cannot import name '(\w+)' from '(relay[\w.]*)'", str(e)) or
+             re.match(r"module '(relay[\w.]*)' has no attribute '(\w+)'", str(e)))
+        what = ((f"{m[2]}.{m[1]}" if "cannot import" in m[0] else f"{m[1]}.{m[2]}") if m else
+                name if isinstance(e, ModuleNotFoundError) and name.startswith("relay") else None)
+        if not what:
+            raise
+        ui.error(f"{what} is not built yet (burn-week modules are still landing)")
+        return 2
+
+
+def _week_cfg(path: str | None) -> dict:
+    """burner-week config: -b PATH, else ./burner-week.json, else the documented example (with a note)."""
+    from pathlib import Path
+    if not path and not os.path.exists("burner-week.json"):
+        path = str(Path(__file__).resolve().parent.parent / "examples" / "burner-week.json")
+        print(ui.c("2", f"note: no ./burner-week.json, using the example {path} (copy it, then edit roots and lanes)"))
+    try:
+        return load(path or "burner-week.json")
+    except (OSError, ValueError) as e:
+        ui.error(f"can't load burner-week config {path}: {'not found' if isinstance(e, FileNotFoundError) else e}")
+        raise SystemExit(2)
+
+
+def _week_overrides(cfg: dict, args) -> dict:
+    """--ideas opts in to local chat-history mining; --lanes keeps (and enables) only the named lanes."""
+    cfg = dict(cfg)
+    if args.ideas:
+        cfg["ideas"] = {**(cfg.get("ideas") or {}), "enabled": True}
+    if args.lanes:
+        want = {x.strip() for x in args.lanes.split(",") if x.strip()}
+        cfg["lanes"] = [{**ln, "enabled": True} for ln in cfg.get("lanes", []) if {ln.get("name"), ln.get("kind")} & want]
+        if not cfg["lanes"]:
+            ui.error(f"--lanes {args.lanes} matches no lane in the config")
+            raise SystemExit(2)
+    return cfg
+
+
+def _block(url: str | None, what: str = "web dashboard still serving") -> int:
+    """Keep the web dashboard (a daemon thread) serving until Ctrl-C."""
+    if url:
+        import time
+        print(ui.c("1;36", f"{what}  {url}") + ui.c("2", "  · Ctrl-C to stop"))
+        try:
+            while True:
+                time.sleep(3600)
+        except KeyboardInterrupt:
+            print()
+    return 0
+
+
+def _print_week_plan(res: dict) -> None:
+    """--dry-run: burn_week's pace per lane (relay.pace.report), its schedule note, and the task queue."""
+    from types import SimpleNamespace
+    from . import pace
+    print(pace.report([SimpleNamespace(**p) if isinstance(p, dict) else p for p in res.get("pace") or []]))
+    if res.get("schedule"):
+        print(ui.c("2", res["schedule"]))
+    for ln in res.get("lanes") or []:
+        if not ln.get("available", True):
+            print(ui.c("33", f"  lane {ln.get('name')} unavailable: {ln.get('why')}"))
+    queue = res.get("queue") or []
+    print(ui.c("1", f"\nqueue · {len(queue)} tasks from {len(res.get('projects') or [])} projects")
+          + ui.c("2", " (dry run: nothing started)"))
+    for t in queue:
+        print(f"  {str(t.get('project')):<18} {str(t.get('source', '')):<8} {t.get('text')}")
+
+
+def _burn_week(args) -> int:
+    from . import demo_week, swarm
+    from .bus import Bus
+    cfg = _week_overrides(_week_cfg(args.burner), args)
+    kw = dict(roots=[os.path.expanduser(r) for r in args.roots] if args.roots else None, plan_path=args.plan,
+              max_agents=args.agents, hours=args.hours)
+    if args.dry_run:
+        _print_week_plan(swarm.burn_week(cfg, dry_run=True, **kw) or {})
+        return 0
+    bus = Bus(log_dir=os.path.join(args.cwd, ".relay"))
+    stop = demo_week.watch(bus, not args.no_dash, args.web)
+    try:
+        res = swarm.burn_week(cfg, bus=bus, **kw)
+    except KeyboardInterrupt:
+        res = {"reason": "interrupted"}
+    finally:
+        stop()
+    print(demo_week.summary(bus.rows, res))
+    return _block(args.web and f"http://127.0.0.1:{args.web}/")
+
+
+def _burn_discover(args) -> int:
+    from pathlib import Path
+    from . import discover
+    cfg = _week_cfg(args.burner)
+    projects = discover.discover_projects([os.path.expanduser(r) for r in args.roots or cfg.get("roots") or []],
+                                          max_depth=cfg.get("max_depth", 3), limit=cfg.get("max_projects", 20),
+                                          include=cfg.get("include"), exclude=cfg.get("exclude"), skip=cfg.get("skip"))
+    print(discover.report(projects))
+    if args.out:
+        if Path(args.out).exists():
+            ui.error(f"{args.out} already exists; not overwriting it")
+            return 1
+        found = None
+        if (cfg.get("ideas") or {}).get("enabled"):
+            from . import ideas
+            found = ideas.mine(cfg)
+        Path(args.out).write_text(discover.to_plan_md(projects, found, per_project=cfg.get("per_project", 3)))
+        print(ui.c("32", f"wrote {args.out}") + ui.c("2", f" · edit it, then: relay burn week {args.out}"))
+    return 0
+
+
+def _burn_ideas(args) -> int:
+    from . import ideas
+    cfg = _week_cfg(args.burner)
+    opts = {**(cfg.get("ideas") or {}), "enabled": True}            # running this command is the opt-in
+    if args.days:
+        opts["since_days"] = args.days
+    print(ui.c("2", "reading local Claude Code / Codex history; this command only prints, nothing is sent"))
+    print(ideas.report(ideas.mine({**cfg, "ideas": opts})))
+    return 0
+
+
+def _burn_usage(args) -> int:
+    from . import usage
+    cfg = _week_cfg(args.burner)
+    print(usage.report(usage.weekly_usage(cfg, os.path.join(args.cwd, ".relay/events.jsonl"))))
+    return 0
+
+
+def _burn_demo(args) -> int:
+    from . import demo_week
+    demo_week.run_demo(agents=args.agents or 8, speed=args.speed or 1.0, dash=not args.no_dash, web_port=args.web,
+                       record=args.record)
+    return _block(args.web and f"http://127.0.0.1:{args.web}/")
+
+
+def _dash(args) -> int:
+    from . import dash
+    dash.tail(args.events or os.path.join(args.cwd, ".relay/events.jsonl"))
+    return 0
+
+
+def _web(args) -> int:
+    from . import web
+    path, feed = args.events or os.path.join(args.cwd, ".relay/events.jsonl"), None
+    if args.supabase:
+        from . import supa
+        if not supa.available():
+            ui.error("--supabase needs SUPABASE_URL and SUPABASE_KEY (or SUPABASE_SERVICE_ROLE_KEY)")
+            return 2
+        feed = web.Feed(lambda since: supa.recent_events(since_ts=since))    # polls Supabase, acts as the bus
+    try:
+        srv = web.serve(port=args.port, events_path=path, bus=feed)
+    except OSError as e:
+        ui.error(f"can't listen on 127.0.0.1:{args.port}: {e}")
+        return 1
+    _block(getattr(srv, "url", f"http://127.0.0.1:{args.port}/"), f"burn-week dashboard ({'Supabase' if feed else path})")
+    getattr(srv, "shutdown", lambda: None)()
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -75,15 +270,34 @@ def main(argv: list[str] | None = None) -> int:
     sv2.add_argument("--claude-logs", help="Claude Code projects dir(s), comma-separated (default: ~/.claude/projects)")
     sv2.add_argument("--no-claude", action="store_true", help="skip Claude Code logs")
     sv2.add_argument("--json", action="store_true")
-    bn = sub.add_parser("burn", help="night shift: burn expiring subscription capacity on your planning docs")
-    bn.add_argument("action", choices=["capacity", "plan", "run"])
+    bn = sub.add_parser("burn", help="night shift (capacity|plan|run) and burn week (week|discover|ideas|usage|demo)")
+    bn.add_argument("action", choices=["capacity", "plan", "run", *WEEK_ACTIONS])
     bn.add_argument("plan", nargs="?", help="planning doc (markdown checklist)")
-    bn.add_argument("-b", "--burner", default="burner.json", help="subscriptions + downtime + model ladder")
+    bn.add_argument("-b", "--burner", help="subscriptions + downtime + model ladder "
+                                           "(default: burner.json; burner-week.json for burn week|discover|ideas|usage)")
     bn.add_argument("--now", action="store_true", help="start even if you're not in a downtime window")
     bn.add_argument("--wait", action="store_true", help="sleep until the next downtime window, then start")
     bn.add_argument("--hours", type=float, help="stop after this many hours")
     bn.add_argument("--max-tasks", type=int)
     bn.add_argument("--no-pr", action="store_true", help="leave the branch local")
+    wk = bn.add_argument_group("burn week|discover|ideas|usage|demo")
+    wk.add_argument("--roots", nargs="+", metavar="DIR", help="where to look for git repos (default: config roots)")
+    wk.add_argument("--agents", type=int, help="max concurrent agents (default: config max_agents; demo 8)")
+    wk.add_argument("--ideas", action="store_true", help="opt in: mine local Claude Code / Codex chats for task ideas")
+    wk.add_argument("--lanes", help="only these lanes, comma-separated names or kinds (e.g. claude,codex)")
+    wk.add_argument("--dry-run", action="store_true", help="print the pace and queue plan, start nothing")
+    wk.add_argument("--no-dash", action="store_true", help="plain log lines instead of the terminal dashboard")
+    wk.add_argument("--web", type=int, metavar="PORT", help="also serve the web dashboard on 127.0.0.1:PORT")
+    wk.add_argument("-o", "--out", metavar="PLAN.md", help="discover: write a planning doc here")
+    wk.add_argument("--days", type=float, help="ideas: look back this many days (default: config, 21)")
+    wk.add_argument("--speed", type=float, help="demo: playback speed (default 1.0)")
+    wk.add_argument("--record", metavar="JSONL", help="demo: save the redacted event rows (docs/sample-events.jsonl)")
+    dh = sub.add_parser("dash", help="live terminal dashboard of burn-week events")
+    dh.add_argument("--events", help="events.jsonl to follow (default: <cwd>/.relay/events.jsonl)")
+    wb = sub.add_parser("web", help="burn-week web dashboard (SSE) on 127.0.0.1")
+    wb.add_argument("--port", type=int, default=3737)
+    wb.add_argument("--events", help="events.jsonl to serve (default: <cwd>/.relay/events.jsonl)")
+    wb.add_argument("--supabase", action="store_true", help="serve the rows in Supabase instead (SUPABASE_URL + SUPABASE_KEY)")
     args, extra = ap.parse_known_args(argv)
 
     # stdout belongs to the protocol: dispatch before any banner or print
@@ -108,10 +322,17 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "burn":
+        bad = _burn_misuse(args)
+        if bad:
+            ap.error(bad)
+    if args.cmd in ("dash", "web") or (args.cmd == "burn" and args.action in WEEK_ACTIONS):
+        return _week_main(args)
+
+    if args.cmd == "burn":
         from . import capacity
         from .config import DEFAULT
         from .plan import parse
-        bcfg = load(args.burner)
+        bcfg = load(args.burner or "burner.json")
         bcfg = {**DEFAULT, **bcfg} if "models" not in bcfg else bcfg
         if args.action == "capacity":
             print(capacity.report(capacity.assess(bcfg, os.path.join(args.cwd, ".relay/events.jsonl")), bcfg))
