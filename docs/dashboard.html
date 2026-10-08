@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="relay-dashboard" content="burn-week">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Agent Relay burn week, live: a swarm of agents spending this week's leftover AI subscription capacity on your own projects before the reset.">
+<title>Agent Relay · Burn week</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23ff5c00'/%3E%3Ctext x='16' y='22.5' font-family='ui-monospace,Menlo,monospace' font-size='17' font-weight='700' text-anchor='middle' fill='%23fff'%3ER%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f6f6; --card: #ffffff; --well: #f6f6f6; --well-2: #ebebeb; --ink: #191919; --ink-2: #4a4a4a;
+    --muted: #7a7a7a; --line: #e4e4e4; --line-2: #f0f0f0; --orange: #ff5c00; --orange-ink: #e05200; --orange-soft: #fff1e8;
+    --done: #1f9d63; --blocked: #b7791f; --failed: #d64545; --limited: #d6409f;
+    --claude: #d9774f; --codex: #10a37f; --agent37: #7c5cff; --relay: #2f7cf6; --orca: #0aa5b8; --monid: #c99a06; --other: #8a8a8a;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 14px 34px -22px rgba(25,40,60,.30);
+    --hero-ink: #0f2133; --hero-sub: #26323d; --chip: rgba(255,255,255,.72); --chip-line: rgba(255,255,255,.9);
+    --sky: radial-gradient(900px 260px at 16% 132%, #ffffff 30%, rgba(255,255,255,0) 70%),
+           radial-gradient(760px 240px at 86% 128%, #ffffff 26%, rgba(255,255,255,0) 70%),
+           radial-gradient(460px 120px at 64% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%),
+           radial-gradient(380px 110px at 22% 6%, rgba(255,255,255,.8), rgba(255,255,255,0) 70%),
+           linear-gradient(180deg, #8fc3f2 0%, #b9dbf7 46%, #e6f2fc 80%, #f7fbff 100%);
+    --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #101010; --card: #1a1a1a; --well: #222222; --well-2: #2e2e2e; --ink: #f2f2f2; --ink-2: #c8c8c8;
+      --muted: #8d8d8d; --line: #2b2b2b; --line-2: #242424; --orange: #ff6a1a; --orange-ink: #ffb27f; --orange-soft: rgba(255,92,0,.14);
+      --done: #7fdcae; --blocked: #ffd27a; --failed: #ff8a7a; --limited: #ff87d7;
+      --claude: #ff9b73; --codex: #4fd1a5; --agent37: #b39dff; --relay: #7fb2ff; --orca: #5fd7e2; --monid: #ffd27a; --other: #9a9a9a;
+      --shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 18px 40px -24px rgba(0,0,0,.9);
+      --hero-ink: #ffffff; --hero-sub: #c4cedb; --chip: rgba(255,255,255,.07); --chip-line: rgba(255,255,255,.09);
+      --sky: radial-gradient(760px 240px at 80% 132%, rgba(255,92,0,.42), rgba(255,92,0,0) 70%),
+             radial-gradient(560px 200px at 10% 140%, rgba(255,150,60,.22), rgba(255,150,60,0) 70%),
+             radial-gradient(420px 140px at 60% 0%, rgba(120,160,255,.10), rgba(120,160,255,0) 70%),
+             linear-gradient(180deg, #0b1220 0%, #101a2c 52%, #1c1612 100%);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #101010; --card: #1a1a1a; --well: #222222; --well-2: #2e2e2e; --ink: #f2f2f2; --ink-2: #c8c8c8;
+    --muted: #8d8d8d; --line: #2b2b2b; --line-2: #242424; --orange: #ff6a1a; --orange-ink: #ffb27f; --orange-soft: rgba(255,92,0,.14);
+    --done: #7fdcae; --blocked: #ffd27a; --failed: #ff8a7a; --limited: #ff87d7;
+    --claude: #ff9b73; --codex: #4fd1a5; --agent37: #b39dff; --relay: #7fb2ff; --orca: #5fd7e2; --monid: #ffd27a; --other: #9a9a9a;
+    --shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 18px 40px -24px rgba(0,0,0,.9);
+    --hero-ink: #ffffff; --hero-sub: #c4cedb; --chip: rgba(255,255,255,.07); --chip-line: rgba(255,255,255,.09);
+    --sky: radial-gradient(760px 240px at 80% 132%, rgba(255,92,0,.42), rgba(255,92,0,0) 70%),
+           radial-gradient(560px 200px at 10% 140%, rgba(255,150,60,.22), rgba(255,150,60,0) 70%),
+           radial-gradient(420px 140px at 60% 0%, rgba(120,160,255,.10), rgba(120,160,255,0) 70%),
+           linear-gradient(180deg, #0b1220 0%, #101a2c 52%, #1c1612 100%);
+  }
+  [data-flavor="claude"] { --c: var(--claude); } [data-flavor="codex"] { --c: var(--codex); }
+  [data-flavor="agent37"] { --c: var(--agent37); } [data-flavor="relay"] { --c: var(--relay); }
+  [data-flavor="orca"] { --c: var(--orca); } [data-flavor="monid"] { --c: var(--monid); } [data-flavor="other"] { --c: var(--other); }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  [hidden] { display: none !important; }
+  button { font: inherit; color: inherit; }
+  code { font: 12px var(--mono); }
+  .ms { font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--orange-ink); }
+  .tab { font-variant-numeric: tabular-nums; }
+
+  /* header */
+  header { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line-2); }
+  .bar { max-width: 1920px; margin: 0 auto; height: 56px; padding: 0 20px; display: flex; align-items: center; gap: 14px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; letter-spacing: -.03em; }
+  .logo i { width: 27px; height: 27px; border-radius: 9px; background: var(--orange); display: grid; place-items: center; color: #fff; font: 700 14px var(--mono); font-style: normal; }
+  .pill { font: 600 11px/1 var(--mono); letter-spacing: .06em; background: var(--orange-soft); color: var(--orange-ink); padding: 6px 9px; border-radius: 8px; white-space: nowrap; }
+  .conn { display: inline-flex; align-items: center; gap: 7px; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px 6px 9px; white-space: nowrap; }
+  .conn i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .conn[data-state="live"] { color: var(--done); border-color: color-mix(in srgb, var(--done) 40%, transparent); }
+  .conn[data-state="live"] i { box-shadow: 0 0 0 0 currentColor; animation: ping 1.6s ease-out infinite; }
+  .conn[data-state="replay"] { color: var(--orange-ink); border-color: color-mix(in srgb, var(--orange) 40%, transparent); }
+  .conn[data-state="replay"] i { animation: blink 1.2s ease-in-out infinite; }
+  .conn[data-state="down"] { color: var(--blocked); }
+  .conn[data-state="sync"] i, .conn[data-state="boot"] i { animation: blink .8s ease-in-out infinite; }
+  .meta { display: flex; gap: 8px; min-width: 0; overflow: hidden; }
+  .meta span { font: 500 11.5px/1 var(--mono); color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; white-space: nowrap; }
+  .clock { margin-left: auto; text-align: right; line-height: 1.05; }
+  .clock small { display: block; font: 600 10px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .clock b { font: 600 22px/1 var(--mono); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .clock.soon b { color: var(--orange-ink); }
+  .icon { height: 34px; min-width: 34px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font: 500 13px var(--sans); }
+  .icon:hover { border-color: var(--muted); }
+
+  main { max-width: 1920px; margin: 0 auto; padding: 14px 20px 10px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* hero: the sky from docs/index.html, with the race card floating on it */
+  .hero { position: relative; overflow: hidden; isolation: isolate; border-radius: 26px; padding: 24px 26px; background: var(--sky); color: var(--hero-ink); box-shadow: var(--shadow);
+          display: grid; grid-template-columns: minmax(0, 1fr) minmax(400px, 560px); gap: 26px; align-items: center; }
+  .hero .ms { color: color-mix(in srgb, var(--hero-ink) 70%, var(--orange)); }
+  .hero h1 { margin: 12px 0 0; font-weight: 600; line-height: 1; letter-spacing: -.045em; }
+  .hero .num { display: block; font-size: clamp(46px, 5.6vw, 84px); color: var(--orange); font-variant-numeric: tabular-nums; text-shadow: 0 0 40px color-mix(in srgb, var(--orange) 30%, transparent); white-space: nowrap; }
+  .hero .unit { display: block; font-size: clamp(20px, 2vw, 27px); letter-spacing: -.03em; margin-top: 10px; font-weight: 500; }
+  .hero p.lede { margin: 10px 0 18px; font-size: 15.5px; color: var(--hero-sub); max-width: 620px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips span { display: inline-flex; align-items: baseline; gap: 6px; background: var(--chip); border: 1px solid var(--chip-line); backdrop-filter: blur(8px); border-radius: 12px; padding: 7px 11px; font-size: 13px; color: var(--hero-sub); white-space: nowrap; }
+  .chips b { font: 600 15px/1 var(--mono); color: var(--hero-ink); font-variant-numeric: tabular-nums; }
+  .chips .k-done b { color: var(--done); } .chips .k-blocked b { color: var(--blocked); }
+  .chips .k-failed b { color: var(--failed); } .chips .k-limited b { color: var(--limited); }
+  .chips span.zero { opacity: .55; }
+  .embers { position: absolute; inset: 0; z-index: -1; pointer-events: none; display: none; }
+  .embers i { position: absolute; bottom: -8px; width: 4px; height: 4px; border-radius: 50%; background: #ffb070; box-shadow: 0 0 8px 2px rgba(255,120,30,.7); opacity: 0; animation: rise 7s linear infinite; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .embers { display: block; } }
+  :root[data-theme="dark"] .embers { display: block; }
+
+  /* race card */
+  .hero > div { min-width: 0; }
+  .race { min-width: 0; background: var(--card); color: var(--ink); border-radius: 22px; padding: 14px 18px 10px; box-shadow: 0 24px 60px rgba(25,60,100,.16); }
+  .race .top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .race .top b { font-size: 15px; letter-spacing: -.01em; }
+  .race .top > span { font: 500 11px var(--mono); color: var(--muted); white-space: nowrap; }
+  .meters { margin-top: 6px; }
+  .mrow { display: grid; grid-template-columns: 118px minmax(0, 1fr) 60px; column-gap: 12px; align-items: center; padding: 4px 0; }
+  .mrow.head { padding: 2px 0 0; height: 18px; }
+  .tlabel { position: relative; height: 14px; }
+  .tlabel b { position: absolute; top: 0; transform: translateX(-72%); font: 600 9.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--orange-ink); white-space: nowrap; }
+  .mname { display: flex; align-items: center; gap: 7px; min-width: 0; font: 500 12.5px/1.2 var(--mono); }
+  .mname span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
+  .track { position: relative; height: 12px; border-radius: 99px; background: var(--well-2); }
+  .fill { position: absolute; inset: 0; border-radius: inherit; transform-origin: left; transform: scaleX(0); transition: transform 1.1s cubic-bezier(.2,.8,.2,1);
+          background: linear-gradient(90deg, color-mix(in srgb, var(--c) 45%, transparent), var(--c)); overflow: hidden; }
+  .burning .fill::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(-45deg, rgba(255,255,255,.22) 0 7px, transparent 7px 14px); background-size: 20px 20px; animation: stripes 1s linear infinite; }
+  .tick { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; border-radius: 2px; background: var(--ink); opacity: .55; }
+  .mrow.hit .fill { background: linear-gradient(90deg, color-mix(in srgb, var(--done) 45%, transparent), var(--done)); box-shadow: 0 0 18px color-mix(in srgb, var(--done) 55%, transparent); }
+  .mrow.hit .tick { background: var(--done); opacity: 1; }
+  .mpct { text-align: right; font: 600 14px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .mrow.hit .mpct { color: var(--done); }
+  .msub { grid-column: 2 / 4; min-width: 0; overflow: hidden; display: flex; justify-content: space-between; gap: 10px; margin-top: 4px; font: 10.5px/1.2 var(--mono); color: var(--muted); white-space: nowrap; }
+  .msub .mused { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .msub .delta { margin-left: 7px; color: var(--orange-ink); }
+  .msub .mreset { flex: none; }
+  .msub .mreset.soon { color: var(--orange-ink); font-weight: 600; }
+  .mempty { padding: 18px 0 10px; color: var(--muted); font-size: 13px; }
+
+  /* banners */
+  .banners { display: flex; flex-direction: column; gap: 10px; }
+  .banners:empty { display: none; }
+  .banner { display: flex; align-items: center; gap: 12px; border-radius: 16px; padding: 8px 16px 8px 10px; font-size: 13.5px; line-height: 1.35; animation: drop .55s cubic-bezier(.2,.8,.2,1) both; }
+  .banner > div { min-width: 0; }
+  .banner .bi { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; font: 700 15px var(--mono); }
+  .banner .bt { margin-left: auto; font: 600 13px var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .banner b { font-weight: 600; }
+  .banner small { font-size: 12.5px; opacity: .75; margin-left: 4px; }
+  .banner.limit { color: var(--ink); border: 1px solid color-mix(in srgb, var(--limited) 45%, transparent);
+                  background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--limited) 13%, var(--card)) 0 12px, color-mix(in srgb, var(--limited) 6%, var(--card)) 12px 24px);
+                  background-size: 34px 34px; animation: drop .55s cubic-bezier(.2,.8,.2,1) both, hatch 1.4s linear infinite; }
+  .banner.limit .bi { background: var(--limited); color: #fff; }
+  .banner.limit .bt { color: var(--limited); }
+  .banner.final { background: #262626; color: #fff; padding: 10px 16px 10px 12px; box-shadow: var(--shadow); }
+  .banner.final .bi { background: var(--done); color: #0f2a1d; width: 34px; height: 34px; border-radius: 11px; }
+  .banner.final b { font-size: 17px; letter-spacing: -.02em; }
+  .banner.final .lead { color: #ffb27f; font-weight: 500; font-size: 15px; }
+  .banner.final small { display: block; margin: 1px 0 0; color: #cfcfcf; opacity: 1; }
+  .banner.final .bt { color: #ffb27f; background: rgba(255,255,255,.07); border-radius: 10px; padding: 8px 12px; }
+
+  /* lanes + side */
+  .work { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; min-height: 0; }
+  .lanes { position: relative; display: grid; grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr)); gap: 12px; min-height: 380px; }
+  .lane { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--card); border-radius: 20px; padding: 14px 12px 12px; box-shadow: var(--shadow); overflow: hidden; transition: opacity .4s; }
+  .lane::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--c); }
+  .lane.live::before { background: linear-gradient(90deg, var(--c), color-mix(in srgb, var(--c) 30%, transparent), var(--c)); background-size: 200% 100%; animation: flow 2.2s linear infinite; }
+  .lhead { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
+  .lhead b { flex: 1; min-width: 0; font-size: 15px; font-weight: 600; letter-spacing: -.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lhead .cnt { flex: none; font: 600 11px/1 var(--mono); color: var(--muted); white-space: nowrap; }
+  .lane.live .lhead .cnt { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px 4px 6px; border-radius: 99px; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
+  .lane.live .lhead .cnt::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1.1s ease-in-out infinite; }
+  .lsub { font: 11px/1.2 var(--mono); color: var(--muted); margin: 5px 2px 10px 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 13px; }
+  .llim { margin: -2px 0 10px; border-radius: 10px; padding: 7px 9px; font: 600 10.5px/1.25 var(--mono); letter-spacing: .03em; color: var(--limited); background: color-mix(in srgb, var(--limited) 11%, transparent); border: 1px dashed color-mix(in srgb, var(--limited) 50%, transparent); }
+  .lbody { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; margin: 0 -4px; padding: 0 4px 2px; }
+  .idle { border: 1.5px dashed var(--line); border-radius: 14px; padding: 18px 8px; text-align: center; font: 600 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .lane.off { opacity: .5; }
+  .lane.limited .lbody { background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--limited) 6%, transparent) 0 10px, transparent 10px 20px); border-radius: 12px; }
+
+  /* agent cards */
+  .agent { position: relative; --p: 0; --s: var(--c); margin-top: 8px; padding: 9px 10px 8px; border-radius: 14px; background: var(--well); border: 1px solid var(--line-2); overflow: hidden; max-height: 240px;
+           animation: cardIn .55s cubic-bezier(.2,.8,.2,1) both;
+           transition: max-height .45s ease, opacity .35s ease, transform .4s ease, margin .45s ease, padding .45s ease, border-color .3s, background .3s; }
+  .agent:first-child { margin-top: 0; }
+  .agent.running { border-color: color-mix(in srgb, var(--c) 35%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--c) 9%, var(--well)), var(--well) 70%); box-shadow: 0 10px 24px -18px var(--c); }
+  .agent.done { --s: var(--done); border-color: color-mix(in srgb, var(--done) 45%, transparent); }
+  .agent.blocked { --s: var(--blocked); border-color: color-mix(in srgb, var(--blocked) 45%, transparent); }
+  .agent.failed { --s: var(--failed); border-color: color-mix(in srgb, var(--failed) 45%, transparent); }
+  .agent.limited { --s: var(--limited); border-color: color-mix(in srgb, var(--limited) 45%, transparent); }
+  .agent:not(.running)::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; animation: flash 1.3s ease-out both;
+                                background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--s) 26%, transparent), transparent 70%); }
+  .agent.leave { max-height: 0 !important; opacity: 0; transform: scale(.94); margin-top: 0; padding-top: 0; padding-bottom: 0; border-width: 0; }
+  .atop { display: flex; align-items: center; gap: 6px; font: 500 10.5px/1 var(--mono); min-width: 0; }
+  .slot { color: var(--c); font-weight: 700; }
+  .proj { flex: 1; min-width: 0; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border-radius: 99px; font: 600 9.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--s); background: color-mix(in srgb, var(--s) 14%, transparent); }
+  .chip i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .agent.running .chip i { animation: blink 1.1s ease-in-out infinite; }
+  .task { margin: 6px 0 8px; font-size: 13.5px; line-height: 1.35; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .prog { position: relative; height: 5px; border-radius: 99px; background: var(--well-2); overflow: hidden; }
+  .prog i { position: absolute; inset: 0; border-radius: inherit; transform-origin: left; transform: scaleX(var(--p)); background: linear-gradient(90deg, color-mix(in srgb, var(--s) 55%, transparent), var(--s)); transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+  .agent.running .prog::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent); animation: shimmer 1.6s ease-in-out infinite; }
+  .afoot { display: flex; align-items: baseline; gap: 7px; margin-top: 7px; font: 11.5px/1 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .afoot .tok { color: var(--ink); font-weight: 600; font-size: 13.5px; }
+  .afoot .el { margin-left: auto; }
+  .note { margin-top: 5px; font-size: 11.5px; line-height: 1.3; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 15px; }
+  .agent:not(.running) .note { color: var(--s); font-family: var(--mono); font-size: 11px; }
+  .lbody.dense .task { -webkit-line-clamp: 1; line-clamp: 1; margin: 5px 0 7px; }
+  .lbody.dense .note { display: none; }
+
+  /* side: rate chart + landed */
+  .side { display: flex; flex-direction: column; gap: 14px; min-height: 0; min-width: 0; }
+  .card { background: var(--card); border-radius: 20px; padding: 16px 16px 14px; box-shadow: var(--shadow); min-width: 0; }
+  .card .h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .card .h span { font: 500 11px var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rate .big { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+  .rate .big b { font: 600 26px/1 var(--sans); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .rate .big span { font: 500 12px var(--mono); color: var(--muted); }
+  .need { margin-left: auto; font: 600 10.5px/1 var(--mono); padding: 5px 8px; border-radius: 99px; color: var(--muted); background: var(--well); white-space: nowrap; }
+  .need.ahead { color: var(--done); background: color-mix(in srgb, var(--done) 13%, transparent); }
+  .need.behind { color: var(--blocked); background: color-mix(in srgb, var(--blocked) 14%, transparent); }
+  canvas#chart { display: block; width: 100%; height: 112px; margin-top: 8px; }
+  .landed { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .landed ol { list-style: none; margin: 8px -4px 0; padding: 0 4px; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+  .land { --s: var(--done); padding: 10px 2px; border-top: 1px solid var(--line-2); animation: landIn .7s cubic-bezier(.2,.8,.2,1) both; }
+  .land:first-child { border-top: 0; }
+  .land.blocked { --s: var(--blocked); } .land.failed { --s: var(--failed); } .land.limited { --s: var(--limited); }
+  .l1 { display: flex; align-items: center; gap: 7px; font: 500 11px/1 var(--mono); min-width: 0; }
+  .l1 .st { flex: none; width: 19px; height: 19px; border-radius: 6px; display: grid; place-items: center; font-weight: 700; color: var(--s); background: color-mix(in srgb, var(--s) 15%, transparent); }
+  .l1 .proj { color: var(--ink); text-transform: none; letter-spacing: 0; font-weight: 600; flex: 0 1 auto; }
+  .l1 .ln { color: var(--c); }
+  .l1 .tk { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ltask { margin: 4px 0 0 26px; font-size: 13px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .l3 { display: flex; align-items: center; gap: 8px; margin: 4px 0 0 26px; font: 500 11px/1.25 var(--mono); color: var(--muted); min-width: 0; white-space: nowrap; }
+  .l3 .br { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+  .l3 .sha { flex: none; color: var(--ink-2); background: var(--well); border-radius: 5px; padding: 1px 5px; }
+  .l3 .ins { color: var(--done); } .l3 .del { color: var(--failed); }
+  .l3 .tests.ok { color: var(--done); } .l3 .tests.bad { color: var(--failed); }
+  .l3 .why, .l3 .raw { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .l3 .why { color: var(--s); }
+  .hint { color: var(--muted); font-size: 13px; margin: 14px 2px 4px; }
+
+  /* empty state */
+  .empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; z-index: 2; background: color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter: blur(2px); border-radius: 20px; }
+  .empty > div { max-width: 520px; text-align: center; background: var(--card); border-radius: 24px; padding: 28px 30px; box-shadow: var(--shadow); }
+  .empty .flame { width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 15px; display: grid; place-items: center; background: var(--orange-soft); color: var(--orange); font-size: 22px; animation: breathe 2.4s ease-in-out infinite; }
+  .empty h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -.03em; }
+  .empty p { color: var(--ink-2); margin: 8px 0 14px; }
+  .empty pre { margin: 0; text-align: left; background: #1f1f1f; color: #e8e8e8; border-radius: 14px; padding: 13px 16px; font: 12.5px/1.7 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .empty pre span { color: #8d8d8d; }
+  footer { max-width: 1920px; margin: 0 auto; padding: 0 20px 10px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+
+  /* motion */
+  @keyframes cardIn { from { opacity: 0; transform: translateY(12px) scale(.96); } }
+  @keyframes landIn { from { opacity: 0; transform: translateY(-10px); background: color-mix(in srgb, var(--s) 16%, transparent); } }
+  @keyframes drop { from { opacity: 0; transform: translateY(-10px); } }
+  @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes shimmer { to { transform: translateX(100%); } }
+  @keyframes stripes { to { background-position: 20px 0; } }
+  @keyframes hatch { to { background-position: 34px 0; } }
+  @keyframes flow { to { background-position: -200% 0; } }
+  @keyframes blink { 50% { opacity: .3; } }
+  @keyframes ping { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 60%, transparent); } 100% { box-shadow: 0 0 0 7px transparent; } }
+  @keyframes breathe { 50% { transform: scale(1.07); } }
+  @keyframes rise { 0% { opacity: 0; transform: translate(0, 0) scale(1); } 12% { opacity: .9; } 100% { opacity: 0; transform: translate(var(--dx, 14px), -260px) scale(.4); } }
+  .replaying *, .replaying *::before, .replaying *::after { animation: none !important; transition: none !important; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+  /* wide screens: the whole board fits the viewport (the video layout) */
+  @media (min-width: 1180px) and (min-height: 760px) {
+    body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    main { flex: 1; min-height: 0; width: 100%; }
+    .work { flex: 1; }
+    .lanes { min-height: 0; }
+  }
+  @media (min-width: 1180px) and (max-height: 900px) {
+    .hero { padding: 16px 20px; } .hero p.lede { display: none; } .hero .unit { margin-top: 8px; margin-bottom: 14px; }
+    .hero .num { font-size: clamp(44px, 5vw, 72px); }
+    .mrow { padding: 3px 0; }
+  }
+  @media (max-width: 1179px) {
+    .work { grid-template-columns: 1fr; }
+    .lanes { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(240px, 1fr); overflow-x: auto; padding-bottom: 4px; min-height: 340px; }
+    .lane { max-height: 560px; }
+    .side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .landed ol { max-height: 420px; }
+  }
+  @media (max-width: 980px) {
+    .hero { grid-template-columns: minmax(0, 1fr); }
+    .meta { display: none; }
+  }
+  @media (max-width: 760px) {
+    .bar { padding: 0 16px; gap: 8px; }
+    .logo span, .bar .pill, #replay .lbl { display: none; }
+    .conn { padding: 6px 8px; }
+    .clock b { font-size: 17px; }
+    main { padding: 12px 16px 8px; gap: 12px; }
+    .hero { padding: 20px 18px; border-radius: 22px; }
+    .race { padding: 14px 14px 12px; }
+    .mrow { grid-template-columns: 92px minmax(0, 1fr) 52px; column-gap: 9px; }
+    .msub { flex-wrap: wrap; row-gap: 2px; }
+    .lanes { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: 1fr; overflow: visible; min-height: 0; }
+    .lane { max-height: none; }
+    .lane.off { display: none; }
+    .side { grid-template-columns: 1fr; }
+    .banner { flex-wrap: wrap; } .banner .bt { margin-left: 48px; }
+    footer { padding: 4px 16px 16px; }
+  }
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="logo"><i>R</i><span>Agent Relay</span></div>
+  <span class="pill">BURN WEEK</span>
+  <div class="conn" id="conn" data-state="boot" role="status" aria-live="polite"><i></i><span id="conn-text">connecting</span></div>
+  <div class="meta" id="meta"></div>
+  <div class="clock" id="clockbox"><small id="clock-label">Next reset</small><b id="countdown">--:--:--</b></div>
+  <button class="icon" id="replay" type="button" title="Replay the recording" hidden>↻<span class="lbl"> Replay</span></button>
+  <button class="icon" id="theme" type="button" aria-label="Theme">◐</button>
+</div></header>
+
+<main>
+  <section class="hero" aria-label="This run">
+    <div class="embers" aria-hidden="true"><i style="left:8%;animation-delay:0s"></i><i style="left:19%;animation-delay:2.1s;--dx:-10px"></i><i style="left:33%;animation-delay:4.4s"></i><i style="left:52%;animation-delay:1.2s;--dx:-18px"></i><i style="left:67%;animation-delay:3.3s"></i><i style="left:78%;animation-delay:5.6s;--dx:-8px"></i><i style="left:90%;animation-delay:.6s"></i></div>
+    <div>
+      <div class="ms">Use it or lose it · burn week</div>
+      <h1><span class="num" id="tokens">0</span><span class="unit">tokens of leftover capacity put to work</span></h1>
+      <p class="lede" id="lede">Waiting for the swarm. Leftover subscription capacity becomes reviewable commits before your plans reset.</p>
+      <div class="chips" id="chips">
+        <span class="k-usd"><b id="n-usd">$0.00</b>spent</span>
+        <span class="k-done"><b id="n-done">0</b>landed</span>
+        <span class="k-blocked"><b id="n-blocked">0</b>parked</span>
+        <span class="k-failed"><b id="n-failed">0</b>failed</span>
+        <span class="k-limited"><b id="n-limited">0</b>limited</span>
+        <span class="k-running"><b id="n-running">0</b>running</span>
+        <span class="k-queued"><b id="n-queued">0</b>queued</span>
+      </div>
+    </div>
+    <div class="race" aria-label="Subscriptions">
+      <div class="top"><b>Race to <span id="target-top">97%</span> before each reset</b><span id="race-when"></span></div>
+      <div class="meters" id="meters"></div>
+    </div>
+  </section>
+
+  <div class="banners" id="banners" aria-live="polite"></div>
+
+  <div class="work">
+    <section class="lanes" id="lanes" aria-label="Lanes">
+      <div class="empty" id="empty" hidden><div>
+        <div class="flame" aria-hidden="true">🔥</div>
+        <h2 id="empty-title">Nothing burning yet</h2>
+        <p id="empty-live">Connected to <code>relay web</code>. Start a run and every agent shows up here live.</p>
+        <p id="empty-static">This page replays <code>sample-events.jsonl</code> when it sits next to it, or shows a run live through <code>relay web</code>.</p>
+        <pre><span># no keys needed: sandbox projects, mock lanes</span>
+relay burn demo --web 3737
+<span># the real thing, on your repos</span>
+relay burn week --web 3737
+<span># record the demo for this page</span>
+relay burn demo --record docs/sample-events.jsonl</pre>
+      </div></div>
+    </section>
+    <aside class="side">
+      <section class="card rate" aria-label="Token burn rate">
+        <div class="h"><span class="ms">Burn rate</span><span id="rate-span"></span></div>
+        <div class="big"><b id="rate-now">0</b><span id="rate-unit">tok/min</span><span class="need" id="need" hidden></span></div>
+        <canvas id="chart" role="img" aria-label="Tokens per minute over the run"></canvas>
+      </section>
+      <section class="card landed" aria-label="Landed">
+        <div class="h"><span class="ms">Landed</span><span id="landed-count">0 commits</span></div>
+        <ol id="landed"></ol>
+        <p class="hint" id="landed-empty">Each finished task lands here: its branch, diffstat and tests.</p>
+      </section>
+    </aside>
+  </div>
+</main>
+<footer><span>One tested commit per task on a local <code>relay/burn/*</code> branch. Nothing is pushed; you review and merge.</span><span id="foot-src"></span></footer>
+<noscript><p style="text-align:center">This dashboard needs JavaScript.</p></noscript>
+
+<script>
+"use strict";
+(() => {
+// Every event field is untrusted text: it only ever reaches the page through textContent.
+const P = new URLSearchParams(location.search);
+const ROOT = document.documentElement;
+const COLS = ["claude", "codex", "agent37", "relay", "orca"];
+const KNOWN = new Set([...COLS, "monid"]);
+const NAMES = {claude: "Claude Code", codex: "Codex", agent37: "Agent37", relay: "Relay", orca: "Orca", monid: "Monid"};
+const ALIASES = [["claude", "claude"], ["codex", "codex"], ["chatgpt", "codex"], ["agent37", "agent37"],
+                 ["openai", "relay"], ["relay", "relay"], ["orca", "orca"], ["monid", "monid"]];
+const ENDS = ["done", "blocked", "failed", "limited"];
+const LABEL = {running: "running", done: "done", blocked: "parked", failed: "failed", limited: "limited"};
+const ICON = {done: "✓", blocked: "◆", failed: "✗", limited: "⊘"};
+const HOLD = 2600, MAX_GAP = 2.2, LOOP_PAUSE = 9000;
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = id => document.getElementById(id);
+
+// ---------------------------------------------------------------- small helpers
+const num = (v, d = 0) => { const x = typeof v === "number" ? v : typeof v === "string" && v.trim() ? Number(v) : NaN; return Number.isFinite(x) ? x : d; };
+const CTRL = /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff]/g;
+const txt = (v, n = 300) => (v == null || typeof v === "object" ? "" : String(v)).replace(CTRL, " ").replace(/\s+/g, " ").trim().slice(0, n);
+const arr = v => Array.isArray(v) ? v : [];
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function si(v, unit) {
+  v = num(v);
+  if (unit === "usd") return money(v);
+  const a = Math.abs(v);
+  for (const [s, d] of [["B", 1e9], ["M", 1e6], ["k", 1e3]]) if (a >= d * 0.9995) { const x = v / d, ax = Math.abs(x); return x.toFixed(ax < 9.995 ? 2 : ax < 99.95 ? 1 : 0) + s; }
+  return String(Math.round(v));
+}
+function money(v) { v = num(v); return "$" + (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString("en-US") : v > 0 && v < 0.095 ? v.toFixed(3) : v.toFixed(2)); }
+const commas = v => Math.round(num(v)).toLocaleString("en-US");
+const pad2 = n => String(n).padStart(2, "0");
+function clock(sec) { let s = Math.max(0, Math.floor(num(sec))); const h = Math.floor(s / 3600); s %= 3600; return h ? `${h}:${pad2(Math.floor(s / 60))}:${pad2(s % 60)}` : `${Math.floor(s / 60)}:${pad2(s % 60)}`; }
+function countdown(sec) { let s = Math.max(0, Math.floor(num(sec))); const d = Math.floor(s / 86400); s %= 86400; const hms = `${pad2(Math.floor(s / 3600))}:${pad2(Math.floor(s % 3600 / 60))}:${pad2(s % 60)}`; return d ? `${d}d ${hms}` : hms; }
+function when(ts) { try { return new Date(ts * 1000).toLocaleString("en-US", {weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23"}); } catch (_) { return ""; } }
+function away(sec) { const s = Math.max(0, sec); return s < 3600 ? Math.max(1, Math.ceil(s / 60)) + "m" : s < 72 * 3600 ? Math.floor(s / 3600) + "h" : `${Math.floor(s / 86400)}d ${Math.floor(s % 86400 / 3600)}h`; }
+const resetText = (ts, t) => !ts ? "" : ts > t ? `resets ${when(ts)} · ${away(ts - t)}` : "reset passed";
+const unitWord = u => u === "tokens" ? "tokens" : u === "usd" ? "" : u;
+function rgba(hex, a) { const m = /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(String(hex).trim()); return m ? `rgba(${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)},${a})` : hex; }
+
+// ---------------------------------------------------------------- clock (virtual while replaying a recording)
+let mode = "boot", replaying = false, dirty = true;
+const V = {ts: 0, wall: 0, speed: 1, cap: Infinity};
+function now() { return mode === "demo" ? Math.min(V.ts + (performance.now() - V.wall) / 1000 * V.speed, V.cap) : Date.now() / 1000; }
+function vsync(ts, cap) { V.ts = Math.max(now(), ts); V.wall = performance.now(); V.cap = Math.max(cap, V.ts); }
+
+// ---------------------------------------------------------------- state: the same fold as relay/dash.py
+let GEN = 0, S = blank();
+function blank() {
+  return {gen: ++GEN, run: "", host: "", started: 0, resetsAt: 0, target: 0.97, maxAgents: 0, queue: 0, queued: 0, begun: new Set(),
+          lanes: new Map(), meters: new Map(), burn: new Map(), agents: new Map(), branches: new Map(), avg: new Map(),
+          limited: new Map(), counts: {done: 0, blocked: 0, failed: 0, limited: 0}, landed: [], seq: 0,
+          tokens: 0, usd: 0, series: [], end: null, lastTs: 0};
+}
+function guess(s) { s = String(s || "").toLowerCase(); const hit = ALIASES.find(([k]) => s.includes(k)); return hit ? hit[1] : ""; }
+function flavor(lane) { const i = S.lanes.get(lane) || {}; const f = i.flavor || i.kind || lane || ""; return KNOWN.has(f) ? f : guess(`${lane} ${f}`); }
+const swatch = lane => flavor(lane) || "other";                       // a whitelisted data-flavor value
+function colOf(lane) { const f = flavor(lane); return COLS.includes(f) ? f : "x:" + (lane || "other"); }
+function subOf(lane) {
+  const i = S.lanes.get(lane) || {};
+  if (i.subscription && S.meters.has(i.subscription)) return i.subscription;
+  const keys = new Set([lane, i.kind, i.flavor].filter(Boolean));
+  for (const m of S.meters.values()) if (keys.has(m.lane)) return m.name;
+  return null;
+}
+function meterFlavor(m) {
+  for (const [lane, i] of S.lanes) if (i.subscription === m.name) return swatch(lane);
+  return KNOWN.has(m.lane) ? m.lane : guess(`${m.name} ${m.lane}`) || "other";
+}
+function meter(name) { if (!S.meters.has(name)) S.meters.set(name, {name, unit: "tokens", used: 0, limit: null, base: 0, snap: 0, resetsAt: 0, lane: "", rate: 0}); return S.meters.get(name); }
+function burned(m) { const k = m.unit === "tokens" ? "tokens" : m.unit === "usd" ? "usd" : null; let t = 0; if (k) for (const [lane, b] of S.burn) if (subOf(lane) === m.name) t += b[k]; return t; }
+function usedOf(m) { const b = burned(m); return Math.max(m.used + b - m.snap, m.base + b); }   // right whether or not pace counts our own burn
+function burning() { const s = new Set(); for (const lane of S.lanes.keys()) { const m = subOf(lane); if (m) s.add(m); } return s; }
+function nextReset(t) {                                                 // every plan has its own clock: the soonest one being burned
+  const b = burning(); let best = null;
+  for (const m of S.meters.values()) if (m.resetsAt > t && (!b.size || b.has(m.name)) && (!best || m.resetsAt < best.resetsAt)) best = m;
+  return best ? {ts: best.resetsAt, name: best.name} : S.resetsAt > t ? {ts: S.resetsAt, name: ""} : null;
+}
+const akey = r => `${txt(r.task_id, 80) || "?"}#${Math.round(num(r.agent))}`;
+function newAgent(r, ts) {
+  const task = txt(r.task_id, 80);
+  return {key: akey(r), slot: Math.round(num(r.agent)), task, project: txt(r.project, 60), text: txt(r.text, 300), lane: txt(r.lane, 40),
+          branch: txt(r.branch, 120) || S.branches.get(task) || (task ? "relay/burn/" + task : ""), status: "running", tokens: 0, usd: 0,
+          note: "", started: ts, last: ts, ended: 0, seconds: 0, commit: "", summary: "", diff: null, tests: null};
+}
+function agentOf(r, ts) { const k = akey(r); if (!S.agents.has(k)) S.agents.set(k, newAgent(r, ts)); return S.agents.get(k); }
+function spend(a, r, ts) {
+  if (!a.lane) a.lane = txt(r.lane, 40);
+  const tok = Math.max(a.tokens, num(r.tokens)), cost = Math.max(a.usd, num(r.usd)), dt = tok - a.tokens, du = cost - a.usd;
+  if (dt > 0 || du > 0) {
+    const b = S.burn.get(a.lane) || {tokens: 0, usd: 0};
+    b.tokens += dt; b.usd += du; S.burn.set(a.lane, b);
+    S.tokens += dt; S.usd += du;
+    if (dt > 0) point(ts, S.tokens);
+  }
+  a.tokens = tok; a.usd = cost; a.last = Math.max(a.last, ts);
+}
+function point(ts, cum) {
+  const p = S.series, last = p[p.length - 1];
+  if (last && ts <= last[0] + 0.25) { last[1] = cum; return; }
+  p.push([ts, cum]);
+  if (p.length > 4000) S.series = p.filter((_, i) => i % 2 === 0 || i > p.length - 600);
+}
+function diffstat(r) {
+  const s = txt(r.diffstat, 200);
+  const pick = (key, ...res) => { if (Number.isFinite(num(r[key], NaN))) return num(r[key]); for (const re of res) { const m = s.match(re); if (m) return Number(m[1]); } return null; };
+  const files = pick("files", /(\d+) files? changed/), ins = pick("insertions", /(\d+) insertions?\(\+\)/, /(?:^|[^\w-])\+(\d+)/),
+        del = pick("deletions", /(\d+) deletions?\(-\)/, /(?:^|[^\w+])[-−](\d+)/);
+  return files == null && ins == null && del == null ? (s ? {raw: s} : null) : {files, ins: ins || 0, del: del || 0};
+}
+
+const ON = {
+  swarm_start(r, ts) {
+    S.run = txt(r.run, 40); S.started = ts; S.maxAgents = num(r.max_agents); S.queue = num(r.queue);
+    S.resetsAt = num(r.resets_at); S.target = num(r.target_pct, 0.97) || 0.97; S.series = [[ts, 0]];
+    for (const l of arr(r.lanes)) if (l && typeof l === "object" && l.name != null)
+      S.lanes.set(txt(l.name, 40), {kind: txt(l.kind, 40), subscription: txt(l.subscription, 80), flavor: txt(l.as || l.kind || l.name, 40)});
+    for (const u of arr(r.usages)) if (u && typeof u === "object" && u.name != null) {
+      const m = meter(txt(u.name, 80));
+      m.unit = txt(u.unit, 12) || "tokens"; m.used = num(u.used); m.limit = num(u.limit) || null; m.base = m.used;
+      m.resetsAt = num(u.resets_at); m.lane = txt(u.lane, 40);
+    }
+  },
+  pace(r, ts) {
+    const lane = txt(r.lane, 40), sub = txt(r.subscription, 80) || subOf(lane);
+    if (!sub) return;
+    if (lane) { const i = S.lanes.get(lane) || {kind: "", subscription: "", flavor: lane}; i.subscription = i.subscription || sub; S.lanes.set(lane, i); }
+    const fresh = !S.meters.has(sub), m = meter(sub);
+    if (r.unit) m.unit = txt(r.unit, 12);
+    if (r.used != null) { const b = burned(m); m.used = num(r.used); m.snap = b; if (fresh) m.base = m.used - b; }
+    if (r.limit != null) m.limit = num(r.limit) || null;
+    if (r.target_rate != null) m.rate = num(r.target_rate);
+    if (num(r.resets_at) > 0) m.resetsAt = num(r.resets_at);
+    else if (num(r.hours_left) > 0 && (!m.resetsAt || m.resetsAt <= ts)) m.resetsAt = ts + num(r.hours_left) * 3600;   // each plan has its own clock
+    if (r.target_pct != null) S.target = num(r.target_pct, S.target) || S.target;
+  },
+  task_queued() { S.queued++; },
+  agent_start(r, ts) { const a = newAgent(r, ts); S.agents.set(a.key, a); S.branches.set(a.task, a.branch); S.begun.add(a.task || a.key); },
+  agent_progress(r, ts) { const a = agentOf(r, ts); spend(a, r, ts); a.note = txt(r.note, 160) || a.note; },
+  agent_end(r, ts) {
+    const a = agentOf(r, ts);
+    spend(a, r, ts);
+    const st = ENDS.includes(r.status) ? r.status : "failed";
+    Object.assign(a, {status: st, seconds: num(r.seconds, ts - a.started), ended: performance.now(), commit: txt(r.commit, 12),
+                      summary: txt(r.summary, 240), diff: diffstat(r), tests: typeof r.tests_ok === "boolean" ? r.tests_ok : null});
+    if (!a.project) a.project = txt(r.project, 60);
+    S.counts[st]++;
+    const L = S.avg.get(a.lane) || {n: 0, tok: 0, sec: 0}; L.n++; L.tok += a.tokens; L.sec += a.seconds; S.avg.set(a.lane, L);
+    S.landed.unshift({id: ++S.seq, status: st, project: a.project, text: a.text, lane: a.lane, branch: a.branch, commit: a.commit,
+                      summary: a.summary, diff: a.diff, tests: a.tests, tokens: a.tokens, seconds: a.seconds});
+    if (S.landed.length > 60) S.landed.length = 60;
+    if (replaying) S.agents.delete(a.key);
+  },
+  lane_limited(r, ts) { if (r.lane != null) S.limited.set(txt(r.lane, 40), {until: num(r.until), reason: txt(r.reason, 160), ts}); },
+  swarm_end(r, ts) {
+    S.end = {reason: txt(r.reason, 80), report: txt(r.report, 200), seconds: num(r.seconds, ts - S.started), ts};
+    for (const k of ENDS) S.counts[k] = Math.round(num(r[k], S.counts[k]));
+    S.tokens = Math.max(S.tokens, num(r.tokens)); S.usd = Math.max(S.usd, num(r.usd));
+  },
+};
+function apply(r) {
+  if (!r || typeof r !== "object" || Array.isArray(r)) return;
+  if (r.event === "swarm_start") S = blank();                         // a new run replaces the last one
+  const ts = num(r.ts, S.lastTs);
+  S.lastTs = Math.max(S.lastTs, ts);
+  if (r.host) S.host = txt(r.host, 60);
+  const fn = Object.prototype.hasOwnProperty.call(ON, r.event) ? ON[r.event] : null;
+  if (fn) { try { fn(r, ts || S.lastTs); } catch (_) { /* one malformed row never takes the board down */ } }
+}
+
+// ---------------------------------------------------------------- animated numbers
+const counters = new Map();
+function count(node, value, fmt, eps = 0.5) {
+  let c = counters.get(node);
+  if (!c) { counters.set(node, {shown: value, target: value, fmt, eps}); node.textContent = fmt(value); return; }
+  c.target = value; c.fmt = fmt; c.eps = eps;
+  if (REDUCED || replaying) { c.shown = value; node.textContent = fmt(value); }
+}
+function tween(dt) {
+  const k = 1 - Math.exp(-dt / 240);
+  for (const [node, c] of counters) {
+    if (!node.isConnected) { counters.delete(node); continue; }
+    if (c.shown === c.target) continue;
+    const d = c.target - c.shown;
+    c.shown = Math.abs(d) <= c.eps ? c.target : c.shown + d * k;
+    node.textContent = c.fmt(c.shown);
+  }
+}
+function snapCounters() { for (const [node, c] of counters) { c.shown = c.target; node.textContent = c.fmt(c.target); } }
+
+// ---------------------------------------------------------------- render
+function render() { renderTop(); renderMeters(); renderLanes(); renderLanded(); renderEmpty(); tickClocks(); chartDirty = true; }
+
+function renderTop() {
+  const meta = $("meta"), chips = [S.run && "run " + S.run, S.maxAgents && `${S.maxAgents} agents`, S.host && S.host !== "local" && "on " + S.host].filter(Boolean);
+  if (meta.dataset.key !== chips.join("|")) { meta.dataset.key = chips.join("|"); meta.replaceChildren(...chips.map(c => el("span", null, c))); }
+  count($("tokens"), S.tokens, commas);
+  count($("n-usd"), S.usd, money, 0.004);
+  const running = [...S.agents.values()].filter(a => a.status === "running").length;
+  const queued = Math.max(0, Math.max(S.queued, S.queue) - S.begun.size);   // swarm_start.queue and task_queued count the same tasks
+  const vals = {...S.counts, running, queued};
+  for (const k of Object.keys(vals)) { count($("n-" + k), vals[k], v => String(Math.round(v))); $("n-" + k).parentNode.classList.toggle("zero", !vals[k]); }
+  $("n-usd").parentNode.classList.toggle("zero", !S.usd);
+  const lanes = new Set([...S.lanes.keys()].map(colOf)).size;
+  $("lede").textContent = !S.run ? "Waiting for the swarm. Leftover subscription capacity becomes reviewable commits before your plans reset."
+    : S.end ? `Run finished in ${clock(S.end.seconds)}: ${S.counts.done} tasks landed as tested commits on local branches, ready for you to review.`
+    : `${S.maxAgents || running} agents across ${lanes || 1} lanes turn what's left of this week's subscriptions into reviewable commits before each plan resets.`;
+  $("target-top").textContent = Math.round(S.target * 100) + "%";
+  const plans = burning().size;
+  $("race-when").textContent = plans ? `${plans} plan${plans === 1 ? "" : "s"} burning` : "";
+  const top = [...S.meters.values()].find(m => m.limit);
+  document.title = top ? `${(Math.min(1, usedOf(top) / top.limit) * 100).toFixed(1)}% · Agent Relay burn week` : "Agent Relay · Burn week";
+}
+
+const meterRows = new Map();
+function renderMeters() {
+  const box = $("meters");
+  if (!box.firstChild) {
+    const head = el("div", "mrow head"), lab = el("div", "tlabel"), b = el("b", null, "target");
+    lab.append(b); head.append(el("span"), lab, el("span")); box.append(head, el("p", "mempty", "Subscriptions show up when the swarm starts."));
+  }
+  box.querySelector(".tlabel b").style.left = (S.target * 100) + "%";
+  box.querySelector(".tlabel b").textContent = Math.round(S.target * 100) + "% target";
+  box.querySelector(".mempty").hidden = S.meters.size > 0;
+  box.querySelector(".mrow.head").hidden = !S.meters.size;
+  box.classList.toggle("burning", !!S.run && !S.end);
+  const seen = new Set();
+  for (const m of S.meters.values()) {
+    const key = S.gen + ":" + m.name; seen.add(key);
+    let row = meterRows.get(key);
+    if (!row) {
+      row = {el: el("div", "mrow"), name: el("span"), fill: el("i", "fill"), tick: el("i", "tick"), pct: el("div", "mpct"), detail: el("span"),
+             delta: el("span", "delta"), reset: el("span", "mreset")};
+      const nm = el("div", "mname"), track = el("div", "track"), sub = el("div", "msub"), used = el("span", "mused");
+      nm.append(el("i", "dot"), row.name); track.append(row.fill, row.tick); used.append(row.detail, row.delta); sub.append(used, row.reset);
+      row.el.append(nm, track, row.pct, sub); box.append(row.el); meterRows.set(key, row);
+    }
+    row.meter = m;
+    row.reset.textContent = resetText(m.resetsAt, now());
+    row.el.dataset.flavor = meterFlavor(m);
+    row.name.textContent = m.name; row.el.title = m.name;
+    const used = usedOf(m), lim = m.limit, pct = lim ? Math.min(1, used / lim) : null, b = burned(m);
+    row.fill.style.transform = `scaleX(${pct == null ? 0 : pct})`;
+    row.tick.style.left = (S.target * 100) + "%";
+    row.tick.hidden = pct == null;
+    count(row.pct, pct == null ? 0 : pct * 100, v => pct == null ? "—" : v.toFixed(1) + "%", 0.02);
+    row.detail.textContent = lim ? `${si(used, m.unit)} / ${si(lim, m.unit)} ${unitWord(m.unit)}` : `${si(used, m.unit)} ${unitWord(m.unit)}`;
+    row.delta.textContent = b > 0 ? `+${si(b, m.unit)}` : "";
+    row.delta.title = b > 0 ? "burned by this run" : "";
+    row.el.classList.toggle("hit", pct != null && pct >= S.target - 1e-9);
+  }
+  for (const [key, row] of meterRows) if (!seen.has(key)) { row.el.remove(); meterRows.delete(key); }
+}
+
+const banners = new Map();
+function renderBanners() {
+  const box = $("banners"), t = now(), want = new Set();
+  for (const [lane, lim] of S.limited) {
+    if (lim.until && lim.until <= t) continue;
+    const key = `lim:${S.gen}:${lane}`; want.add(key);
+    let b = banners.get(key);
+    if (!b) {
+      b = {el: el("div", "banner limit"), reason: el("span"), time: el("span", "bt")};
+      const body = el("div"), title = el("b", null, `${NAMES[flavor(lane)] || lane} lane hit its usage limit. `);
+      body.append(title, b.reason, el("small", null, "No retries, no account switching: nothing new launches on it until it resets."));
+      b.el.append(el("span", "bi", "⊘"), body, b.time); b.el.dataset.flavor = swatch(lane);
+      banners.set(key, b); box.append(b.el);
+    }
+    b.reason.textContent = lim.reason ? `(${lim.reason})` : "";
+    b.time.textContent = lim.until ? "resumes in " + countdown(lim.until - t) : "paused until reset";
+  }
+  if (S.end) {
+    const key = `end:${S.gen}`; want.add(key);
+    if (!banners.has(key)) {
+      const b = {el: el("div", "banner final")}, body = el("div");
+      const top = [...S.meters.values()].filter(m => m.limit).map(m => [m, usedOf(m) / m.limit]).sort((x, y) => y[1] - x[1])[0];
+      const hit = top && top[1] >= S.target - 1e-9;
+      body.append(el("b", null, hit ? "Week burned. " : "Run complete. "),
+                  el("span", "lead", top ? `${(Math.min(1, top[1]) * 100).toFixed(1)}% of ${top[0].name} used${top[0].resetsAt ? " before its " + when(top[0].resetsAt) + " reset" : ""}.` : S.end.reason),
+                  el("small", null, [`${S.counts.done} landed`, `${S.counts.blocked} parked`, `${S.counts.failed} failed`, `${si(S.tokens)} tokens`, money(S.usd),
+                                     clock(S.end.seconds), S.end.reason && top ? S.end.reason : ""].filter(Boolean).join(" · ") +
+                                     ". Every task is one tested commit on a local relay/burn/* branch; nothing was pushed."));
+      b.el.append(el("span", "bi", "✓"), body);
+      const report = S.end.report.split(/[\\/]/).pop();
+      if (report) b.el.append(el("span", "bt", report));
+      banners.set(key, b); box.prepend(b.el);
+    }
+  }
+  for (const [key, b] of banners) if (!want.has(key)) { b.el.remove(); banners.delete(key); }
+}
+
+const columns = new Map();
+function columnKeys() {
+  const keys = [...COLS];
+  for (const lane of [...S.lanes.keys(), ...[...S.agents.values()].map(a => a.lane)]) {
+    const c = colOf(lane);
+    if (!keys.includes(c) && flavor(lane) !== "monid" && keys.length < 8) keys.push(c);
+  }
+  return keys;
+}
+function renderLanes() {
+  const box = $("lanes"), keys = columnKeys(), t = now();
+  box.style.setProperty("--cols", keys.length);
+  for (const key of keys) {
+    let col = columns.get(key);
+    if (!col) {
+      col = {el: el("section", "lane"), name: el("b"), cnt: el("span", "cnt"), sub: el("div", "lsub"), lim: el("div", "llim"), body: el("div", "lbody"), idle: el("div", "idle"), cards: new Map()};
+      col.el.dataset.flavor = COLS.includes(key) ? key : "other";
+      const head = el("div", "lhead"); head.append(el("i", "dot"), col.name, col.cnt);
+      col.body.append(col.idle); col.el.append(head, col.sub, col.lim, col.body);
+      columns.set(key, col); box.append(col.el);
+    }
+    col.name.textContent = NAMES[key] || key.slice(2);
+    const lanes = [...S.lanes.keys()].filter(l => colOf(l) === key);
+    const agents = [...S.agents.values()].filter(a => colOf(a.lane) === key).sort((a, b) => a.slot - b.slot);
+    const running = agents.filter(a => a.status === "running").length;
+    let tok = 0, cost = 0;
+    for (const [lane, b] of S.burn) if (colOf(lane) === key) { tok += b.tokens; cost += b.usd; }
+    const on = !S.run || lanes.length > 0 || agents.length > 0;
+    const lim = lanes.map(l => S.limited.get(l)).find(x => x && (!x.until || x.until > t));
+    col.el.classList.toggle("off", !on);
+    col.el.classList.toggle("live", running > 0);
+    col.el.classList.toggle("limited", !!lim);
+    col.cnt.textContent = running ? String(running) : !on ? "off" : lim ? "paused" : S.end ? "done" : S.run ? "idle" : "";
+    col.cnt.title = running ? `${running} agent${running === 1 ? "" : "s"} running` : "";
+    const subs = [...new Set(lanes.map(l => (S.lanes.get(l) || {}).subscription).filter(Boolean))];
+    col.sub.textContent = [subs.join(" + "), tok ? si(tok) + " tok" : cost ? money(cost) : ""].filter(Boolean).join(" · ");
+    col.lim.hidden = !lim; col.lim.dataset.until = lim ? lim.until : "";
+    if (lim) col.lim.textContent = "⊘ limited · " + (lim.until ? "resumes in " + countdown(lim.until - t) : "until reset");
+    col.idle.hidden = agents.length > 0;
+    col.idle.textContent = !on ? "not in this run" : lim ? "paused at its limit" : S.end ? "done" : "standby";
+    for (const a of agents) {
+      let c = col.cards.get(a.key);
+      if (!c) { c = buildCard(); col.cards.set(a.key, c); col.body.append(c.el); }
+      updateCard(c, a);
+    }
+    for (const [k, c] of col.cards) if (!S.agents.has(k) || colOf(S.agents.get(k).lane) !== key) { col.cards.delete(k); leave(c.el); }
+    const room = col.body.clientHeight;                                 // crowded column: one-line tasks, no notes
+    col.body.classList.toggle("dense", room > 0 && agents.length * 136 > room);
+  }
+  for (const [key, col] of columns) if (!keys.includes(key)) { col.el.remove(); columns.delete(key); }
+}
+function buildCard() {
+  const c = {el: el("article", "agent running"), slot: el("span", "slot"), proj: el("span", "proj"), chip: el("span", "chip"), chipText: el("span"),
+             task: el("p", "task"), fill: el("i"), tok: el("b", "tok"), usd: el("span", "usd"), elapsed: el("span", "el"), note: el("div", "note")};
+  const top = el("div", "atop"), prog = el("div", "prog"), foot = el("div", "afoot");
+  c.chip.append(el("i"), c.chipText); top.append(c.slot, c.proj, c.chip); prog.append(c.fill);
+  foot.append(c.tok, el("span", null, "tok"), c.usd, c.elapsed);
+  c.el.append(top, c.task, prog, foot, c.note);
+  return c;
+}
+function progress(a) {
+  if (a.status !== "running") return 1;
+  const L = S.avg.get(a.lane) || [...S.avg.values()].reduce((x, y) => ({n: x.n + y.n, tok: x.tok + y.tok, sec: x.sec + y.sec}), {n: 0, tok: 0, sec: 0});
+  const avgTok = L.n ? L.tok / L.n : 0, avgSec = L.n ? L.sec / L.n : 60;
+  const byTok = avgTok > 0 ? 1 - Math.exp(-1.5 * a.tokens / avgTok) : 0;
+  const byTime = 1 - Math.exp(-1.5 * Math.max(0, now() - a.started) / Math.max(5, avgSec));
+  return Math.min(0.96, Math.max(byTok, byTime, 0.03));
+}
+function updateCard(c, a) {
+  c.el.className = "agent " + (a.status === "running" || ENDS.includes(a.status) ? a.status : "failed");
+  c.el.dataset.flavor = swatch(a.lane);
+  c.slot.textContent = "#" + a.slot;
+  c.proj.textContent = a.project || "task";
+  c.chipText.textContent = LABEL[a.status] || a.status;
+  c.task.textContent = a.text || a.task || "…";
+  c.task.title = a.text;
+  c.el.style.setProperty("--p", progress(a).toFixed(3));
+  count(c.tok, a.tokens, si);
+  c.usd.textContent = a.usd ? money(a.usd) : "";
+  c.elapsed.textContent = clock(a.status === "running" ? now() - a.started : a.seconds);
+  if (a.status === "running") c.note.textContent = a.note || (a.tokens ? "working" : "starting in its worktree…");
+  else if (a.status === "done") {
+    const d = a.diff && !a.diff.raw ? `+${a.diff.ins} −${a.diff.del}` : a.diff ? a.diff.raw : "";
+    c.note.textContent = [a.commit.slice(0, 7), d, a.tests === true ? "tests ✓" : a.tests === false ? "tests ✗" : ""].filter(Boolean).join("  ") || "landed";
+  } else c.note.textContent = a.summary || LABEL[a.status];
+}
+function leave(node) {
+  if (REDUCED || replaying) { node.remove(); return; }
+  node.style.maxHeight = node.offsetHeight + "px";
+  requestAnimationFrame(() => requestAnimationFrame(() => node.classList.add("leave")));
+  setTimeout(() => node.remove(), 520);
+}
+function expireCards(t) {
+  for (const a of S.agents.values()) if (a.status !== "running" && a.ended && t - a.ended > HOLD) { S.agents.delete(a.key); dirty = true; }
+}
+
+let landGen = -1, landTop = 0;
+function renderLanded() {
+  const list = $("landed");
+  if (landGen !== S.gen) { list.replaceChildren(); landGen = S.gen; landTop = 0; }
+  const fresh = S.landed.filter(x => x.id > landTop);
+  for (let i = Math.min(fresh.length, 40) - 1; i >= 0; i--) list.prepend(buildLanded(fresh[i]));
+  if (fresh.length) landTop = fresh[0].id;
+  while (list.children.length > 40) list.lastChild.remove();
+  const n = S.counts.done, waiting = S.counts.blocked;
+  $("landed-count").textContent = `${n} commit${n === 1 ? "" : "s"}` + (waiting ? ` · ${waiting} parked` : "");
+  $("landed-empty").hidden = S.landed.length > 0;
+}
+function buildLanded(x) {
+  const li = el("li", "land " + x.status), l1 = el("div", "l1");
+  li.dataset.flavor = swatch(x.lane);
+  l1.append(el("span", "st", ICON[x.status]), el("span", "proj", x.project || "task"), el("span", "ln", NAMES[flavor(x.lane)] || x.lane),
+            el("span", "tk", `${si(x.tokens)} tok · ${clock(x.seconds)}`));
+  li.append(l1, el("p", "ltask", x.text || x.summary || "task"));
+  const l3 = el("div", "l3");
+  if (x.status === "done") {
+    if (x.branch) l3.append(el("code", "br", x.branch));
+    if (x.commit) l3.append(el("span", "sha", x.commit.slice(0, 7)));
+    if (x.diff && x.diff.raw) l3.append(el("span", "raw", x.diff.raw));
+    else if (x.diff) l3.append(el("span", "ins", "+" + x.diff.ins), el("span", "del", "−" + x.diff.del));
+    if (x.tests != null) l3.append(el("span", "tests " + (x.tests ? "ok" : "bad"), x.tests ? "tests ✓" : "tests ✗"));
+  } else l3.append(el("span", "why", x.summary || LABEL[x.status]));
+  if (l3.firstChild) li.append(l3);
+  const files = x.diff && x.diff.files != null ? `${x.diff.files} file${x.diff.files === 1 ? "" : "s"} changed` : "";
+  li.title = [x.summary, x.branch, files].filter(Boolean).join("\n");
+  return li;
+}
+
+function renderEmpty() {
+  const has = S.run || S.agents.size || S.landed.length || S.meters.size;
+  $("empty").hidden = !!has || mode === "boot";
+  $("empty-live").hidden = mode !== "live";
+  $("empty-static").hidden = mode === "live";
+  $("empty-title").textContent = mode === "live" ? "Nothing burning yet" : "No run to show";
+}
+
+// ---------------------------------------------------------------- rate chart (canvas)
+let chartDirty = true;
+function cumAt(t) {
+  const p = S.series;
+  if (!p.length || t < p[0][0]) return 0;
+  let lo = 0, hi = p.length - 1;
+  if (t >= p[hi][0]) return p[hi][1];
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (p[mid][0] <= t) lo = mid; else hi = mid; }
+  const [t0, c0] = p[lo], [t1, c1] = p[hi];
+  return t1 > t0 ? c0 + (c1 - c0) * (t - t0) / (t1 - t0) : c1;
+}
+function needRate() { let r = 0; for (const m of S.meters.values()) if (m.unit === "tokens" && m.rate > 0) r += m.rate; return r / 60; }
+function drawChart(pulse) {
+  const cv = $("chart"), w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const g = cv.getContext("2d");
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const cs = getComputedStyle(ROOT), css = k => cs.getPropertyValue(k).trim();
+  const orange = css("--orange"), line = css("--line"), muted = css("--muted"), mono = css("--mono") || "monospace";
+  const pl = 2, pr = 10, pt = 16, pb = 18, W = w - pl - pr, H = h - pt - pb;
+  const last = S.lastTs || now(), t1 = S.end ? last : Math.max(last, Math.min(now(), last + 120));
+  const t0 = S.started || (S.series[0] ? S.series[0][0] : t1), span = Math.max(30, t1 - t0);
+  const N = clamp(Math.floor(W / 5), 20, 120), win = Math.max(span / 16, 2), vals = [];
+  for (let i = 0; i <= N; i++) { const t = t0 + span * i / N; vals.push(Math.max(0, (cumAt(t) - cumAt(t - win)) / win * 60)); }
+  const need = needRate(), peak = Math.max(1, need, ...vals) * 1.15;
+  const X = i => pl + W * i / N, Y = v => pt + H - H * v / peak;
+  g.font = `500 10px ${mono}`; g.textBaseline = "alphabetic";
+  g.strokeStyle = line; g.lineWidth = 1;
+  for (const f of [0, 0.5, 1]) { const y = Math.round(pt + H * f) + 0.5; g.beginPath(); g.moveTo(pl, y); g.lineTo(pl + W, y); g.stroke(); }
+  g.fillStyle = muted;
+  g.fillText(si(peak) + "/min", pl, pt - 5);
+  g.fillText(clock(0), pl, h - 4);
+  const right = S.end ? clock(span) : "now";
+  g.fillText(right, pl + W - g.measureText(right).width, h - 4);
+  if (S.series.length < 2) {
+    const msg = S.run ? "waiting for the first tokens" : "no run yet";
+    g.fillText(msg, pl + (W - g.measureText(msg).width) / 2, pt + H / 2 + 3);
+    return vals[N];
+  }
+  const path = new Path2D();
+  path.moveTo(X(0), Y(vals[0]));
+  for (let i = 1; i <= N; i++) { const xm = (X(i - 1) + X(i)) / 2; path.bezierCurveTo(xm, Y(vals[i - 1]), xm, Y(vals[i]), X(i), Y(vals[i])); }
+  const area = new Path2D(path); area.lineTo(X(N), pt + H); area.lineTo(X(0), pt + H); area.closePath();
+  const grad = g.createLinearGradient(0, pt, 0, pt + H); grad.addColorStop(0, rgba(orange, 0.34)); grad.addColorStop(1, rgba(orange, 0));
+  g.fillStyle = grad; g.fill(area);
+  g.strokeStyle = orange; g.lineWidth = 2; g.lineJoin = "round"; g.stroke(path);
+  if (need > 0) {
+    const y = Math.round(Y(need)) + 0.5;
+    g.save(); g.setLineDash([4, 4]); g.strokeStyle = muted; g.lineWidth = 1; g.beginPath(); g.moveTo(pl, y); g.lineTo(pl + W, y); g.stroke(); g.restore();
+    const label = "needed " + si(need) + "/min";
+    g.fillStyle = muted; g.fillText(label, pl + 4, y > pt + 14 ? y - 4 : y + 12);
+  }
+  const hx = X(N), hy = Y(vals[N]);
+  if (!S.end) {
+    const r = 5 + 4 * (0.5 + 0.5 * Math.sin(pulse / 260));
+    g.fillStyle = rgba(orange, 0.22); g.beginPath(); g.arc(hx, hy, r, 0, 7); g.fill();
+  }
+  g.save(); g.shadowColor = orange; g.shadowBlur = 10; g.fillStyle = orange; g.beginPath(); g.arc(hx, hy, 3.4, 0, 7); g.fill(); g.restore();
+  const steady = clamp(span / 8, 5, 60);                                // the headline number: a steadier window than the curve
+  return Math.max(0, (cumAt(t1) - cumAt(t1 - steady)) / steady * 60);
+}
+function renderRate(t) {
+  const rate = drawChart(t) || 0, need = needRate(), chip = $("need");
+  const span = (S.end ? S.end.ts : Math.max(S.lastTs, now())) - S.started, avg = span > 0 ? S.tokens / span * 60 : 0;
+  const shown = S.end ? avg : rate;                                     // once the run is over, its average
+  count($("rate-now"), shown, si, Math.max(0.5, shown * 1e-4));
+  $("rate-unit").textContent = S.end ? "tok/min avg" : "tok/min";
+  $("rate-span").textContent = S.started ? `avg ${si(avg)}/min over ${clock(span)}` : "";
+  chip.hidden = !(need > 0 && S.series.length > 1);
+  if (!chip.hidden) { const ahead = avg >= need; chip.className = "need " + (ahead ? "ahead" : "behind"); chip.textContent = (ahead ? "ahead of pace" : "behind pace") + " · need " + si(need); }
+}
+
+// ---------------------------------------------------------------- clocks, loop
+function tickClocks() {
+  const t = now(), next = nextReset(t);
+  $("countdown").textContent = next ? countdown(next.ts - t) : "--:--:--";
+  $("clock-label").textContent = next && next.name ? "Next reset · " + next.name : "Next reset";
+  $("clockbox").title = next ? `${next.name || "plan"} resets ${when(next.ts)}` : "";
+  $("clockbox").classList.toggle("soon", !!next && next.ts - t < 6 * 3600);
+  for (const row of meterRows.values()) if (row.meter) {
+    row.reset.textContent = resetText(row.meter.resetsAt, t);
+    row.reset.classList.toggle("soon", row.meter.resetsAt > t && row.meter.resetsAt - t < 6 * 3600);
+  }
+  for (const col of columns.values()) for (const [k, c] of col.cards) {
+    const a = S.agents.get(k);
+    if (a && a.status === "running") { c.elapsed.textContent = clock(t - a.started); c.el.style.setProperty("--p", progress(a).toFixed(3)); }
+  }
+  for (const col of columns.values()) if (!col.lim.hidden && num(col.lim.dataset.until)) col.lim.textContent = "⊘ limited · resumes in " + countdown(num(col.lim.dataset.until) - t);
+  renderBanners();
+}
+let lastFrame = performance.now(), lastSec = 0, lastChart = 0;
+function loop(t) {
+  const dt = Math.min(200, t - lastFrame); lastFrame = t;
+  if (dirty && !replaying) { dirty = false; render(); }
+  tween(dt);
+  if (t - lastSec > 500) { lastSec = t; expireCards(performance.now()); tickClocks(); }
+  if (t - lastChart > 66 && (chartDirty || (!S.end && t - lastChart > (REDUCED ? 1000 : 66)))) { lastChart = t; chartDirty = false; renderRate(t); }
+  requestAnimationFrame(loop);
+}
+
+// ---------------------------------------------------------------- sources: relay web (SSE) or a recorded demo
+function setConn(state, text) { $("conn").dataset.state = state; $("conn-text").textContent = text; }
+function reset() { S = blank(); dirty = true; }
+function startLive() {
+  mode = "live"; setConn("boot", "connecting"); $("foot-src").textContent = "live from relay web";
+  const es = new EventSource("events");
+  es.addEventListener("reset", () => { reset(); replaying = true; ROOT.classList.add("replaying"); setConn("sync", "syncing"); });
+  es.addEventListener("live", () => {
+    replaying = false; render(); snapCounters(); setConn("live", "live");
+    requestAnimationFrame(() => requestAnimationFrame(() => ROOT.classList.remove("replaying")));
+  });
+  es.onmessage = e => { let r; try { r = JSON.parse(e.data); } catch (_) { return; } apply(r); dirty = true; };
+  es.onerror = () => setConn("down", es.readyState === EventSource.CLOSED ? "disconnected" : "reconnecting");
+}
+let demo = null, demoTimer = 0;
+const LOOP = P.get("loop") !== "0";
+function parseJsonl(text) {
+  const out = [];
+  for (const line of text.split("\n")) {
+    if (!line.trim()) continue;
+    try { const r = JSON.parse(line); if (r && typeof r === "object" && !Array.isArray(r)) out.push(r); } catch (_) { /* skip */ }
+  }
+  return out;
+}
+async function startDemo() {
+  mode = "demo"; setConn("boot", "loading");
+  let rows = [];
+  try { const res = await fetch("sample-events.jsonl", {cache: "no-store"}); if (res.ok) rows = parseJsonl(await res.text()); } catch (_) { /* offline or file:// */ }
+  if (!rows.length) { mode = "empty"; setConn("idle", "no data"); $("foot-src").textContent = ""; dirty = true; return; }
+  $("replay").hidden = false; $("foot-src").textContent = "replaying a recorded relay burn demo";
+  play(rows);
+}
+function play(rows) {
+  clearTimeout(demoTimer); reset();
+  const first = num(rows[0].ts), span = Math.max(0, num(rows[rows.length - 1].ts, first) - first);
+  const speed = clamp(num(P.get("speed")) || span / 55, 1, 5000), at = [0];
+  for (let i = 1; i < rows.length; i++) at.push(at[i - 1] + Math.min(Math.max(0, num(rows[i].ts) - num(rows[i - 1].ts)) / speed, MAX_GAP));
+  demo = {rows, at, i: 0, w0: performance.now()};
+  Object.assign(V, {ts: first, wall: performance.now(), speed, cap: first});   // a loop restarts the virtual clock too
+  setConn("replay", `replay ${speed >= 10 ? Math.round(speed) : speed.toFixed(1)}×`);
+  step();
+}
+function step() {
+  const d = demo, sec = (performance.now() - d.w0) / 1000;
+  while (d.i < d.rows.length && d.at[d.i] <= sec) {
+    const r = d.rows[d.i++]; apply(r);
+    vsync(num(r.ts, V.ts), d.i < d.rows.length ? num(d.rows[d.i].ts, V.ts) : num(r.ts, V.ts));
+    dirty = true;
+  }
+  if (d.i < d.rows.length) demoTimer = setTimeout(step, clamp((d.at[d.i] - sec) * 1000, 8, 250));
+  else { setConn("replay", "replay done"); if (LOOP) demoTimer = setTimeout(() => play(d.rows), LOOP_PAUSE); }
+}
+$("replay").addEventListener("click", () => { if (demo) play(demo.rows); });
+
+// ---------------------------------------------------------------- theme
+const THEMES = ["auto", "dark", "light"];
+let theme = THEMES.includes(P.get("theme")) ? P.get("theme") : (() => { try { const s = localStorage.getItem("relay-burn-theme"); return THEMES.includes(s) ? s : "auto"; } catch (_) { return "auto"; } })();
+function applyTheme() {
+  if (theme === "auto") delete ROOT.dataset.theme; else ROOT.dataset.theme = theme;
+  $("theme").title = "Theme: " + theme; $("theme").setAttribute("aria-label", "Theme: " + theme);
+  chartDirty = true;
+}
+$("theme").addEventListener("click", () => {
+  theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+  try { localStorage.setItem("relay-burn-theme", theme); } catch (_) { /* private mode */ }
+  applyTheme();
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { chartDirty = true; });
+window.addEventListener("resize", () => { chartDirty = true; });
+
+// ---------------------------------------------------------------- boot
+function boot() {
+  applyTheme(); render(); requestAnimationFrame(loop);
+  const meta = document.querySelector('meta[name="relay-dashboard"]');      // relay web marks the page it serves
+  if (meta && meta.dataset.source === "relay-web" && !P.has("demo")) startLive();
+  else startDemo();                                                         // GitHub Pages, any static server, ?demo=1
+}
+boot();
+})();
+</script>
+</body>
+</html>
