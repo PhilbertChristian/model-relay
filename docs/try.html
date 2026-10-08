@@ -7,73 +7,149 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f6f6f6; --ink:#191919; --ink-2:#4a4a4a; --muted:#7a7a7a; --line:#e6e6e6; --orange:#ff5c00; --orange-soft:#fff1e8; --green:#1f9d63; --green-soft:#e6f6ee; --red:#d4543d; --red-soft:#fdecea;
+  :root { --bg:#f6f6f6; --ink:#191919; --ink-2:#4a4a4a; --muted:#7a7a7a; --line:#e6e6e6; --orange:#ff5c00; --orange-soft:#fff1e8; --green:#1f9d63; --green-soft:#e6f6ee; --red:#d4543d; --red-soft:#fdecea; --amber:#a15c00; --amber-soft:#fff4dd;
           --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 var(--sans); -webkit-font-smoothing:antialiased; }
   a { color:inherit; }
+  [hidden] { display:none !important; }
   header { position:sticky; top:0; z-index:20; background:rgba(246,246,246,.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(0,0,0,.05); }
   .w { max-width:1280px; margin:0 auto; padding:0 20px; }
   header .w { height:64px; display:flex; align-items:center; gap:14px; }
-  .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:19px; letter-spacing:-.03em; text-decoration:none; }
+  .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:19px; letter-spacing:-.03em; text-decoration:none; white-space:nowrap; }
   .logo i { width:26px; height:26px; border-radius:8px; background:var(--orange); display:grid; place-items:center; color:#fff; font:700 14px var(--mono); font-style:normal; }
-  .pill { font:600 11px var(--mono); letter-spacing:.06em; background:var(--orange-soft); color:var(--orange); padding:5px 9px; border-radius:8px; }
+  .pill { font:600 11px var(--mono); letter-spacing:.06em; background:var(--orange-soft); color:var(--orange); padding:5px 9px; border-radius:8px; white-space:nowrap; }
   header .r { margin-left:auto; display:flex; gap:8px; }
   .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:42px; padding:0 18px; border-radius:14px; font:500 15px var(--sans); border:0; cursor:pointer; text-decoration:none; white-space:nowrap; }
   .btn.orange { background:var(--orange); color:#fff; } .btn.ghost { background:#fff; border:1px solid var(--line); color:var(--ink); } .btn.dark { background:var(--ink); color:#fff; }
   .btn.big { height:52px; padding:0 26px; font-size:17px; border-radius:16px; }
   .btn:disabled { opacity:.55; cursor:default; }
+  @media (max-width:560px) { header .pill { display:none; } header .btn { height:36px; padding:0 12px; font-size:14px; border-radius:12px; } }
+  .intro { padding:26px 0 2px; }
+  .intro h1 { margin:0; font-size:clamp(28px,3.6vw,40px); line-height:1.08; letter-spacing:-.035em; font-weight:600; }
+  .intro h1 span { color:var(--orange); }
+  .intro p { margin:10px 0 0; max-width:780px; font-size:16px; color:var(--ink-2); }
   .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:20px 0 16px; }
   .kpi { background:#fff; border-radius:18px; padding:14px 18px; }
   .kpi small { display:block; font-size:12.5px; color:var(--muted); }
-  .kpi b { font-size:30px; font-weight:600; letter-spacing:-.03em; font-variant-numeric:tabular-nums; } .kpi b.o { color:var(--orange); }
+  .kpi b { font-size:30px; font-weight:600; letter-spacing:-.03em; font-variant-numeric:tabular-nums; } .kpi b.o { color:var(--orange); } .kpi b.q { color:var(--amber); }
   @media (max-width:860px) { .kpis { grid-template-columns:repeat(2,1fr); } }
-  .card { background:#fff; border-radius:22px; padding:20px; }
+  .card { background:#fff; border-radius:22px; padding:20px; min-width:0; }
   .card h2 { font-size:16px; margin:0 0 4px; font-weight:600; letter-spacing:-.01em; }
   .card .sub { font-size:13px; color:var(--muted); margin:0 0 14px; }
   .step { display:inline-grid; place-items:center; width:22px; height:22px; border-radius:7px; background:var(--ink); color:#fff; font:600 12px var(--mono); margin-right:8px; vertical-align:1px; }
-  .setup { display:grid; grid-template-columns:1.35fr 1fr; gap:16px; }
-  @media (max-width:980px) { .setup { grid-template-columns:minmax(0,1fr); } }
-  .prompt { display:flex; gap:8px; }
-  .prompt input { flex:1; min-width:0; height:52px; border:1.5px solid var(--line); border-radius:16px; padding:0 16px; font:16px var(--sans); background:var(--bg); }
-  .prompt input:focus { outline:none; border-color:var(--orange); background:#fff; }
-  .or { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12.5px; margin:14px 0 10px; } .or::before, .or::after { content:""; flex:1; height:1px; background:var(--line); }
-  .samples { display:flex; flex-wrap:wrap; gap:6px; }
-  .sample { border:1px solid var(--line); background:var(--bg); border-radius:12px; padding:7px 11px; cursor:pointer; font:500 13.5px var(--sans); color:var(--ink); display:inline-flex; gap:6px; align-items:center; }
-  .sample:hover { border-color:#cfcfcf; background:#fff; } .sample.on { border-color:var(--orange); background:var(--orange-soft); }
-  .sample a { font:500 11px var(--mono); color:var(--muted); text-decoration:none; } .sample a:hover { color:var(--orange); }
+  .link { background:none; border:0; color:var(--orange); font:600 12.5px var(--sans); cursor:pointer; padding:0; }
+  .link:hover { text-decoration:underline; text-underline-offset:2px; }
+  .lab { font:600 11px var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:3px 0 10px; }
+
+  /* step 1: repo picker (main) | describe or drop (secondary), then the job cards */
+  .s1 { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); grid-template-areas:"pick alt" "jobs jobs" "samples samples"; column-gap:30px; }
+  .s1 .pick { grid-area:pick; min-width:0; }
+  .s1 .alt { grid-area:alt; min-width:0; border-left:1px solid #efefef; padding-left:28px; }
+  .s1 .jobsec { grid-area:jobs; min-width:0; border-top:1px solid #efefef; margin-top:18px; padding-top:18px; }
+  .s1 .samplerow { grid-area:samples; border-top:1px solid #efefef; margin-top:16px; padding-top:14px; }
+  @media (max-width:980px) { .s1 { grid-template-columns:minmax(0,1fr); grid-template-areas:"pick" "jobs" "alt" "samples"; }
+    .s1 .alt { border-left:0; padding-left:0; border-top:1px solid #efefef; margin-top:18px; padding-top:16px; } }
   .gh { display:flex; gap:8px; }
-  .ghuser { flex:0 1 46%; min-width:0; display:flex; align-items:center; height:44px; border:1.5px solid var(--line); border-radius:14px; background:var(--bg); padding:0 4px 0 12px; cursor:text; }
+  .ghuser { flex:0 1 46%; min-width:0; display:flex; align-items:center; height:48px; border:1.5px solid var(--line); border-radius:14px; background:var(--bg); padding:0 4px 0 12px; cursor:text; }
   .ghuser:focus-within { border-color:var(--orange); background:#fff; }
-  .ghuser span { flex:none; font:500 12.5px var(--mono); color:var(--muted); }
-  .ghuser input { flex:1; min-width:0; height:100%; border:0; outline:none; background:none; padding:0 6px 0 1px; font:500 13.5px var(--mono); color:var(--ink); }
-  .gh select { flex:1; min-width:0; height:44px; border:1.5px solid var(--line); border-radius:14px; padding:0 36px 0 12px; font:500 14px var(--sans); color:var(--ink); cursor:pointer; -webkit-appearance:none; appearance:none;
+  .ghuser span { flex:none; font:500 13px var(--mono); color:var(--muted); }
+  .ghuser input { flex:1; min-width:0; height:100%; border:0; outline:none; background:none; padding:0 6px 0 1px; font:600 14px var(--mono); color:var(--ink); }
+  .gh select { flex:1; min-width:0; height:48px; border:1.5px solid var(--line); border-radius:14px; padding:0 36px 0 12px; font:500 14.5px var(--sans); color:var(--ink); cursor:pointer; -webkit-appearance:none; appearance:none;
                background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237a7a7a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center; }
   .gh select:focus { outline:none; border-color:var(--orange); background-color:#fff; } .gh select:disabled { opacity:.6; cursor:default; }
-  .repostatus { font-size:12.5px; color:var(--muted); margin-top:6px; min-height:19px; } .repostatus b { color:var(--ink); font-weight:600; }
-  .repostatus.ok { color:var(--green); } .repostatus.ok b { color:var(--green); } .repostatus.err { color:var(--red); }
+  .ghfoot { display:flex; align-items:flex-start; gap:12px; margin-top:8px; }
+  .repostatus { flex:1; min-width:0; font-size:12.5px; color:var(--muted); min-height:19px; overflow-wrap:anywhere; } .repostatus b { color:var(--ink); font-weight:600; }
+  .repostatus.ok { color:var(--ink-2); } .repostatus.ok b { color:var(--green); } .repostatus.err { color:var(--red); }
+  .ghfoot .link { flex:none; line-height:19px; } .repostatus .snap { color:var(--muted); }
+  @media (max-width:560px) { .gh { flex-direction:column; } .ghuser { flex:none; } .gh select { flex:none; } }
+  .prompt { display:flex; gap:8px; }
+  .prompt input { flex:1; min-width:0; height:44px; border:1.5px solid var(--line); border-radius:14px; padding:0 14px; font:15px var(--sans); background:var(--bg); }
+  .prompt input:focus { outline:none; border-color:var(--orange); background:#fff; }
+  .prompt .btn { height:44px; border-radius:14px; }
   .draftnote { font-size:12.5px; color:var(--green); margin-top:8px; } .draftnote:empty { display:none; } .draftnote b { font-weight:600; }
   .draftnote a { color:inherit; font-weight:600; text-underline-offset:2px; } .draftnote.pop { animation:pop .35s ease; }
   @keyframes pop { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:none; } }
-  @media (max-width:560px) { .gh { flex-direction:column; } .ghuser { flex:none; } .gh select { flex:none; } }
-  .drop { display:flex; align-items:center; gap:12px; margin-top:10px; border:1.5px dashed #cfcfcf; border-radius:14px; padding:11px 14px; background:var(--bg); cursor:pointer; font-size:14px; }
+  .drop { display:flex; align-items:center; gap:12px; margin-top:10px; border:1.5px dashed #cfcfcf; border-radius:14px; padding:9px 14px; background:var(--bg); cursor:pointer; font-size:14px; }
   .drop:hover, .drop.over { border-color:var(--orange); background:var(--orange-soft); }
   .drop .ico { width:30px; height:30px; flex:none; border-radius:9px; background:var(--orange); color:#fff; display:grid; place-items:center; }
   .drop span { color:var(--muted); font-size:12.5px; } .drop u { color:var(--orange); text-decoration:none; font-weight:600; }
-  .files { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .files { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } .files:empty { display:none; }
   .files span { font:500 11.5px var(--mono); background:#f1f1f1; border-radius:8px; padding:4px 8px; } .files span b { color:var(--green); }
-  .agents { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-  .agent { display:flex; align-items:center; gap:10px; border:1px solid var(--line); background:var(--bg); border-radius:14px; padding:10px 12px; cursor:pointer; user-select:none; }
+  .samplerow { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; }
+  .samplerow > span { font-size:12.5px; color:var(--muted); }
+  .samples { display:flex; flex-wrap:wrap; gap:6px; }
+  .sample { border:1px solid var(--line); background:var(--bg); border-radius:10px; padding:5px 10px; cursor:pointer; font:500 12.5px var(--sans); color:var(--ink); display:inline-flex; gap:6px; align-items:center; }
+  .sample:hover { border-color:#cfcfcf; background:#fff; } .sample.on { border-color:var(--orange); background:var(--orange-soft); }
+  .sample a { font:500 11px var(--mono); color:var(--muted); text-decoration:none; } .sample a:hover { color:var(--orange); }
+
+  /* job cards: what the leftover tokens produce, in priority order */
+  .jhead { display:flex; align-items:baseline; justify-content:space-between; gap:4px 16px; flex-wrap:wrap; }
+  .jhead h3 { margin:0; font-size:16px; font-weight:600; letter-spacing:-.01em; }
+  .jhead span { font-size:12.5px; color:var(--muted); }
+  .agentic { display:flex; gap:10px; align-items:flex-start; margin:10px 0 12px; padding:10px 12px; border-radius:12px; background:var(--green-soft); color:#17603e; font-size:13px; line-height:1.45; }
+  .agentic i { flex:none; font-style:normal; font-weight:700; width:20px; height:20px; border-radius:6px; background:var(--green); color:#fff; display:grid; place-items:center; font-size:12px; margin-top:-1px; }
+  .jobs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+  @media (max-width:1100px) { .jobs { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width:600px) { .jobs { grid-template-columns:minmax(0,1fr); } }
+  .job { display:flex; flex-direction:column; gap:7px; min-width:0; padding:12px 12px 10px; border:1px solid var(--line); border-radius:16px; background:#fff; transition:border-color .15s, box-shadow .15s, background .15s; }
+  .job.on { border-color:#ffd2b8; background:linear-gradient(180deg,#fff7f1,#fff 65%); }
+  .job.off { background:var(--bg); } .job.off .jt, .job.off p, .job.off .art { opacity:.5; }
+  .job.drag { opacity:.35; } .job.over { border-color:var(--orange); box-shadow:0 0 0 3px rgba(255,92,0,.15); }
+  .jh { display:flex; align-items:center; gap:8px; min-width:0; }
+  .grip { flex:none; cursor:grab; color:#c4c4c4; font-size:14px; line-height:1; user-select:none; }
+  .job .n { flex:none; width:20px; height:20px; border-radius:6px; background:var(--ink); color:#fff; display:grid; place-items:center; font:600 11px var(--mono); }
+  .job.off .n { background:#cdcdcd; }
+  .jt { flex:1; min-width:0; font-size:14.5px; font-weight:600; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .job p { margin:0; font-size:12.5px; line-height:1.45; color:var(--ink-2); }
+  .jf { display:flex; align-items:center; gap:6px; margin-top:auto; padding-top:2px; min-width:0; }
+  .jc { margin-left:auto; flex:none; font:500 11px var(--mono); color:var(--muted); white-space:nowrap; }
+  .art { display:inline-block; min-width:0; max-width:100%; font:500 11px/1.6 var(--mono); padding:1px 7px; border-radius:7px; background:#fff; border:1px solid var(--line); color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .art.a-review { background:#eef4ff; border-color:#d8e5ff; color:#2f5bd3; } .art.a-ideas { background:#fff8e3; border-color:#f3e2b0; color:#8a5d00; }
+  .mini { flex:none; width:26px; height:26px; padding:0; border-radius:8px; border:1px solid var(--line); background:#fff; color:var(--ink-2); font:600 12px var(--sans); cursor:pointer; display:grid; place-items:center; }
+  .mini:hover:not(:disabled) { border-color:var(--orange); color:var(--orange); } .mini:disabled { opacity:.3; cursor:default; }
+  .mini:focus-visible, .link:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
+  .switch { position:relative; display:inline-block; flex:none; width:34px; height:20px; }
+  .switch input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; z-index:1; }
+  .switch span { position:absolute; inset:0; border-radius:99px; background:#d8d8d8; transition:background .2s; }
+  .switch span::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.15); transition:left .2s; }
+  .switch input:checked + span { background:var(--orange); } .switch input:checked + span::after { left:16px; }
+  .switch input:focus-visible + span { outline:2px solid var(--orange); outline-offset:2px; }
+  .chats { margin-top:10px; border:1px solid var(--line); border-radius:16px; padding:12px; }
+  .chh { display:flex; align-items:center; gap:6px 10px; flex-wrap:wrap; font-size:13.5px; }
+  .chh > b { font-weight:600; }
+  .tag { font:600 10px var(--mono); letter-spacing:.06em; padding:2px 7px; border-radius:6px; background:#efefef; color:var(--muted); white-space:nowrap; }
+  .tag.mine { background:var(--green-soft); color:var(--green); }
+  .chinfo { flex:1; min-width:200px; font-size:12px; color:var(--muted); }
+  .chgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:8px; margin:10px 0; }
+  .cht { display:flex; flex-direction:column; gap:4px; min-width:0; background:var(--bg); border-radius:12px; padding:9px 10px; }
+  .cht b { font-size:12.5px; font-weight:600; }
+  .cht span { font-size:12px; line-height:1.4; color:var(--ink-2); overflow-wrap:anywhere; } .cht span.none { color:var(--muted); font-style:italic; }
+  .chdrop { display:flex; align-items:center; gap:10px; border:1.5px dashed #d4d4d4; border-radius:12px; padding:8px 12px; cursor:pointer; font-size:12.5px; color:var(--ink-2); }
+  .chdrop:hover, .chdrop.over { border-color:var(--orange); background:var(--orange-soft); }
+  .chdrop .ico { flex:none; width:26px; height:26px; border-radius:8px; background:var(--ink); color:#fff; display:grid; place-items:center; font-size:12px; }
+  .chdrop code { font-size:11.5px; }
+  .chmsg { font-size:12px; margin-top:6px; color:var(--muted); } .chmsg:empty { display:none; } .chmsg.err { color:var(--red); }
+
+  /* step 2: agents, then run */
+  .agents { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; }
+  .agent { display:flex; align-items:center; gap:10px; min-width:0; border:1px solid var(--line); background:var(--bg); border-radius:14px; padding:10px 12px; cursor:pointer; user-select:none; }
   .agent input { display:none; }
   .agent .lg { width:30px; height:30px; border-radius:9px; display:grid; place-items:center; color:#fff; font:700 13px var(--mono); flex:none; }
+  .agent > span:nth-child(3) { min-width:0; }
   .agent b { display:block; font-size:13.5px; font-weight:600; } .agent small { color:var(--muted); font-size:12px; }
   .agent .sw { margin-left:auto; width:34px; height:20px; border-radius:99px; background:#d8d8d8; position:relative; flex:none; transition:background .2s; }
   .agent .sw::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .2s; }
   .agent:has(input:checked) { border-color:#ffc6a6; background:var(--orange-soft); }
   .agent:has(input:checked) .sw { background:var(--orange); } .agent:has(input:checked) .sw::after { left:16px; }
-  .opts { display:flex; flex-wrap:wrap; gap:14px; margin-top:12px; font-size:13px; color:var(--ink-2); }
+  .s2 { margin-top:16px; }
+  .runrow { display:flex; align-items:center; gap:12px 16px; margin-top:16px; flex-wrap:wrap; } .runrow .hint { font-size:12.5px; color:var(--muted); }
+  .opts { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-left:auto; font-size:13px; color:var(--ink-2); }
+  .opts > span { font:600 11px var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
   .opts label { display:flex; align-items:center; gap:6px; cursor:pointer; } .opts input { accent-color:var(--orange); }
-  .runrow { display:flex; align-items:center; gap:14px; margin-top:16px; flex-wrap:wrap; } .runrow .hint { font-size:12.5px; color:var(--muted); }
+  @media (max-width:860px) { .opts { margin-left:0; } }
+
+  /* step 3: timeline + terminal */
   .mainrow { display:grid; grid-template-columns:1.35fr 1fr; gap:16px; margin-top:16px; }
   @media (max-width:980px) { .mainrow { grid-template-columns:minmax(0,1fr); } }
   .night { position:relative; height:34px; margin:2px 0 16px; }
@@ -87,32 +163,47 @@
   .item .t { font:500 12.5px var(--mono); color:var(--muted); text-align:right; padding-top:13px; }
   .item .dot { position:absolute; left:58px; top:17px; width:12px; height:12px; border-radius:50%; background:#fff; border:3px solid var(--c,#bbb); z-index:1; }
   .blk { min-width:0; overflow-wrap:anywhere; border:1px solid var(--line); border-left:4px solid var(--c,#bbb); border-radius:14px; padding:10px 12px; background:#fff; transition:all .25s; }
-  .blk .title { font-weight:500; font-size:14.5px; }
-  .blk .meta { display:flex; gap:10px; align-items:center; font-size:12px; color:var(--muted); margin-top:3px; flex-wrap:wrap; }
+  .blk .title { font-weight:500; font-size:14.5px; } .blk .title .tj { margin-right:7px; }
+  .blk .meta { display:flex; gap:6px 10px; align-items:center; font-size:12px; color:var(--muted); margin-top:4px; flex-wrap:wrap; }
   .blk .proj { font:500 11px var(--mono); padding:2px 7px; border-radius:6px; background:var(--bg); color:var(--ink-2); }
   .st { margin-left:auto; font:600 10.5px var(--mono); letter-spacing:.05em; padding:3px 8px; border-radius:6px; background:#f1f1f1; color:var(--muted); }
   .item.running .blk { border-color:var(--orange); box-shadow:0 0 0 4px rgba(255,92,0,.12); } .item.running .st { background:var(--orange); color:#fff; }
-  .item.done .st { background:var(--green-soft); color:var(--green); } .item.blocked .st { background:var(--red-soft); color:var(--red); }
+  .item.done .st { background:var(--green-soft); color:var(--green); } .item.parked .st { background:var(--amber-soft); color:var(--amber); }
   .item.later { opacity:.45; }
-  .blk .why { font-size:12.5px; color:var(--red); margin-top:4px; } .blk .ok { font-size:12.5px; color:var(--green); margin-top:4px; } .blk .ev { font-size:12px; color:#b45309; margin-top:4px; }
+  .blk .park { font-size:12.5px; color:var(--amber); margin-top:4px; } .blk .ok { font-size:12.5px; color:var(--green); margin-top:4px; } .blk .ev { font-size:12px; color:#b45309; margin-top:4px; }
   .empty { text-align:center; color:var(--muted); padding:40px 10px; font-size:14px; }
-  .term { background:#141414; border-radius:22px; overflow:hidden; display:flex; flex-direction:column; }
+  .term { background:#141414; border-radius:22px; overflow:hidden; display:flex; flex-direction:column; min-width:0; }
   .bar { display:flex; align-items:center; gap:6px; padding:12px 16px; border-bottom:1px solid #2a2a2a; color:#9a9a9a; font:12px var(--mono); }
   .bar i { width:10px; height:10px; border-radius:50%; background:#3a3a3a; } .bar .clock { margin-left:auto; color:#ffb27f; }
-  pre#out { margin:0; padding:14px 16px; height:560px; overflow-y:auto; font:12.5px/1.6 var(--mono); color:#e8e8e8; white-space:pre-wrap; }
-  .d{color:#8d8d8d} .g{color:#7fdcae;font-weight:600} .p{color:#ffb27f;font-weight:600} .a{color:#ffd27a;font-weight:600} .r{color:#ff8a7a} .c{color:#9ee6ff} .t{color:#e7c879} .h{color:#fff;font-weight:700}
+  pre#out { margin:0; padding:14px 16px; height:560px; overflow-y:auto; font:12.5px/1.6 var(--mono); color:#e8e8e8; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .d{color:#8d8d8d} .g{color:#7fdcae;font-weight:600} .p{color:#ffb27f;font-weight:600} .a{color:#ffd27a;font-weight:600} .r{color:#ff8a7a} .c{color:#9ee6ff} .t{color:#e7c879} .h{color:#fff;font-weight:700} .v{color:#c4b5fd}
   details.md summary { cursor:pointer; font-size:13px; color:var(--ink-2); margin-top:14px; }
   textarea { width:100%; height:200px; margin-top:8px; border:1px solid var(--line); border-radius:12px; background:var(--bg); padding:12px; font:12.5px/1.55 var(--mono); resize:vertical; }
-  .mdbar { display:flex; gap:12px; margin-top:6px; } .link { background:none; border:0; color:var(--orange); font:600 12.5px var(--sans); cursor:pointer; padding:0; }
-  #result { display:none; margin-top:16px; grid-template-columns:1.1fr 1fr; gap:16px; } @media (max-width:980px) { #result { grid-template-columns:1fr; } }
-  .util h2 { display:flex; justify-content:space-between; align-items:baseline; }
+  .mdbar { display:flex; gap:12px; margin-top:6px; }
+
+  /* step 4: results */
+  #result { display:none; margin-top:16px; grid-template-columns:1fr 1.1fr; gap:16px; align-items:start; } @media (max-width:980px) { #result { grid-template-columns:minmax(0,1fr); } }
+  .util h2 { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:4px 12px; }
   .util .head { font-size:40px; font-weight:600; letter-spacing:-.04em; margin:2px 0 14px; } .util .head span { color:var(--orange); }
-  .ubar { margin:12px 0; } .ubar .lb { display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:5px; } .ubar .lb b { font-variant-numeric:tabular-nums; }
+  .ubar { margin:12px 0; } .ubar .lb { display:flex; justify-content:space-between; gap:10px; font-size:13.5px; margin-bottom:5px; } .ubar .lb b { font-variant-numeric:tabular-nums; white-space:nowrap; }
   .ubar .tr { position:relative; height:14px; border-radius:99px; background:#eee; overflow:hidden; }
   .ubar .bf { position:absolute; left:0; top:0; bottom:0; background:#bdbdbd; border-radius:99px; }
   .ubar .af { position:absolute; left:0; top:0; bottom:0; background:var(--orange); border-radius:99px; width:0; transition:width 1.2s cubic-bezier(.2,.8,.2,1); }
-  .legend { display:flex; gap:14px; font-size:12px; color:var(--muted); } .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
-  #md h3 { margin:14px 0 6px; font-size:15px; } #md ul { margin:0; padding-left:20px; } #md li { margin:3px 0; font-size:14px; }
+  .legend { display:flex; gap:14px; font-size:12px; font-weight:400; color:var(--muted); } .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+  #md .mtop { margin:6px 0 2px; }
+  #md h3 { margin:16px 0 8px; font-size:15px; }
+  .mg { border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin:8px 0; min-width:0; }
+  .mgh { display:flex; align-items:center; flex-wrap:wrap; gap:4px 8px; font-size:13.5px; font-weight:600; margin-bottom:4px; }
+  .mgh small { font-weight:500; color:var(--muted); font-size:12px; } .mgh code { margin-left:auto; font-size:11px; font-weight:500; overflow-wrap:anywhere; }
+  .mg ul, ul.park { list-style:none; margin:0; padding:0; }
+  .mg li, ul.park li { display:flex; flex-direction:column; gap:1px; padding:6px 0; border-top:1px solid #f2f2f2; font-size:13.5px; min-width:0; }
+  .mg li:first-child, ul.park li:first-child { border-top:0; }
+  .mg li small, ul.park li small { font:500 11.5px var(--mono); color:var(--muted); overflow-wrap:anywhere; }
+  ul.park li small { color:var(--amber); }
+  .chmd { display:grid; grid-template-columns:max-content minmax(0,1fr); gap:5px 12px; margin:6px 0 4px; font-size:13px; }
+  .chmd dt { font-weight:600; white-space:nowrap; } .chmd dd { margin:0; color:var(--ink-2); overflow-wrap:anywhere; }
+  @media (max-width:560px) { .chmd { grid-template-columns:minmax(0,1fr); gap:2px; } .chmd dd { margin-bottom:6px; } }
+  .chnext { font-size:12px; color:var(--muted); }
   .note { font-size:12px; color:var(--muted); margin-top:10px; } code { font:12.5px var(--mono); background:#f0f0f0; padding:1px 6px; border-radius:6px; }
 </style>
 </head>
@@ -123,49 +214,70 @@
 </div></header>
 
 <div class="w">
+  <section class="intro">
+    <h1>Your repos, worked <span>overnight</span>.</h1>
+    <p>Pick a repo and rank the jobs. While you sleep, Agent Relay spends the AI plans you already pay for, and by morning you have branches with real work on them.</p>
+  </section>
+
   <div class="kpis">
     <div class="kpi"><small>Rescued tonight (API rates)</small><b class="o" id="rescued">$0.00</b></div>
     <div class="kpi"><small>Shipped</small><b id="shipped">0</b></div>
-    <div class="kpi"><small>Needs you</small><b id="needs">0</b></div>
+    <div class="kpi"><small>Parked</small><b class="q" id="parked">0</b></div>
     <div class="kpi"><small>Night clock</small><b id="clock">23:00</b></div>
   </div>
 
-  <div class="setup">
-    <div class="card">
-      <h2><span class="step">1</span>What do you want to build?</h2>
-      <p class="sub">Describe it, pick a side project or one of your repos, or drop your own plan. You get a task list.</p>
-      <form class="prompt" id="pform"><input id="pin" placeholder="e.g. Build a website for my piano recital" autocomplete="off"><button class="btn dark big" type="submit">Draft plan</button></form>
-      <div class="draftnote" id="draftnote" aria-live="polite"></div>
-      <div class="or">or start from a side project</div>
-      <div class="samples" id="samples"></div>
-      <div class="or">or pick one of your GitHub repos</div>
+  <section class="card s1">
+    <div class="pick">
+      <h2><span class="step">1</span>Pick a GitHub repo</h2>
+      <p class="sub">Its PLAN.md, TODO.md or open issues become tonight's tasks.</p>
       <div class="gh">
         <label class="ghuser" title="GitHub username"><span>github.com/</span><input id="ghuser" value="PhilbertChristian" aria-label="GitHub username" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
         <select id="repo" aria-label="Your GitHub repos" disabled><option value="">Choose a repo…</option></select>
       </div>
-      <div class="repostatus" id="repostatus" aria-live="polite"></div>
+      <div class="ghfoot"><div class="repostatus" id="repostatus" aria-live="polite"></div><button type="button" class="link" id="tryuser" data-user="KM199">try KM199</button></div>
+    </div>
+    <div class="alt">
+      <div class="lab">Or describe it, or drop your plan</div>
+      <form class="prompt" id="pform"><input id="pin" placeholder="e.g. Build a website for my piano recital" autocomplete="off" aria-label="Describe what to build"><button class="btn dark" type="submit">Draft plan</button></form>
+      <div class="draftnote" id="draftnote" aria-live="polite"></div>
       <label class="drop" id="drop" for="files"><input type="file" id="files" accept=".md,.markdown,.txt,text/markdown,text/plain" multiple hidden>
         <span class="ico">⬆</span><div><b>Drop your PLAN.md</b><br><span>or <u>choose files</u>. Any markdown checklist works.</span></div></label>
       <div class="files" id="filelist"></div>
     </div>
-    <div class="card">
-      <h2><span class="step">2</span>Connect your agents</h2>
-      <p class="sub">The subscriptions you already pay for. Relay uses what's about to expire first.</p>
-      <div class="agents">
-        <label class="agent"><input type="checkbox" data-sub="claude-a" checked><span class="lg" style="background:#d97757">CC</span><span><b>Claude Code</b><small>Max 20× · seat A</small></span><span class="sw"></span></label>
-        <label class="agent"><input type="checkbox" data-sub="claude-b" checked><span class="lg" style="background:#d97757">CC</span><span><b>Claude Code</b><small>Max 20× · seat B</small></span><span class="sw"></span></label>
-        <label class="agent"><input type="checkbox" data-sub="chatgpt" checked><span class="lg" style="background:#10a37f">CX</span><span><b>Codex</b><small>ChatGPT Pro</small></span><span class="sw"></span></label>
-        <label class="agent"><input type="checkbox" data-sub="agent37" checked><span class="lg" style="background:#5b4cf0">37</span><span><b>Hermes on Agent37</b><small>$25 credit</small></span><span class="sw"></span></label>
-        <label class="agent"><input type="checkbox" data-sub="openai"><span class="lg" style="background:#191919">AI</span><span><b>OpenAI API</b><small>pay-as-you-go</small></span><span class="sw"></span></label>
+    <div class="jobsec">
+      <div class="jhead"><h3>What should your leftover tokens produce?</h3><span>Drag or use ↑ ↓ to rank. The top job runs first.</span></div>
+      <p class="agentic"><i>⎇</i><span><b>Fully agentic:</b> every job runs in its own worktree on its own branch. Nothing touches main, so nothing needs your approval. Keep what you like, delete the rest.</span></p>
+      <div class="jobs" id="jobs"></div>
+      <div class="chats" id="chats">
+        <div class="chh"><b>💬 What chat search finds</b><span class="tag" id="chtag">SAMPLE</span><span class="chinfo" id="chinfo"></span><button type="button" class="link" id="chreset" hidden>back to the sample</button></div>
+        <div class="chgrid" id="chgrid"></div>
+        <label class="chdrop" id="chdrop" for="chfile"><input type="file" id="chfile" accept=".json,application/json" hidden><span class="ico">⬆</span>
+          <span><b>Drop your ChatGPT or Claude export</b> (conversations.json). It's parsed in your browser and never uploaded. On your machine, <code>burner ideas</code> reads your local transcripts.</span></label>
+        <div class="chmsg" id="chmsg" aria-live="polite"></div>
       </div>
-      <div class="opts">
+    </div>
+    <div class="samplerow"><span>No GitHub? Try a sample:</span><div class="samples" id="samples"></div></div>
+  </section>
+
+  <section class="card s2">
+    <h2><span class="step">2</span>Connect your agents</h2>
+    <p class="sub">The subscriptions you already pay for. Agent Relay uses what's about to expire first.</p>
+    <div class="agents">
+      <label class="agent"><input type="checkbox" data-sub="claude-a" checked><span class="lg" style="background:#d97757">CC</span><span><b>Claude Code</b><small>Max 20× · seat A</small></span><span class="sw"></span></label>
+      <label class="agent"><input type="checkbox" data-sub="claude-b" checked><span class="lg" style="background:#d97757">CC</span><span><b>Claude Code</b><small>Max 20× · seat B</small></span><span class="sw"></span></label>
+      <label class="agent"><input type="checkbox" data-sub="chatgpt" checked><span class="lg" style="background:#10a37f">CX</span><span><b>Codex</b><small>ChatGPT Pro</small></span><span class="sw"></span></label>
+      <label class="agent"><input type="checkbox" data-sub="agent37" checked><span class="lg" style="background:#5b4cf0">37</span><span><b>Hermes on Agent37</b><small>$25 credit</small></span><span class="sw"></span></label>
+      <label class="agent"><input type="checkbox" data-sub="openai"><span class="lg" style="background:#191919">AI</span><span><b>OpenAI API</b><small>pay-as-you-go</small></span><span class="sw"></span></label>
+    </div>
+    <div class="runrow"><button class="btn orange big" id="run">▶ Run tonight's shift</button><span class="hint">a simulated night, about 10 seconds</span>
+      <div class="opts"><span>Simulate</span>
         <label><input type="checkbox" id="inj402" checked>Agent37 runs out (402)</label>
         <label><input type="checkbox" id="injloop" checked>A model gets stuck</label>
+        <label><input type="checkbox" id="injask" checked>An agent asks a question</label>
         <label>Speed <select id="speed" style="border:1px solid var(--line);border-radius:8px;background:#fff;padding:3px 6px;font:13px var(--sans)"><option value="1">normal</option><option value="2.5" selected>fast</option><option value="6">very fast</option></select></label>
       </div>
-      <div class="runrow"><button class="btn orange big" id="run">▶ Run tonight's shift</button><span class="hint">about 20 seconds</span></div>
     </div>
-  </div>
+  </section>
 
   <div class="mainrow">
     <div class="card">
@@ -174,7 +286,7 @@
       <div class="night"><span class="lbl" style="left:0">23:00</span><span class="lbl" style="left:47%">03:00</span><span class="lbl" style="right:0">07:00</span><div class="track"></div><div class="fill" id="fill"></div><div class="now" id="now"></div></div>
       <div class="tl" id="timeline"></div>
       <details class="md"><summary>Edit as markdown (PLAN.md)</summary>
-        <textarea id="plan" spellcheck="false"></textarea>
+        <textarea id="plan" spellcheck="false" aria-label="PLAN.md"></textarea>
         <div class="mdbar"><button class="link" id="download" type="button">⬇ Download PLAN.md</button><button class="link" id="clear" type="button" style="color:var(--muted)">Clear</button></div>
       </details>
     </div>
@@ -182,16 +294,14 @@
       <div class="bar"><i></i><i></i><i></i><span style="margin-left:8px">relay burn run PLAN.md</span><span class="clock" id="tclock">23:00</span></div>
       <pre id="out"><span class="d">Press ▶ Run. The log streams here.
 
-A simulation of the real `relay burn run` with the same rules: burn order,
-per-night allowances, failover on limits, the unstick ladder, BLOCKED tasks
-and test gates. No keys needed.</span></pre>
+A simulation of the real `relay burn run` with the same rules: burn order, per-night allowances, failover on limits, the unstick ladder, parked tasks and test gates. Every job gets its own worktree and branch. No keys needed.</span></pre>
     </div>
   </div>
 
   <div id="result">
-    <section class="card util"><h2><span><span class="step">4</span>Your plans, used</span><span class="legend"><span><i style="background:#bdbdbd"></i>today</span><span><i style="background:var(--orange)"></i>with Relay nightly</span></span></h2>
+    <section class="card util"><h2><span><span class="step">4</span>Your plans, used</span><span class="legend"><span><i style="background:#bdbdbd"></i>today</span><span><i style="background:var(--orange)"></i>with Agent Relay nightly</span></span></h2>
       <div class="head" id="uhead"></div><div id="ubars"></div>
-      <div class="note">"Today" for Claude Max seat A is our measured 38% window coverage; the other seats are illustrative. "With Relay" is a projection: Relay working each connected plan 23:00–07:00, every night.</div></section>
+      <div class="note">"Today" for Claude Max seat A is our measured 38% window coverage; the other seats are illustrative. "With Agent Relay" is a projection: Agent Relay working each connected plan 23:00–07:00, every night.</div></section>
     <section class="card"><h2>☕ MORNING.md</h2><div id="md"></div>
       <div class="note">Simulated. Real run: <code>relay burn run PLAN.md -b burner.json</code> · your month: <code>relay savings</code></div></section>
   </div>
@@ -200,13 +310,23 @@ and test gates. No keys needed.</span></pre>
 
 <script>
 const $ = id => document.getElementById(id);
-function esc(x) { return String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function esc(x) { return String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
 function h(s) { let x = 2166136261; for (const ch of s) { x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619); } return x >>> 0; }
 const sha = s => h(s).toString(16).padStart(8, "0").slice(0, 7);
 const money = v => "$" + v.toFixed(2);
 const fmt = m => { const t = (23 * 60 + m) % 1440; return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0"); };
 const NIGHT = 480;
 const COLORS = ["#ff5c00", "#2f6fed", "#1f9d63", "#9b51e0", "#d4a017", "#e0457b"];
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+// zero-width, line/paragraph separators and bidi controls: built from code points so the source stays plain ASCII
+const INVISIBLE = new RegExp("[" + [[0x200b, 0x200f], [0x2028, 0x202e], [0x2066, 0x2069]].map(([a, b]) => String.fromCharCode(a) + "-" + String.fromCharCode(b)).join("") + "]", "g");
+function clean(s, max) {   // untrusted text → one tidy line: no control or bidi characters, at most max characters
+  let t = String(s == null ? "" : s).replace(/[\x00-\x1f\x7f-\x9f]+/g, " ").replace(INVISIBLE, " ").replace(/\s+/g, " ").trim();
+  const cs = [...t];
+  if (cs.length > max) t = cs.slice(0, max - 1).join("").trimEnd() + "…";
+  return t;
+}
 
 // ---------- 1a. prompt → plan (drafted in the browser; the real CLI drafts it with your model)
 const MAINT = [["bug", "reproduce the top open bug and fix it with a regression test"], ["bug", "fix the next open bugs from the issue tracker"],
@@ -292,7 +412,7 @@ async function loadFiles(list) {
   $("filelist").innerHTML = chips.join(""); renderTimeline();
 }
 
-// ---------- 1d. your GitHub repos → plan (PLAN.md / TODO.md / ROADMAP.md, else open issues, else a draft from the description)
+// ---------- 1d. your GitHub repos → tonight's tasks: PLAN.md / TODO.md / ROADMAP.md, open issues and open PRs, ranked by the job cards
 const GH_API = "https://api.github.com", GH_RAW = "https://raw.githubusercontent.com";
 const PLAN_FILES = ["PLAN.md", "TODO.md", "ROADMAP.md", "docs/PLAN.md"];
 const MAX_TASKS = 20;
@@ -303,8 +423,7 @@ const GH_ERR = {
   net: () => "Couldn't reach GitHub",
 };
 const enc = encodeURIComponent;
-const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
-let ghGen = 0, ghPicking = 0, ghRepos = [], ghUser = null, ghIdle = "", ghTimer = null;   // ghGen: newest list-load/pick wins
+let ghGen = 0, ghPicking = 0, ghRepos = [], ghUser = null, ghIdle = "", ghTimer = null, ghSnap = "";   // ghGen: newest list-load/pick wins; ghSnap: why the list is a saved snapshot
 
 function ghStatus(html, cls) { const s = $("repostatus"); s.className = "repostatus" + (cls ? " " + cls : ""); s.innerHTML = html; }
 function ghSelect(optionsHtml, disabled) { const s = $("repo"); s.innerHTML = optionsHtml; s.disabled = disabled; }
@@ -317,29 +436,34 @@ async function ghJson(url) {   // never throws: {data} or {err: "missing" | "rat
   try { return {data: await r.json()}; } catch (e) { return {err: "net"}; }
 }
 async function ghText(url) { try { const r = await fetch(url); return r.ok ? await r.text() : null; } catch (e) { return null; } }
+function syncTryUser(user) {   // a one-click switch between the two demo accounts
+  const other = String(user).toLowerCase() === "km199" ? "PhilbertChristian" : "KM199";
+  $("tryuser").dataset.user = other; $("tryuser").textContent = "try " + other;
+}
 
-async function loadRepos(raw) {
+async function loadRepos(raw) {   // → true once the dropdown has repos (the newest is picked for you), false on errors, null if a newer load took over
   const user = String(raw || "").trim(), gen = ++ghGen, placeholder = `<option value="">Choose a repo…</option>`;
-  ghRepos = []; ghUser = null; ghIdle = "";
-  if (!user) { ghSelect(placeholder, true); ghStatus("Type a GitHub username to list its public repos."); return; }
-  if (!GH_USER_RE.test(user)) { ghSelect(placeholder, true); ghStatus(GH_ERR.missing(user), "err"); return; }
+  ghRepos = []; ghUser = null; ghIdle = ""; ghSnap = ""; syncTryUser(user);
+  if (!user) { ghSelect(placeholder, true); ghStatus("Type a GitHub username to list its public repos."); return false; }
+  if (!GH_USER_RE.test(user)) { ghSelect(placeholder, true); ghStatus(GH_ERR.missing(user), "err"); return false; }
   const key = "relay.ghrepos." + user.toLowerCase();
   let list = null;
   try { list = JSON.parse(sessionStorage.getItem(key) || "null"); } catch (e) {}
   if (!Array.isArray(list)) {
     ghSelect(`<option value="">Loading…</option>`, true); ghStatus(`Loading…`);
     const res = await ghJson(`${GH_API}/users/${enc(user)}/repos?per_page=100&sort=pushed`);
-    if (gen !== ghGen) return;   // a newer username or pick took over
+    if (gen !== ghGen) return null;   // a newer username or pick took over
     let snap = null;
     if (res.err === "rate" || res.err === "net") {   // shared venue Wi-Fi can exhaust GitHub's 60/hour: use the bundled snapshot
       try { const r = await fetch(`repos/${enc(user.toLowerCase())}.json`); if (r.ok) snap = await r.json(); } catch (e) {}
-      if (gen !== ghGen) return;
+      if (gen !== ghGen) return null;
     }
     if (Array.isArray(snap)) {
+      ghSnap = res.err === "rate" ? "GitHub's hourly limit was hit, so this is a saved snapshot" : "offline, so this is a saved snapshot";
       list = snap.filter(r => r && r.name).map(r => ({owner: String(r.owner || user), name: String(r.name), branch: String(r.branch || "main"),
         description: String(r.description || ""), language: String(r.language || ""), stars: +r.stars || 0,
         openIssues: typeof r.openIssues === "number" ? r.openIssues : null}));
-    } else if (res.err || !Array.isArray(res.data)) { ghSelect(placeholder, true); ghStatus(GH_ERR[res.err || "net"](user), "err"); return; }
+    } else if (res.err || !Array.isArray(res.data)) { ghSelect(placeholder, true); ghStatus(GH_ERR[res.err || "net"](user), "err"); return false; }
     else list = res.data.filter(r => r && typeof r === "object" && r.name && !r.fork && !r.archived).map(r => ({
       owner: (r.owner && r.owner.login) || user, name: String(r.name), branch: r.default_branch || "main",
       description: r.description || "", language: r.language || "", stars: +r.stargazers_count || 0,
@@ -348,65 +472,86 @@ async function loadRepos(raw) {
   }
   ghRepos = list; ghUser = user.toLowerCase();
   ghSelect(placeholder + list.map((r, i) => `<option value="${i}">${esc([r.name, r.language, r.stars ? "★" + r.stars : ""].filter(Boolean).join(" · "))}</option>`).join(""), !list.length);
-  ghIdle = list.length ? `${plural(list.length, "repo")} · pick one to turn its plan, open issues or description into tonight's tasks`
-                       : `${esc(user)} has no public repos to pick (forks and archived repos are skipped)`;
+  ghIdle = (list.length ? `${plural(list.length, "repo")} · pick one to turn its plan, open issues and PRs into tonight's tasks`
+                        : `${esc(user)} has no public repos to pick (forks and archived repos are skipped)`) + (ghSnap ? ` · ${ghSnap}` : "");
   ghStatus(ghIdle);
+  if (!list.length) return false;
+  $("repo").value = "0"; pickRepo();   // the most recently pushed repo, so the page never starts empty
+  return true;
 }
 
-// Fold any plan-ish markdown into one PLAN.md project for this repo: "## name" + "repo: url" + kept keys + up to MAX_TASKS tasks.
-function repoPlan(repo, text, fallbackTitle) {
-  let title = null; const keys = {}, tasks = [];
-  for (const ln of text.split("\n")) {
-    let m;
-    if ((m = ln.match(/^#\s+(.+)/))) { if (!title) title = m[1].trim(); }
-    else if ((m = ln.match(/^(test|notes|budget|priority):\s*(.+)/i))) { const k = m[1].toLowerCase(); if (!(k in keys)) keys[k] = m[2].trim(); }
-    else if (/^\s*- \[ \] /.test(ln)) tasks.push(ln.trim());
+// One cached read per repo: the job cards re-rank it without fetching again. At most 4 raw files, 1 issues call and 1 PRs call.
+const SRC = new Map();
+function repoSources(repo) {
+  const key = `${repo.owner}/${repo.name}`.toLowerCase();
+  if (!SRC.has(key)) {
+    const p = fetchSources(repo, key);
+    SRC.set(key, p);
+    p.then(s => { if (s.note) SRC.delete(key); }, () => SRC.delete(key));   // GitHub was unreachable: try again on the next pick
   }
-  const head = [`## ${repo.name}`, `repo: https://github.com/${repo.owner}/${repo.name}`, ...Object.entries(keys).map(([k, v]) => `${k}: ${v}`)];
-  const kept = tasks.slice(0, MAX_TASKS);
-  return {text: `# ${title || fallbackTitle}\n\n` + head.join("\n") + "\n" + kept.join("\n"), tasks: kept.length, total: tasks.length};
+  return SRC.get(key);
+}
+async function fetchSources(repo, key) {
+  const ss = "relay.ghsrc." + key;
+  try { const c = JSON.parse(sessionStorage.getItem(ss) || "null"); if (c && c.v === 1 && Array.isArray(c.planItems) && Array.isArray(c.issues) && Array.isArray(c.prs)) return c; } catch (e) {}
+  const o = enc(repo.owner), n = enc(repo.name), base = `${GH_RAW}/${o}/${n}/${repo.branch.split("/").map(enc).join("/")}/`;
+  const any = repo.openIssues !== 0, none = Promise.resolve({data: []});   // open_issues_count covers issues and PRs: 0 means nothing to fetch (saves the 60/hour anonymous limit)
+  const [texts, iss, prs] = await Promise.all([
+    Promise.all(PLAN_FILES.map(p => ghText(base + p))),
+    any ? ghJson(`${GH_API}/repos/${o}/${n}/issues?state=open&per_page=20`) : none,
+    any ? ghJson(`${GH_API}/repos/${o}/${n}/pulls?state=open&per_page=10`) : none,
+  ]);
+  const src = {v: 1, planFile: "", planItems: [], keys: {}, issues: [], prs: [], note: ""};
+  for (let k = 0; k < PLAN_FILES.length && !src.planFile; k++) {   // the first plan file with tasks wins
+    if (!texts[k]) continue;
+    const d = planItems(texts[k]);
+    if (d.tasks.length) Object.assign(src, {planFile: PLAN_FILES[k], planItems: d.tasks, keys: d.keys});
+  }
+  if (Array.isArray(iss.data)) src.issues = iss.data.filter(i => i && typeof i === "object" && !("pull_request" in i)).map(slimIssue).filter(Boolean);   // the issues endpoint also returns PRs
+  if (Array.isArray(prs.data)) src.prs = prs.data.filter(p => p && typeof p === "object").map(p => ({n: Math.floor(+p.number) || 0, title: clean(p.title, 90)})).filter(p => p.n > 0 && p.title);
+  const err = [iss.err, prs.err].find(e => e && e !== "missing");
+  if (err) src.note = err === "rate" ? "GitHub rate limit reached, so issues and PRs weren't checked" : "couldn't reach GitHub for issues and PRs";
+  else try { sessionStorage.setItem(ss, JSON.stringify(src)); } catch (e) {}
+  return src;
+}
+function planItems(text) {   // a plan-ish markdown file → its open tasks and project keys
+  const keys = {}, tasks = [];
+  for (const ln of normalizeDoc("PLAN.md", String(text).slice(0, 200000)).text.split("\n")) {
+    let m;
+    if ((m = ln.match(/^(test|notes|budget|priority):\s*(.+)/i))) { const k = m[1].toLowerCase(); if (!has(keys, k)) keys[k] = clean(m[2], 200); }
+    else if (ln.startsWith("- [ ] ")) { const t = clean(ln.slice(6), 140); if (t.length > 2 && tasks.length < MAX_TASKS) tasks.push(t); }
+  }
+  return {keys, tasks};
+}
+function jobOf(t) {   // which job a free-text task belongs to
+  if (/\b(bugs?|fix(es|ed)?|crash(es|ing)?|errors?|broken|breaks|fail(s|ing|ure)?|wrong|regression|exceptions?|typo)\b|not work/i.test(t)) return "bugs";
+  if (/^(review|audit)\b/i.test(t)) return "review";
+  if (/\b(tests?|testing|coverage|e2e)\b/i.test(t)) return "tests";
+  if (/\b(docs?|documentation|document|readme|guide|tutorial|docstrings?|changelog)\b/i.test(t)) return "docs";
+  return "features";
+}
+function slimIssue(i) {
+  const n = Math.floor(+i.number) || 0, title = clean(i.title, 100).replace(/^(fix|bug|feat|feature|docs?|tests?|chore|refactor)(\([^)]*\))?!?:\s*/i, "");
+  if (n < 1 || !title) return null;
+  const labels = (Array.isArray(i.labels) ? i.labels : []).map(l => String((l && typeof l === "object" ? l.name : l) || "").toLowerCase());
+  const job = labels.some(l => /\bbug\b/.test(l)) ? "bugs" : labels.some(l => /enhancement|feature/.test(l)) ? "features"
+            : labels.some(l => /\bdoc/.test(l)) ? "docs" : labels.some(l => /\btest/.test(l)) ? "tests" : jobOf(title);
+  return {n, title, job};
 }
 
+let CUR = null;   // {repo, src} of the picked repo
 async function pickRepo() {
   const sel = $("repo"), repo = sel.value === "" ? null : ghRepos[+sel.value];
-  if (!repo) { ghStatus(ghIdle); return; }
-  const gen = ++ghGen, full = `${repo.owner}/${repo.name}`;
-  ghPicking = gen; sel.disabled = true; ghStatus(`Loading…`);
+  if (!repo) { CUR = null; ghStatus(ghIdle); renderJobs(); return; }
+  const gen = ++ghGen;
+  ghPicking = gen; sel.disabled = true; ghStatus(`Reading PLAN.md, TODO.md, issues and PRs in ${esc(repo.owner)}/${esc(repo.name)}…`);
+  if (!$("plan").value.trim()) { EMPTY = `Reading ${repo.owner}/${repo.name}…`; renderTimeline(); }
   try {
-    let doc = null, from = "", why = "no plan file or open issues found";
-    // 1) a plan file at the root of the default branch (fetched together, used in order)
-    const base = `${GH_RAW}/${enc(repo.owner)}/${enc(repo.name)}/${repo.branch.split("/").map(enc).join("/")}/`;
-    const texts = await Promise.all(PLAN_FILES.map(p => ghText(base + p)));
+    const src = await repoSources(repo);
     if (gen !== ghGen) return;
-    for (let k = 0; k < PLAN_FILES.length && !doc; k++) {
-      if (!texts[k]) continue;
-      const d = normalizeDoc(PLAN_FILES[k], texts[k]);
-      if (d.tasks) { doc = repoPlan(repo, d.text, full); from = `from <b>${esc(PLAN_FILES[k])}</b> in ${esc(full)}`; }
-    }
-    // 2) open issues (the endpoint also returns PRs; those carry a pull_request key)
-    if (!doc && repo.openIssues !== 0) {   // the list already says 0 open issues/PRs: skip the call (saves the 60/hour anonymous limit)
-      const res = await ghJson(`${GH_API}/repos/${enc(repo.owner)}/${enc(repo.name)}/issues?state=open&per_page=20`);
-      if (gen !== ghGen) return;
-      if (Array.isArray(res.data)) {
-        const issues = res.data.filter(i => i && typeof i === "object" && !("pull_request" in i) && i.title);
-        if (issues.length) {
-          doc = repoPlan(repo, `# ${full}: open issues\n` + issues.map(i => `- [ ] #${+i.number} ${String(i.title).replace(/\s+/g, " ").trim()}`).join("\n"), full);
-          from = `from open issues in ${esc(full)}`;
-        }
-      } else why = res.err === "rate" ? "GitHub rate limit reached, open issues not checked" : "couldn't reach GitHub to check open issues";
-    }
-    // 3) nothing to read: draft a starter plan from the description
-    if (!doc) {
-      // the language picks the plan shape: Python/Go/Rust -> a CLI tool, JS/TS -> an app, HTML/CSS -> a site
-      const shape = /python|go|rust|shell|ruby/i.test(repo.language) ? "cli tool" : /javascript|typescript|svelte|vue/i.test(repo.language) ? "web app" : "website";
-      doc = repoPlan(repo, draftPlan(`Improve ${repo.name} (${shape}): ${repo.description || "the project"}`, repo.name), full);
-      from = `drafted from ${repo.description ? "the description of" : "the name of"} ${esc(full)} (${why})`;
-    }
-    $("plan").value = doc.text; picked.clear(); $("filelist").innerHTML = ""; renderSamples(); renderTimeline();
-    const count = doc.total > doc.tasks ? `${doc.tasks} of ${doc.total} tasks` : plural(doc.tasks, "task");
-    ghStatus(`<b>${count}</b> ${from}`, "ok");
+    CUR = {repo, src}; applyRepoPlan();
   } catch (e) {
-    if (gen === ghGen) ghStatus(GH_ERR.net(), "err");
+    if (gen === ghGen) { ghStatus(GH_ERR.net(), "err"); EMPTY = EMPTY_DEFAULT; renderTimeline(); }
   } finally {
     if (gen === ghGen) sel.disabled = false;
     if (ghPicking === gen) ghPicking = 0;
@@ -414,8 +559,185 @@ async function pickRepo() {
 }
 function forgetRepo() {   // another source replaced the plan: drop the repo selection so it can be picked again
   if (ghPicking && ghPicking === ghGen) { ghGen++; ghPicking = 0; $("repo").disabled = false; }   // and cancel a pick still loading
+  if (CUR) { CUR = null; renderJobs(); }
   if ($("repo").value === "") return;
   $("repo").value = ""; if (ghIdle) ghStatus(ghIdle);
+}
+
+// ---------- 1e. jobs: what the leftover tokens should produce. Toggle them; their order is the priority.
+const JOBS = {
+  chats:    {icon: "💬", name: "Search my chats", what: "Finds what you never got to in your Claude and ChatGPT history, then turns it into tasks.", art: "💡 CHATS.md → tasks", cap: 3},
+  bugs:     {icon: "🐛", name: "Find & fix bugs", what: "Open issues labeled bug, plus a scan for failing tests and TODO/FIXME.", art: "⎇ fix branch per bug", cap: 4},
+  features: {icon: "🌿", name: "Branch new features", what: "Feature and enhancement issues, plus the items in PLAN.md or TODO.md.", art: "⎇ branch per feature", cap: 4},
+  review:   {icon: "🔍", name: "Review PRs", what: "Reads each open PR, runs it, and commits its own review as REVIEW.md on relay/review/<pr>.", art: "📝 REVIEW.md per PR", cap: 3},
+  docs:     {icon: "📚", name: "Write docs", what: "Setup, usage and the gaps in your README.", art: "⎇ docs branch", cap: 2},
+  tests:    {icon: "🧪", name: "Add tests", what: "The least-covered code first, until the suite is green.", art: "⎇ test branch", cap: 2},
+};
+const JOB_PREFIX = {bugs: "fix: ", features: "feat: ", review: "review: ", docs: "docs: ", tests: "test: "};
+const TEST_GUESS = {"Python": "python3 -m pytest -q", "Jupyter Notebook": "python3 -m pytest -q", "JavaScript": "npm test", "TypeScript": "npm test", "Vue": "npm test", "Svelte": "npm test",
+  "Go": "go test ./...", "Rust": "cargo test", "Swift": "swift test", "Java": "mvn -q test", "Kotlin": "./gradlew test", "Ruby": "bundle exec rake test", "C++": "make test", "C": "make test",
+  "C#": "dotnet test", "PHP": "vendor/bin/phpunit", "Dart": "flutter test", "Shell": "shellcheck *.sh", "HTML": 'grep -q "<html" index.html'};
+const jobOrder = ["chats", "bugs", "features", "review", "docs", "tests"], jobOff = new Set();
+const JOBMAP = new Map();   // task text → job, so the timeline can show each task's job
+let JOBCOUNT = {};
+
+function jobTasks(src) {   // every job produces something, even on a repo with no plan file, issues or PRs
+  const by = {chats: [CHATS_TASK, ...chatTasks()], bugs: [], features: [], review: [], docs: [], tests: []};
+  src.planItems.forEach(t => { t = clean(t, 140); if (t) by[jobOf(t)].push(t); });
+  src.issues.forEach(i => { const j = has(JOB_PREFIX, i.job) ? i.job : "features"; by[j].push(`${JOB_PREFIX[j]}${clean(i.title, 100)} (#${Math.floor(+i.n) || 0})`); });
+  src.prs.forEach(p => by.review.push(`review PR #${Math.floor(+p.n) || 0}: ${clean(p.title, 90)}`));
+  by.bugs.push("scan for failing tests and TODO/FIXME, fix the real bugs");
+  if (by.features.length < 2) by.features.push("propose 3 small features in IDEAS.md, then build the smallest", "prepare the next release: changelog, version bump, publish");
+  if (!by.review.length) by.review.push("review the last 20 commits and write REVIEW.md with findings");
+  by.docs.push("update the README with setup and usage");
+  by.tests.push("add tests for the least-covered module");
+  return by;
+}
+function buildRepoPlan(repo, src) {
+  const by = jobTasks(src), order = jobOrder.filter(j => !jobOff.has(j)), tasks = [], seen = new Set();
+  JOBMAP.clear(); JOBCOUNT = {};
+  for (const j of order) {
+    let n = 0;
+    for (const t of by[j]) {
+      const k = t.toLowerCase();
+      if (n >= JOBS[j].cap || tasks.length >= MAX_TASKS || seen.has(k)) continue;
+      seen.add(k); JOBMAP.set(t, j); tasks.push(t); n++;
+    }
+    JOBCOUNT[j] = n;
+  }
+  const keys = {};
+  for (const k of ["test", "budget", "priority", "notes"]) if (src.keys && has(src.keys, k)) keys[k] = clean(src.keys[k], 200);
+  if (!keys.test && has(TEST_GUESS, repo.language)) keys.test = TEST_GUESS[repo.language];
+  if (!keys.notes) keys.notes = [clean(repo.description, 140).replace(/[.\s]+$/, ""), order.length ? "jobs by priority: " + order.map(j => JOBS[j].name).join(" > ") : "",
+                                 "one worktree and branch per job, nothing touches main"].filter(Boolean).join(" · ");
+  const head = [`## ${repo.name}`, `repo: https://github.com/${repo.owner}/${repo.name}`, ...Object.entries(keys).map(([k, v]) => `${k}: ${v}`)];
+  return {text: `# Night shift for ${repo.owner}/${repo.name}\n\n${head.join("\n")}\n\n${tasks.map(t => "- [ ] " + t).join("\n")}`, count: tasks.length};
+}
+function applyRepoPlan(focus) {   // the picked repo + the job cards → PLAN.md, timeline and status line
+  if (!CUR) { renderJobs(focus); return; }
+  const {repo, src} = CUR, doc = buildRepoPlan(repo, src), full = `${esc(repo.owner)}/${esc(repo.name)}`;
+  EMPTY = EMPTY_DEFAULT; $("plan").value = doc.text; picked.clear(); $("filelist").innerHTML = ""; renderSamples(); renderTimeline(); renderJobs(focus); clearDraftNote();
+  const found = [src.planFile && `${src.planItems.length} from ${esc(src.planFile)}`, src.issues.length && plural(src.issues.length, "open issue"), src.prs.length && plural(src.prs.length, "open PR")].filter(Boolean);
+  if (!doc.count) { ghStatus(`Every job is off. Turn one on below to fill tonight's timeline.`); return; }
+  ghStatus(`<b>✓ ${plural(doc.count, "task")} loaded from ${full}</b> · ${found.length ? found.join(" · ") : "no plan file, issues or PRs, so the jobs below fill in"}${src.note ? " · " + esc(src.note) : ""}${ghSnap ? ` · <span class="snap">${ghSnap}</span>` : ""}`, "ok");
+}
+function renderJobs(focus) {
+  $("jobs").innerHTML = jobOrder.map((j, i) => {
+    const J = JOBS[j], on = !jobOff.has(j), count = on ? (CUR ? plural(JOBCOUNT[j] || 0, "task") : "") : "off";
+    return `<div class="job ${on ? "on" : "off"}" draggable="true" data-i="${i}" data-j="${j}">
+      <div class="jh"><span class="grip" title="Drag to rank" aria-hidden="true">⠿</span><span class="n">${i + 1}</span><span class="jt"><span aria-hidden="true">${J.icon}</span> ${esc(J.name)}</span>
+        <label class="switch" title="${on ? "On" : "Off"}"><input type="checkbox" data-job="${j}"${on ? " checked" : ""} aria-label="${esc(J.name)}"><span></span></label></div>
+      <p>${esc(J.what)}</p>
+      <div class="jf"><span class="art${j === "review" ? " a-review" : j === "chats" ? " a-ideas" : ""}">${esc(J.art)}</span><span class="jc">${count}</span>
+        <button type="button" class="mini" data-mv="-1" title="Run earlier" aria-label="Run ${esc(J.name)} earlier"${i ? "" : " disabled"}>↑</button><button type="button" class="mini" data-mv="1" title="Run later" aria-label="Run ${esc(J.name)} later"${i < jobOrder.length - 1 ? "" : " disabled"}>↓</button></div></div>`;
+  }).join("");
+  $("chats").hidden = jobOff.has("chats");
+  if (focus) { const el = $("jobs").querySelector(`.job[data-j="${focus[0]}"] ${focus[1]}`); if (el && !el.disabled) el.focus(); }
+}
+function moveJob(from, to, focus) {
+  if (to < 0 || to >= jobOrder.length || from === to) return;
+  jobOrder.splice(to, 0, jobOrder.splice(from, 1)[0]);
+  applyRepoPlan(focus);
+}
+
+// ---------- 1f. chat search: clearly labeled sample results; a dropped export is read in this tab, never uploaded
+const CHAT_KINDS = [["ideas", "💡", "Abandoned ideas"], ["plans", "🗺", "Future plans"], ["principles", "📐", "Design principles"], ["history", "🕰", "History review"], ["summaries", "📝", "Summaries"]];
+const CHAT_SAMPLE = {
+  ideas: ["Share a finished run as a read-only link", "An offline mode that queues work until Wi-Fi is back"],
+  plans: ["Next: move settings into a config file", "Roadmap: a one-command install"],
+  principles: ["Never commit to main; branches are cheap", "Fail loudly, no silent fallbacks"],
+  history: ["September: 14 threads, your busiest month", "Went nowhere: a Rust rewrite, a Discord bot"],
+  summaries: ["Night-shift tool: plans in, tested branches out", "Portfolio site: hero done, contact form open"],
+};
+const CHATS_TASK = "chats: search my Claude and ChatGPT history and write CHATS.md";
+let CHATS = {from: "sample", data: CHAT_SAMPLE, info: ""};
+const CHAT_RULES = [   // the first rule that matches one of your own lines wins
+  ["plans", /\b(next,? (we|i)('ll| will| should)|next step|roadmap|(we|i)('ll| will) (add|build|ship|make|need|write|switch|move)|the plan is|plan is to|going to (add|build|ship|make|write)|v2|phase (2|two)|after (that|launch),? (we|i))\b/i],
+  ["principles", /\b((always|never) (use|commit|ship|push|write|keep|store|log|return|expose|mix|break|leave|add|put|hardcode|trust)|rule of thumb|principle|we decided|from now on|make sure (to|we|it|every)|prefer \w+ (over|to)|don'?t ever)\b/i],
+  ["ideas", /\b(would be (nice|cool|great|fun)|it'?d be (nice|cool|great)|what if (we|i)|idea:|maybe (we|i) (could|should)|we should|we could|someday|some day|one day|i wish|nice to have|later|todo|eventually)\b/i],
+];
+const SECRETS = /(github_pat_|ghp_|gho_|sk_live_|sk-|xox[baprs]-|AKIA)[A-Za-z0-9_-]{8,}|Bearer\s+\S+/g;
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function taskify(s) {   // "It would be nice to have X" → "add X"
+  let t = clean(s, 120).replace(/^(next( step)?|roadmap|todo|idea|plan|later)\s*[:,-]\s*/i, "")
+    .replace(/^(it'?d|it would) be (nice|cool|great|fun) (to have|if (we|it) had)\s+/i, "add ")
+    .replace(/^(it'?d|it would) be (nice|cool|great|fun) (to|if (we|i))\s+/i, "")
+    .replace(/^(maybe |so )?(we|i) (should|could|might) (also |probably |eventually )?/i, "")
+    .replace(/^(next,? )?(we'?ll|we will|i'?ll|i will|let'?s)\s+/i, "").replace(/[.!?]+$/, "");
+  if (/^[A-Z][a-z]/.test(t)) t = t[0].toLowerCase() + t.slice(1);
+  return clean(t, 90);
+}
+function chatTasks() { return [CHATS.data.ideas[0], CHATS.data.plans[0]].filter(Boolean).map(s => "from your chats: " + taskify(s)).filter(t => t.length > 20); }
+function renderChats() {
+  const mine = CHATS.from === "export";
+  $("chtag").textContent = mine ? "YOUR EXPORT" : "SAMPLE"; $("chtag").classList.toggle("mine", mine);
+  $("chinfo").textContent = mine ? CHATS.info : "Sample results: a website can't read your chats. Drop your export to see yours.";
+  $("chgrid").innerHTML = CHAT_KINDS.map(([k, ic, label]) => `<div class="cht"><b><span aria-hidden="true">${ic}</span> ${label}</b>${(CHATS.data[k] || []).slice(0, 2).map(s => `<span>${esc(s)}</span>`).join("") || `<span class="none">nothing found</span>`}</div>`).join("");
+  $("chreset").hidden = !mine;
+}
+function userTurns(c) {   // ChatGPT exports keep a message tree in "mapping"; Claude exports keep a flat "chat_messages" list
+  const out = [];
+  if (c && c.mapping && typeof c.mapping === "object") {
+    for (const node of Object.values(c.mapping)) {
+      const m = node && node.message;
+      if (!m || !m.author || m.author.role !== "user" || !m.content || !Array.isArray(m.content.parts)) continue;
+      const t = m.content.parts.filter(p => typeof p === "string").join("\n");
+      if (t) out.push({t, at: +m.create_time ? +m.create_time * 1000 : 0});
+    }
+  } else if (c && Array.isArray(c.chat_messages)) {
+    for (const m of c.chat_messages) {
+      if (!m || m.sender !== "human") continue;
+      let t = typeof m.text === "string" ? m.text : "";
+      if (!t && Array.isArray(m.content)) t = m.content.filter(x => x && x.type === "text" && typeof x.text === "string").map(x => x.text).join("\n");
+      if (t) out.push({t, at: Date.parse(m.created_at) || 0});
+    }
+  }
+  return out;
+}
+function mineChats(convs) {
+  const found = {ideas: [], plans: [], principles: []}, seen = new Set(), threads = [];
+  let turns = 0;
+  for (const c of convs.slice(0, 20000)) {
+    if (!c || typeof c !== "object") continue;
+    const us = userTurns(c), stamp = +c.update_time ? +c.update_time * 1000 : Date.parse(c.updated_at) || (us.length ? Math.max(...us.map(u => u.at)) : 0);
+    threads.push({title: clean(c.title || c.name || "Untitled", 48), n: us.length, at: stamp || 0});
+    for (const u of us) {
+      if (++turns > 200000) break;
+      for (const part of String(u.t).slice(0, 4000).split(/\n+/)) for (let s of part.split(/(?:[.!?])\s+/)) {
+        s = clean(s.replace(/^[\s>*\-•\d.)]+/, "").replace(SECRETS, "[redacted]"), 140);
+        if (s.length < 16 || /[{}<>]|=>|;\s*$|```|https?:\/\/|^(import|from|def|const|let|var|function|class|return)\b/.test(s)) continue;
+        const rule = CHAT_RULES.find(([, re]) => re.test(s)), key = s.toLowerCase();
+        if (!rule || seen.has(key)) continue;
+        seen.add(key); found[rule[0]].push({s: s[0].toUpperCase() + s.slice(1), at: u.at || stamp || 0});
+      }
+    }
+  }
+  const top = k => found[k].sort((a, b) => b.at - a.at).slice(0, 5).map(x => x.s);
+  const months = new Map();
+  threads.forEach(t => { if (!t.at) return; const d = new Date(t.at), k = d.getFullYear() * 12 + d.getMonth(); months.set(k, (months.get(k) || 0) + 1); });
+  const busiest = [...months].sort((a, b) => b[1] - a[1])[0], history = [];
+  if (busiest) history.push(`${MONTHS[busiest[0] % 12]} ${Math.floor(busiest[0] / 12)}: ${plural(busiest[1], "thread")}, your busiest month`);
+  const dead = threads.filter(t => t.n > 0 && t.n <= 2).sort((a, b) => b.at - a.at).slice(0, 3).map(t => t.title);
+  if (dead.length) history.push(`Went nowhere: ${dead.join(", ")}`);
+  const summaries = threads.filter(t => t.n > 2).sort((a, b) => b.n - a.n).slice(0, 3).map(t => `${t.title}: ${plural(t.n, "message")} from you`);
+  return {data: {ideas: top("ideas"), plans: top("plans"), principles: top("principles"), history, summaries}, turns, threads: threads.length};
+}
+async function loadChats(file) {
+  const msg = $("chmsg"); msg.className = "chmsg"; msg.textContent = "";
+  if (!file) return;
+  if (file.size > 40 * 1048576) { msg.className = "chmsg err"; msg.textContent = `That export is ${Math.round(file.size / 1048576)} MB. The demo reads up to 40 MB; burner ideas has no limit.`; return; }
+  msg.textContent = "Reading your export in this tab…";
+  try {
+    const data = JSON.parse(await file.text());
+    const convs = Array.isArray(data) ? data : data && Array.isArray(data.conversations) ? data.conversations : null;
+    if (!convs || !convs.length) throw new Error("not an export");
+    const res = mineChats(convs);
+    if (!res.turns) throw new Error("no messages");
+    CHATS = {from: "export", data: res.data, info: `${plural(res.threads, "conversation")} and ${plural(res.turns, "message")} of yours, read in this tab. Nothing was uploaded.`};
+    msg.textContent = ""; renderChats(); applyRepoPlan();
+  } catch (e) {
+    msg.className = "chmsg err"; msg.textContent = "Couldn't read that file. Drop the conversations.json from a ChatGPT or Claude data export.";
+  }
 }
 
 // ---------- 3. timeline
@@ -430,22 +752,32 @@ function parsePlan(text) {
 }
 const estMin = t => 30 + (h(t) % 40);
 const estUsd = t => 8 + (h(t) % 1400) / 100;
-let QUEUE = [];
+const ART = {branch: "⎇ branch + commit", review: "📝 REVIEW.md", ideas: "💡 CHATS.md"};
+const artifactOf = t => /\bCHATS\.md\b/.test(t) ? "ideas" : /^review\b|\bREVIEW\.md\b/i.test(t) ? "review" : "branch";
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/\.{2,}/g, ".").replace(/-{2,}/g, "-").replace(/^[-.]+|[-.]+$/g, "") || "project";
+function branchOf(proj, text, art) {   // every job gets its own branch; nothing is committed to main
+  if (art === "review") { const m = text.match(/#(\d+)/); return "relay/review/" + (m ? m[1] : "last-20-commits"); }
+  if (art === "ideas") return "relay/ideas/" + sha("ideas:" + proj + text);
+  return `relay/burn/${slug(proj)}-${sha("branch:" + proj + ":" + text)}`;
+}
+const EMPTY_DEFAULT = "Pick a repo above, describe what you want to build, or drop a plan.";
+let QUEUE = [], EMPTY = EMPTY_DEFAULT, running = false, stale = false;
 function renderTimeline() {
+  if (running) { stale = true; return; }   // the plan changed mid-run: redraw once the night is over
   const projects = parsePlan($("plan").value);
   QUEUE = projects.flatMap((p, pi) => p.tasks.map(tk => ({p, tk, color: COLORS[pi % COLORS.length]})));
   let m = 0;
   $("timeline").innerHTML = QUEUE.length ? QUEUE.map((q, i) => {
-    const at = m; m += estMin(q.tk.text);
+    const at = m, est = estMin(q.tk.text), art = artifactOf(q.tk.text), job = JOBMAP.get(q.tk.text); m += est;
     return `<div class="item ${at >= NIGHT ? "later" : ""}" id="tl-${i}" style="--c:${q.color}"><div class="t">${at >= NIGHT ? "next" : fmt(at)}</div><span class="dot"></span>
-      <div class="blk"><div class="title">${esc(q.tk.text)}</div><div class="meta"><span class="proj">${esc(q.p.name)}</span><span>~${estMin(q.tk.text)} min</span><span class="st">${at >= NIGHT ? "TOMORROW" : "QUEUED"}</span></div><div class="x"></div></div></div>`;
-  }).join("") : `<div class="empty">Describe what you want to build, pick a side project, or drop a plan.</div>`;
+      <div class="blk"><div class="title">${job ? `<span class="tj" aria-hidden="true">${JOBS[job].icon}</span>` : ""}${esc(q.tk.text)}</div><div class="meta"><span class="proj">${esc(q.p.name)}</span><span class="art a-${art}">${ART[art]}</span><span>~${est} min</span><span class="st">${at >= NIGHT ? "TOMORROW" : "QUEUED"}</span></div><div class="x"></div></div></div>`;
+  }).join("") : `<div class="empty">${esc(EMPTY)}</div>`;
   $("tlsub").textContent = QUEUE.length ? `${QUEUE.length} tasks · 23:00 → 07:00` : "23:00 → 07:00 · one block per task";
   $("run").disabled = !QUEUE.length;
 }
 function setItem(i, cls, label, extra) {
   const el = $("tl-" + i); if (!el) return;
-  el.classList.remove("running", "done", "blocked", "later"); if (cls) el.classList.add(cls);
+  el.classList.remove("running", "done", "parked", "later"); if (cls) el.classList.add(cls);
   el.querySelector(".st").textContent = label; if (extra !== undefined) el.querySelector(".x").innerHTML = extra;
   if (cls === "running") el.scrollIntoView({block: "nearest", behavior: "smooth"});
 }
@@ -459,10 +791,11 @@ const SUBS = {
   "agent37":  {name: "Hermes · Agent37", kind: "credit", cap: 1.10, today: 15},
   "openai":   {name: "OpenAI API", kind: "paygo", cap: 6, today: 0},
 };
-const BLOCK = [[/stripe|payment|live key|billing/i, "needs your live payment key"], [/pypi/i, "needs a PyPI token"],
-  [/\bnpm\b.*publish|publish.*\bnpm\b/i, "needs an npm token"], [/web store|app store/i, "needs your store developer account"],
-  [/domain|dns/i, "needs you to buy the domain"], [/deploy to prod|with my account|publish|release to prod/i, "needs your hosting credentials"],
-  [/password|credential|secret/i, "needs credentials only you have"]];
+// The rare things no agent can ever have. The job is parked: the agent does the rest on its branch, leaves a note, and the night moves on.
+const PARK = [[/stripe|payment|live key|billing/i, "a live payment key"], [/pypi/i, "a PyPI token"],
+  [/\bnpm\b.*publish|publish.*\bnpm\b/i, "an npm token"], [/web store|app store/i, "a store developer account"],
+  [/domain|dns/i, "a domain purchase"], [/deploy to prod|with my account|publish|release to prod/i, "registry or hosting credentials"],
+  [/password|credential|secret/i, "credentials only you hold"]];
 let speed = 2.5;
 const out = $("out");
 const sleep = ms => new Promise(r => setTimeout(r, ms / speed));
@@ -470,7 +803,9 @@ function line(cls, text) { const d = document.createElement("div"); if (cls) d.c
 function tick(m) { const c = fmt(Math.min(m, NIGHT)); $("clock").textContent = c; $("tclock").textContent = c; const pct = Math.min(100, m / NIGHT * 100); $("fill").style.width = pct + "%"; $("now").style.left = pct + "%"; }
 
 async function run() {
+  if (running) return;
   renderTimeline(); if (!QUEUE.length) return;
+  running = true;
   const planAtStart = $("plan").value;   // if the plan is replaced mid-run (repo pick, sample, upload), don't stamp results onto it
   $("run").disabled = true; $("run").textContent = "Running…"; $("result").style.display = "none"; out.innerHTML = "";
   speed = +$("speed").value; tick(0);
@@ -478,35 +813,51 @@ async function run() {
   const rank = {window: 0, credit: 1, paygo: 2};
   const order = chosen.sort((a, b) => rank[SUBS[a].kind] - rank[SUBS[b].kind]);
   const state = Object.fromEntries(order.map(k => [k, {spent: 0, dead: null, mins: 0}]));
-  let rescued = 0, paygo = 0, done = 0, blocked = 0, minutes = 0, cur = 0, did402 = false, didLoop = false;
+  let rescued = 0, paygo = 0, done = 0, parked = 0, minutes = 0, cur = 0, did402 = false, didLoop = false, didAsk = false;
   const results = [];
-  const kpi = () => { $("rescued").textContent = money(rescued); $("shipped").textContent = done; $("needs").textContent = blocked; };
+  const kpi = () => { $("rescued").textContent = money(rescued); $("shipped").textContent = done; $("parked").textContent = parked; };
+  const finish = label => { running = false; $("run").disabled = false; $("run").textContent = label; if (stale) { stale = false; renderTimeline(); } };
   kpi();
-  if (!order.length) { line("r", "Connect at least one agent."); $("run").disabled = false; $("run").textContent = "▶ Run tonight's shift"; return; }
-  line("h", "night shift · " + [...new Set(QUEUE.map(q => q.p.name))].join(", "));
+  if (!order.length) { line("r", "Connect at least one agent."); finish("▶ Run tonight's shift"); return; }
+  line("h", "night shift · " + esc([...new Set(QUEUE.map(q => q.p.name))].join(", ")));
   line("d", "burn order: " + order.map(k => SUBS[k].name).join(" → "));
+  line("d", "every job: its own worktree and branch · nothing touches main · no human in the loop");
   await sleep(500);
   const next = () => { while (cur < order.length && state[order[cur]].dead) cur++; return cur < order.length ? order[cur] : null; };
   for (let i = 0; i < QUEUE.length; i++) {
-    const {p, tk} = QUEUE[i];
+    const {p, tk} = QUEUE[i], art = artifactOf(tk.text), br = branchOf(p.name, tk.text, art), c = sha(p.name + tk.text);
     if (minutes >= NIGHT) { line("a", "\n! 07:00: the rest waits for tomorrow night"); break; }
     let k = next(); if (!k) { line("a", "\n! tonight's capacity is used up"); break; }
     if (/scaffold|create|readme|docs/i.test(tk.text) && state.agent37 && !state.agent37.dead) k = "agent37";
     setTime(i, minutes); setItem(i, "running", "RUNNING", "");
-    line("c", `\n━━ ${fmt(minutes)}  ${esc(p.name)}: ${esc(tk.text)}`); await sleep(350);
-    const blk = BLOCK.find(([re]) => re.test(tk.text));
-    if (blk) {
-      line("a", `BLOCKED: ${blk[1]}`); blocked++; kpi();
-      results.push({p: p.name, task: tk.text, status: "blocked", note: blk[1], line: tk.line});
-      setItem(i, "blocked", "NEEDS YOU", `<div class="why">${esc(blk[1])}</div>`); minutes += 6; tick(minutes); await sleep(350); continue;
+    line("c", `\n━━ ${fmt(minutes)}  ${esc(p.name)}: ${esc(tk.text)}`);
+    line("v", `⎇ new worktree on ${esc(br)}`); await sleep(350);
+    const usd = estUsd(tk.text), mins = estMin(tk.text);
+    const park = PARK.find(([re]) => re.test(tk.text));
+    if (park) {   // nothing waits for a human: do what needs no key, leave a note on the branch, move on
+      line("t", "  ⚙ do every step that needs no key · write NOTE.md"); await sleep(300);
+      const s = SUBS[k], take = Math.min(s.cap - state[k].spent, usd / 4);
+      state[k].spent += take; if (s.kind === "paygo") paygo += take; else rescued += take;
+      line("a", `◼ parked: no agent can have ${esc(park[1])} · commit ${c}`);
+      line("p", "↪ orchestrator: switched to the next job"); parked++; kpi();
+      results.push({p: p.name, task: tk.text, status: "parked", note: park[1], commit: c, branch: br, art, line: tk.line});
+      setItem(i, "parked", "PARKED", `<div class="park">◼ parked: missing ${esc(park[1])} · the rest is on ${esc(br)}</div>`);
+      minutes += 12; tick(minutes); await sleep(350); continue;
     }
     let event = "";
-    if ($("injloop").checked && !didLoop && i >= 1) {
+    if (art === "branch" && $("injloop").checked && !didLoop && i >= 1) {
       didLoop = true; line("t", `  ⚙ run ${esc(p.test || "tests")}   ×3 (same error)`); await sleep(300);
-      line("a", "! stuck → second opinion → stronger model"); await sleep(400); event = "Got stuck in a loop. A second opinion unstuck it.";
+      line("a", "! stuck: the same error three times"); await sleep(250);
+      line("p", "⟳ orchestrator: second opinion → stronger model · kept driving"); await sleep(400);
+      event = "Stuck in a loop. The orchestrator got a second opinion and kept it driving.";
+    } else if (art === "branch" && $("injask").checked && !didAsk && i >= 3) {
+      didAsk = true; line("a", `? agent: "two ways to do this, a flag or a config file. Which?"`); await sleep(300);
+      line("p", `⟳ orchestrator: answered "a flag" (easy to undo on a branch) · kept driving`); await sleep(400);
+      event = "Asked a question. The orchestrator answered it and kept it driving.";
     }
-    line("t", `  ⚙ write code · run ${esc(p.test || "tests")}`); await sleep(350);
-    const usd = estUsd(tk.text), mins = estMin(tk.text);
+    line("t", art === "review" ? "  ⚙ read the diff · run the tests · write REVIEW.md"
+            : art === "ideas" ? `  ⚙ read ${CHATS.from === "export" ? "your export" : "the sample chats"} · sort into 5 sections · write CHATS.md`
+            : `  ⚙ write code · run ${esc(p.test || "tests")}`); await sleep(350);
     if (k === "agent37" && $("inj402").checked && !did402) {
       did402 = true; state[k].dead = "402"; const nk = next(); line("a", "! 402 from Agent37 (credit used up)");
       if (!nk) { line("r", "no capacity left"); break; }
@@ -519,17 +870,21 @@ async function run() {
       if (s.kind === "paygo") paygo += take; else rescued += take;
       if (left > 0.001) { state[k].dead = "full"; const nk = next(); if (!nk) break; line("p", `⇄ ${s.name} window used → ${SUBS[nk].name}`); k = nk; }
     }
-    const c = sha(p.name + tk.text); done++; kpi(); line("g", `✓ done  ${money(usd)}  commit ${c}`);
-    results.push({p: p.name, task: tk.text, status: "done", commit: c, usd, line: tk.line});
-    setItem(i, "done", "✓ DONE", `<div class="ok">commit ${c} · ${money(usd)} · ${esc([...new Set(used)].join(" + "))}</div>${event ? `<div class="ev">${esc(event)}</div>` : ""}`);
+    const extra = art === "review" ? plural(3 + h(tk.text) % 5, "finding") : art === "ideas" ? `5 sections · ${plural(chatTasks().length, "idea")} queued as tasks` : "";
+    done++; kpi();
+    line("g", art === "branch" ? `✓ done  ${money(usd)}  commit ${c}` : `✓ ${art === "review" ? "REVIEW.md" : "CHATS.md"} committed  ${money(usd)}  ${extra}`);
+    results.push({p: p.name, task: tk.text, status: "done", commit: c, usd, branch: br, art, extra, line: tk.line});
+    const what = art === "review" ? `📝 REVIEW.md · ${extra} · on ${esc(br)}` : art === "ideas" ? `💡 CHATS.md · ${extra} · on ${esc(br)}` : `⎇ ${esc(br)} · commit ${c}`;
+    setItem(i, "done", "✓ DONE", `<div class="ok">${what} · ${money(usd)} · ${esc([...new Set(used)].join(" + "))}</div>${event ? `<div class="ev">${esc(event)}</div>` : ""}`);
     minutes += mins; tick(minutes); await sleep(300);
   }
   const lines = $("plan").value.split("\n");
-  if ($("plan").value === planAtStart) results.forEach(r => { lines[r.line] = lines[r.line].replace("- [ ]", r.status === "done" ? "- [x]" : "- [!]") + (r.status === "done" ? ` (relay ${r.commit})` : ` (blocked: ${r.note})`); });
+  if ($("plan").value === planAtStart) results.forEach(r => { lines[r.line] = lines[r.line].replace("- [ ]", r.status === "done" ? "- [x]" : "- [!]") + (r.status === "done" ? ` (relay ${r.commit})` : ` (parked: ${r.note})`); });
   $("plan").value = lines.join("\n");
-  line("h", `\n# Good morning ☕  ${done} done · ${blocked} need you`);
+  line("h", `\n# Good morning ☕  ${done} shipped · ${parked} parked`);
+  line("d", `⎇ ${results.length} ${results.length === 1 ? "branch" : "branches"}, nothing on main · keep what you like, delete the rest`);
 
-  // 4. utilization: today vs. with Relay working nights like this one
+  // 4. utilization: today vs. with Agent Relay working nights like this one
   const plans = order.filter(k => SUBS[k].kind !== "paygo");
   const NIGHT_GAIN = 33;   // 8 idle hours a night = 1.6 of 4.8 daily 5h windows ≈ +33 points of weekly window coverage
   const rows = plans.map(k => ({k, before: SUBS[k].today, after: Math.min(96, SUBS[k].today + NIGHT_GAIN)}));
@@ -537,12 +892,23 @@ async function run() {
   const b0 = avg(rows.map(r => r.before)), a0 = avg(rows.map(r => r.after));
   $("uhead").innerHTML = `${b0}% → <span>${a0}%</span>`;
   $("ubars").innerHTML = rows.map(r => `<div class="ubar"><div class="lb"><span>${esc(SUBS[r.k].name)}</span><b>${r.before}% → ${r.after}%</b></div><div class="tr"><div class="af" data-w="${r.after}"></div><div class="bf" style="width:${r.before}%"></div></div></div>`).join("");
-  $("md").innerHTML = `<p><b>${done} shipped · ${blocked} need you</b> · <b style="color:var(--orange)">${money(rescued)} rescued</b>${paygo ? ` · ${money(paygo)} pay-as-you-go (not rescue)` : ""}</p>` +
-    (blocked ? `<h3>Needs you</h3><ul>${results.filter(r => r.status === "blocked").map(r => `<li>${esc(r.task)}: ${esc(r.note)}</li>`).join("")}</ul>` : "") +
-    `<h3>Review</h3><ul>${[...new Set(results.filter(r => r.commit).map(r => r.p))].map(p => `<li>${esc(p)}: draft PR on <code>relay/night-…</code></li>`).join("") || "<li>nothing to review</li>"}</ul>`;
+
+  // MORNING.md, grouped by what the tokens produced
+  const made = a => results.filter(r => r.status === "done" && r.art === a);
+  const code = made("branch"), reviews = made("review"), ideas = made("ideas"), parkedList = results.filter(r => r.status === "parked");
+  const many = (n, one, more) => `${n} ${n === 1 ? one : more}`;
+  let md = `<p class="mtop"><b>${done} shipped · ${parked} parked</b> · <b style="color:var(--orange)">${money(rescued)} rescued</b>${paygo ? ` · ${money(paygo)} pay-as-you-go (not rescue)` : ""}</p><h3>Branches to keep or delete</h3>`;
+  if (code.length) md += `<div class="mg"><div class="mgh">⎇ Code <small>${many(code.length, "branch", "branches")} with commits</small></div><ul>${code.map(r => `<li><span>${esc(r.task)}</span><small>${esc(r.branch)} · ${r.commit}</small></li>`).join("")}</ul></div>`;
+  if (reviews.length) md += `<div class="mg"><div class="mgh">📝 Reviews <small>${many(reviews.length, "REVIEW.md", "REVIEW.md files")}, each committed on its own branch</small></div><ul>${reviews.map(r => `<li><span>${esc(r.task)}</span><small>${esc(r.branch)} · ${esc(r.extra)}</small></li>`).join("")}</ul></div>`;
+  if (ideas.length) md += `<div class="mg"><div class="mgh">💡 CHATS.md <span class="tag${CHATS.from === "export" ? " mine" : ""}">${CHATS.from === "export" ? "YOUR EXPORT" : "SAMPLE"}</span><code>${esc(ideas[0].branch)}</code></div>` +
+    `<dl class="chmd">${CHAT_KINDS.map(([k, ic, label]) => `<dt>${ic} ${label}</dt><dd>${(CHATS.data[k] || []).slice(0, 2).map(esc).join(" · ") || "nothing found"}</dd>`).join("")}</dl>` +
+    `<small class="chnext">Abandoned ideas and future plans became tasks in tonight's queue.</small></div>`;
+  if (!code.length && !reviews.length && !ideas.length) md += `<p class="note">Nothing finished tonight.</p>`;
+  if (parkedList.length) md += `<h3>Parked: what's missing</h3><ul class="park">${parkedList.map(r => `<li><span>${esc(r.task)}</span><small>missing ${esc(r.note)} · the rest is on ${esc(r.branch)}</small></li>`).join("")}</ul>`;
+  $("md").innerHTML = md + `<p class="note">Nothing touched main. Keep what you like, delete the rest.</p>`;
   $("result").style.display = "grid"; $("result").scrollIntoView({behavior: "smooth", block: "start"});
   setTimeout(() => document.querySelectorAll(".af").forEach(el => el.style.width = el.dataset.w + "%"), 250);
-  $("run").disabled = false; $("run").textContent = "↻ Run again";
+  finish("↻ Run again");
 }
 
 // ---------- wiring
@@ -552,7 +918,7 @@ $("files").addEventListener("change", e => loadFiles([...e.target.files]));
 const drop = $("drop");
 ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
 ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
-drop.addEventListener("drop", e => loadFiles([...e.dataTransfer.files]));
+drop.addEventListener("drop", e => { const fl = [...((e.dataTransfer && e.dataTransfer.files) || [])]; if (!fl.length) return; loadFiles(fl); forgetRepo(); clearDraftNote(); });
 $("plan").addEventListener("input", () => { picked.clear(); renderSamples(); renderTimeline(); });
 $("clear").onclick = () => { $("plan").value = ""; picked.clear(); renderSamples(); renderTimeline(); };
 $("download").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([$("plan").value], {type: "text/markdown"})); a.download = "PLAN.md"; a.click(); };
@@ -565,10 +931,10 @@ $("ghuser").addEventListener("keydown", e => {   // Enter loads (or retries afte
   if (e.key !== "Enter") return; e.preventDefault(); clearTimeout(ghTimer);
   const v = e.target.value.trim(); if (v.toLowerCase() !== ghUser) loadRepos(v);
 });
+$("tryuser").onclick = () => { const u = $("tryuser").dataset.user; $("ghuser").value = u; clearTimeout(ghTimer); loadRepos(u); };
 $("pform").addEventListener("submit", () => { if ($("pin").value.trim()) forgetRepo(); });
 $("samples").addEventListener("click", e => { if (e.target.tagName !== "A" && e.target.closest(".sample")) forgetRepo(); });
 $("files").addEventListener("change", forgetRepo);
-drop.addEventListener("drop", forgetRepo);
 $("clear").addEventListener("click", forgetRepo);
 function showDraftNote() {   // the timeline sits below the fold: confirm the click right under the button
   const ps = parsePlan($("plan").value), n = ps.reduce((a, p) => a + p.tasks.length, 0), note = $("draftnote");
@@ -579,11 +945,57 @@ $("draftnote").addEventListener("click", e => { if (e.target.tagName !== "A") re
 const clearDraftNote = () => { $("draftnote").textContent = ""; };
 $("samples").addEventListener("click", e => { if (e.target.tagName !== "A" && e.target.closest(".sample")) clearDraftNote(); });
 ["files", "repo"].forEach(id => $(id).addEventListener("change", clearDraftNote));
-drop.addEventListener("drop", clearDraftNote); $("clear").addEventListener("click", clearDraftNote); $("plan").addEventListener("input", clearDraftNote);
+$("clear").addEventListener("click", clearDraftNote); $("plan").addEventListener("input", clearDraftNote);
+
+// job cards: toggle, ↑ ↓, or drag to rank
+const jobs = $("jobs");
+let dragFrom = null;
+jobs.addEventListener("change", e => {
+  const c = e.target.closest("input[data-job]"); if (!c) return;
+  c.checked ? jobOff.delete(c.dataset.job) : jobOff.add(c.dataset.job);
+  applyRepoPlan([c.dataset.job, "input[data-job]"]);
+});
+jobs.addEventListener("click", e => {
+  const b = e.target.closest("button[data-mv]"); if (!b) return;
+  const card = b.closest(".job"), i = +card.dataset.i, mv = +b.dataset.mv, to = i + mv;
+  const other = `button[data-mv="${-mv}"]`, focus = to <= 0 || to >= jobOrder.length - 1 ? other : `button[data-mv="${mv}"]`;   // the pressed arrow, or its twin once the card hits an end
+  moveJob(i, to, [card.dataset.j, focus]);
+});
+jobs.addEventListener("dragstart", e => {
+  const card = e.target.closest && e.target.closest(".job"); if (!card) return;
+  dragFrom = +card.dataset.i; card.classList.add("drag"); e.dataTransfer.effectAllowed = "move";
+  try { e.dataTransfer.setData("text/plain", card.dataset.j); } catch (err) {}
+});
+jobs.addEventListener("dragover", e => {
+  if (dragFrom === null) return; e.preventDefault();
+  const card = e.target.closest(".job");
+  jobs.querySelectorAll(".job.over").forEach(x => { if (x !== card) x.classList.remove("over"); });
+  if (card && +card.dataset.i !== dragFrom) card.classList.add("over");
+});
+jobs.addEventListener("drop", e => {
+  if (dragFrom === null) return; e.preventDefault();
+  const card = e.target.closest(".job"), from = dragFrom; dragFrom = null;
+  if (card) moveJob(from, +card.dataset.i); else renderJobs();
+});
+jobs.addEventListener("dragend", () => { dragFrom = null; jobs.querySelectorAll(".job.drag, .job.over").forEach(x => x.classList.remove("drag", "over")); });
+
+// chat export: read in this tab, never uploaded
+const chdrop = $("chdrop");
+$("chfile").addEventListener("change", e => { loadChats(e.target.files[0]); e.target.value = ""; });
+["dragenter", "dragover"].forEach(ev => chdrop.addEventListener(ev, e => { e.preventDefault(); chdrop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => chdrop.addEventListener(ev, e => { e.preventDefault(); chdrop.classList.remove("over"); }));
+chdrop.addEventListener("drop", e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadChats(f); });
+$("chreset").onclick = () => { CHATS = {from: "sample", data: CHAT_SAMPLE, info: ""}; $("chmsg").textContent = ""; renderChats(); applyRepoPlan(); };
+
 $("pin").value = "Build a website for my piano recital";
-$("plan").value = draftPlan($("pin").value);   // never start empty
-renderSamples(); renderTimeline();
-loadRepos($("ghuser").value);   // fills the dropdown only; the plan changes when you pick a repo
+EMPTY = `Loading ${$("ghuser").value}'s repos…`;
+renderSamples(); renderJobs(); renderChats(); renderTimeline();
+loadRepos($("ghuser").value).then(ok => {   // GitHub is the main way in (a picked repo fills the plan); if it can't be reached, start from a sample plan
+  if (ok !== false) return;
+  EMPTY = EMPTY_DEFAULT;
+  if (!$("plan").value.trim()) $("plan").value = draftPlan($("pin").value);
+  renderTimeline();
+});
 </script>
 </body>
 </html>
