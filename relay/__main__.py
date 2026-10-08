@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import os
+from pathlib import Path
 import sys
 
 from . import ui
@@ -48,9 +49,11 @@ def _confirm_factory(auto_yes: bool):
 WEEK_ACTIONS = ("week", "discover", "ideas", "usage", "demo")
 _OLD_FLAGS = dict(plan=None, burner=None, now=False, wait=False, hours=None, max_tasks=None, no_pr=False)
 _NEW_FLAGS = dict(roots=None, agents=None, ideas=False, lanes=None, dry_run=False, no_dash=False, web=None, out=None,
-                  days=None, speed=None, record=None)
+                  days=None, speed=None, record=None, check=False, detach=False, install=False, uninstall=False,
+                  status=False, via=None)
 _TAKES = {"week": "plan burner roots agents hours ideas lanes dry_run no_dash web", "discover": "burner roots out",
-          "ideas": "burner days", "usage": "burner", "demo": "agents speed web record no_dash"}
+          "ideas": "burner days", "usage": "burner", "demo": "agents speed web record no_dash",
+          "auto": "burner dry_run check detach install uninstall status via"}
 
 
 def _burn_misuse(args) -> str | None:
@@ -270,8 +273,9 @@ def main(argv: list[str] | None = None) -> int:
     sv2.add_argument("--claude-logs", help="Claude Code projects dir(s), comma-separated (default: ~/.claude/projects)")
     sv2.add_argument("--no-claude", action="store_true", help="skip Claude Code logs")
     sv2.add_argument("--json", action="store_true")
-    bn = sub.add_parser("burn", help="night shift (capacity|plan|run) and burn week (week|discover|ideas|usage|demo)")
-    bn.add_argument("action", choices=["capacity", "plan", "run", *WEEK_ACTIONS])
+    bn = sub.add_parser("burn", help="night shift (capacity|plan|run), burn week (week|discover|ideas|usage|demo) "
+                                     "and end-of-week autoburn (auto)")
+    bn.add_argument("action", choices=["capacity", "plan", "run", *WEEK_ACTIONS, "auto"])
     bn.add_argument("plan", nargs="?", help="planning doc (markdown checklist)")
     bn.add_argument("-b", "--burner", help="subscriptions + downtime + model ladder "
                                            "(default: burner.json; burner-week.json for burn week|discover|ideas|usage)")
@@ -292,12 +296,24 @@ def main(argv: list[str] | None = None) -> int:
     wk.add_argument("--days", type=float, help="ideas: look back this many days (default: config, 21)")
     wk.add_argument("--speed", type=float, help="demo: playback speed (default 1.0)")
     wk.add_argument("--record", metavar="JSONL", help="demo: save the redacted event rows (docs/sample-events.jsonl)")
+    au = bn.add_argument_group("burn auto (per plan, before each plan's own reset)")
+    au.add_argument("--check", action="store_true", help="auto: decide and fire if due (what the hourly job runs)")
+    au.add_argument("--detach", action="store_true", help="auto: fire in the background")
+    act = au.add_mutually_exclusive_group()
+    act.add_argument("--install", action="store_true", help="auto: run --check every hour")
+    act.add_argument("--uninstall", action="store_true", help="auto: remove the hourly job")
+    act.add_argument("--status", action="store_true", help="auto: is the hourly job installed?")
+    from .schedule import VIAS
+    au.add_argument("--via", choices=VIAS, help="auto: scheduler (default: launchd on macOS, else cron)")
     dh = sub.add_parser("dash", help="live terminal dashboard of burn-week events")
     dh.add_argument("--events", help="events.jsonl to follow (default: <cwd>/.relay/events.jsonl)")
     wb = sub.add_parser("web", help="burn-week web dashboard (SSE) on 127.0.0.1")
     wb.add_argument("--port", type=int, default=3737)
     wb.add_argument("--events", help="events.jsonl to serve (default: <cwd>/.relay/events.jsonl)")
     wb.add_argument("--supabase", action="store_true", help="serve the rows in Supabase instead (SUPABASE_URL + SUPABASE_KEY)")
+    from . import schedule, windows
+    windows.add_cli(sub)      # relay windows plan|prime|due|install|uninstall|status
+    schedule.add_cli(sub)     # relay schedule
     args, extra = ap.parse_known_args(argv)
 
     # stdout belongs to the protocol: dispatch before any banner or print
@@ -325,6 +341,14 @@ def main(argv: list[str] | None = None) -> int:
         bad = _burn_misuse(args)
         if bad:
             ap.error(bad)
+    if (args.cmd == "burn" and args.action == "auto") or args.cmd in ("windows", "schedule"):
+        if not args.burner and not os.path.exists("burner-week.json"):   # same fallback as burn week: the documented example
+            args.burner = str(Path(__file__).resolve().parent.parent / "examples" / "burner-week.json")
+            print(ui.c("2", f"note: no ./burner-week.json, using the example {args.burner} (copy it, then edit plans and hours)"))
+        if args.cmd == "burn":
+            from . import autoburn
+            return autoburn.run_cli(args)
+        return args.func(args)
     if args.cmd in ("dash", "web") or (args.cmd == "burn" and args.action in WEEK_ACTIONS):
         return _week_main(args)
 

@@ -1,35 +1,156 @@
 {
   "_comment": "Documented burn-week config (docs/Relay-Burn-Week.md). Copy to ./burner-week.json and edit roots, subscriptions and lanes. Real lanes; chat-history ideas off; the orca lane off. Plan sizes are examples, not your plan's limits.",
-  "week": {"reset": "mon 09:00", "timezone": "America/Los_Angeles", "target_pct": 0.97},
-  "roots": ["~/Documents/Code", "~/code", "~/Projects", "~/Developer"],
+  "week": {
+    "reset": "mon 09:00",
+    "timezone": "America/Los_Angeles",
+    "target_pct": 0.97
+  },
+  "roots": [
+    "~/Documents/Code",
+    "~/code",
+    "~/Projects",
+    "~/Developer"
+  ],
   "max_depth": 3,
   "max_projects": 12,
   "per_project": 3,
   "max_agents": 12,
   "data_dir": "~/.relay-burn",
-  "ideas": {"enabled": false, "since_days": 21},
-  "monid": {"enabled": true},
+  "ideas": {
+    "enabled": false,
+    "since_days": 21
+  },
+  "monid": {
+    "enabled": true
+  },
   "subscriptions": [
-    {"name": "claude-max", "kind": "claude_code", "lane": "claude", "weekly_tokens": 400000000},
-    {"name": "codex", "kind": "codex", "lane": "codex", "weekly_tokens": 100000000},
-    {"name": "agent37", "kind": "agent37_budget", "lane": "agent37", "monthly_usd": 20, "instance": "$AGENT37_INSTANCE_ID"},
-    {"name": "openai", "kind": "api_budget", "lane": "relay", "providers": ["openai"], "monthly_usd": 20},
-    {"name": "monid", "kind": "monid_credits", "lane": "monid", "credits": 1000}
+    {
+      "name": "claude-max",
+      "kind": "claude_code",
+      "lane": "claude",
+      "weekly_tokens": 400000000
+    },
+    {
+      "name": "codex",
+      "kind": "codex",
+      "lane": "codex",
+      "weekly_tokens": 100000000
+    },
+    {
+      "name": "agent37",
+      "kind": "agent37_budget",
+      "lane": "agent37",
+      "monthly_usd": 20,
+      "instance": "$AGENT37_INSTANCE_ID"
+    },
+    {
+      "name": "openai",
+      "kind": "api_budget",
+      "lane": "relay",
+      "providers": [
+        "openai"
+      ],
+      "monthly_usd": 20
+    },
+    {
+      "name": "monid",
+      "kind": "monid_credits",
+      "lane": "monid",
+      "credits": 1000
+    }
   ],
   "lanes": [
-    {"kind": "claude", "name": "claude", "subscription": "claude-max", "max_agents": 8, "model": "sonnet"},
-    {"kind": "codex", "name": "codex", "subscription": "codex", "max_agents": 3},
-    {"kind": "agent37", "name": "agent37", "subscription": "agent37", "max_agents": 2},
-    {"kind": "relay", "name": "relay", "subscription": "openai", "max_agents": 2},
-    {"kind": "orca", "name": "orca", "max_agents": 4, "enabled": false}
+    {
+      "kind": "claude",
+      "name": "claude",
+      "subscription": "claude-max",
+      "max_agents": 8,
+      "model": "sonnet"
+    },
+    {
+      "kind": "codex",
+      "name": "codex",
+      "subscription": "codex",
+      "max_agents": 3
+    },
+    {
+      "kind": "agent37",
+      "name": "agent37",
+      "subscription": "agent37",
+      "max_agents": 2
+    },
+    {
+      "kind": "relay",
+      "name": "relay",
+      "subscription": "openai",
+      "max_agents": 2
+    },
+    {
+      "kind": "orca",
+      "name": "orca",
+      "max_agents": 4,
+      "enabled": false
+    }
   ],
   "providers": {
-    "openai": {"base_url": "${OPENAI_BASE_URL:-https://api.openai.com/v1}", "api_key_env": "OPENAI_API_KEY"}
+    "openai": {
+      "base_url": "${OPENAI_BASE_URL:-https://api.openai.com/v1}",
+      "api_key_env": "OPENAI_API_KEY"
+    }
   },
   "models": [
-    {"id": "oai-mini", "provider": "openai", "model": "gpt-5-mini", "tier": 0,
-     "price_in": 0.25, "price_out": 2.00, "context_window": 400000},
-    {"id": "oai-gpt5", "provider": "openai", "model": "gpt-5", "tier": 1,
-     "price_in": 1.25, "price_out": 10.00, "context_window": 400000}
-  ]
+    {
+      "id": "oai-mini",
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "tier": 0,
+      "price_in": 0.25,
+      "price_out": 2.0,
+      "context_window": 400000
+    },
+    {
+      "id": "oai-gpt5",
+      "provider": "openai",
+      "model": "gpt-5",
+      "tier": 1,
+      "price_in": 1.25,
+      "price_out": 10.0,
+      "context_window": 400000
+    }
+  ],
+  "idle": {
+    "timezone": "America/Los_Angeles",
+    "weekday": "18:00-09:00",
+    "weekend": "all"
+  },
+  "reserve_pct": 0.15,
+  "windows": {
+    "prime_at": "05:00",
+    "stagger_minutes": 60,
+    "align": "hour",
+    "days": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri"
+    ],
+    "plans": [
+      {
+        "name": "claude-max",
+        "kind": "claude_code"
+      },
+      {
+        "name": "codex",
+        "kind": "codex"
+      }
+    ]
+  },
+  "autoburn": {
+    "enabled": false,
+    "start_hours_before_reset": 36,
+    "min_leftover_pct": 0.1,
+    "allow_work_hours": false,
+    "min_hours": 1
+  }
 }
