@@ -12,8 +12,8 @@ Sponsors: Agent37 (cloud lane, LLM router, platform cron), Monid (task research)
 Supabase (live telemetry). Integrations: Orca (lane + skill), Claude Code plugin.
 
 ## House rules
-- WT = /Users/kai/ModelRElay/.worktrees/burn-week (git worktree, branch burn-week). Work ONLY in WT; `cd WT` in
-  every Bash command. Never edit the main checkout /Users/kai/ModelRElay outside .worktrees/burn-week.
+- WT = /Users/kai/model-relay/.worktrees/burn-week (git worktree, branch burn-week). Work ONLY in WT; `cd WT` in
+  every Bash command. Never edit the main checkout /Users/kai/model-relay outside .worktrees/burn-week.
 - Python 3.10+, standard library only (zero deps), like the rest of relay/. Match existing style:
   `from __future__ import annotations`, dataclasses, short docstrings, compact code, `relay.ui.c()` for color.
 - Only create/edit files you own. Shared contracts — relay/contracts.py, relay/bus.py, relay/lanes/base.py,
